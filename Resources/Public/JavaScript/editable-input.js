@@ -105,7 +105,7 @@ export class EditableInput extends LitElement {
         return html`
             <span
                     class=${classMap({slot: true, synced: this.isSynced, changed: this.changed,})}
-                    style="--button-count: ${buttonCount};"
+                    style="--button-count: ${buttonCount};--deg: ${Math.random() * 360}deg;"
                     contenteditable="${this.isSynced ? 'false' : 'plaintext-only'}"
                     data-placeholder="${this.value.length ? '' : (this.placeholder || '\u200B'/* placeholder keeps firefox from breaking out*/)}"
                     @input="${(event) => {
@@ -137,8 +137,9 @@ export class EditableInput extends LitElement {
         display: inline-block;
         border: 1px solid transparent;
         &:hover, &:focus {
-          --border-color-rotation-percent: 90deg;
-          border-image: conic-gradient(from var(--border-color-rotation-percent), #ff0000 0%, #ffff00 16.67%, #00ff00 33.33%, #00ffff 50%, #0000ff 66.67%, #ff00ff 83.33%, #ff0000 100%) 1;
+          --deg: 90deg;
+          border-image: conic-gradient(from var(--deg), #ff0000 0%, #ffff00 8.33%, #00ff00 16.66%, #00ffff 25%, #0000ff 33.33%, #ff00ff 41.66%, #ff0000 50%, #ffff00 58.33%, #00ff00 66.66%, #00ffff 75%, #0000ff 83.33%, #ff00ff 91.66%, #ff0000 100%) 1;
+          outline: 0;
         }
 
         border-radius: 4px;

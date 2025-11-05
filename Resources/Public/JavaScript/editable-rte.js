@@ -123,7 +123,6 @@ export class EditableRte extends LitElement {
         :host {
             position: relative;
             display: inline-block;
-            border: 1px solid #ffffff;
         }
 
         .slot {
@@ -131,7 +130,10 @@ export class EditableRte extends LitElement {
             display: inline-block;
             border: 1px solid transparent;
             &:hover, &:focus {
-              border: 1px solid var(--theme-color);
+              --deg: 90deg;
+              // TODO make this an outline again with proper automatic color selection (on white use x on black use y, etc) maybe css: hue-rotate
+              border-image: conic-gradient(from var(--deg), #ff0000 0%, #ffff00 8.33%, #00ff00 16.66%, #00ffff 25%, #0000ff 33.33%, #ff00ff 41.66%, #ff0000 50%, #ffff00 58.33%, #00ff00 66.66%, #00ffff 75%, #0000ff 83.33%, #ff00ff 91.66%, #ff0000 100%) 1;
+              outline: 0;
             }
             border-radius: 4px;
             padding-left: 4px;
