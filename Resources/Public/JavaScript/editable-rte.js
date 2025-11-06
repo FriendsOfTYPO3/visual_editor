@@ -144,7 +144,7 @@ export class EditableRte extends LitElement {
         }
         .slot:hover, .slot:focus {
             box-shadow: 0 0 4px 0 rgba(0,0,0,0.50) inset;
-            backdrop-filter: invert(20%);
+            backdrop-filter: blur(10px) invert(20%);
         }
 
         .slot.synced {
@@ -157,7 +157,7 @@ export class EditableRte extends LitElement {
         }
 
         .slot.changed {
-             backdrop-filter: hue-rotate(120deg) invert(30%);
+             backdrop-filter: blur(10px) hue-rotate(120deg) invert(30%);
         }
 
         .buttons {
