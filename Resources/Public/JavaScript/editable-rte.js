@@ -22,9 +22,9 @@ export class EditableRte extends LitElement {
 
     constructor() {
         super();
-        this.value = this.innerText;
+        this.value = this.innerHTML;
         this.valueInitial = this.value;
-        this.innerText = '';
+        this.innerHTML = '';
         this.addEventListener('click', (e) => {
             e.stopPropagation();
         })
@@ -50,7 +50,7 @@ export class EditableRte extends LitElement {
           aTag.dataset.href = aTag.href;
           aTag.removeAttribute('href');
         }
-        this.shadowRoot.querySelector('.slot').innerText = this.valueInitial || '\n';
+        this.shadowRoot.querySelector('.slot').innerHTML = this.valueInitial || '\n';
         this.langSyncUidInitial = this.langSyncUid;
         changesStore.setInitial(this.table, this.uid, this.field, this.valueInitial, this.isSynced ? this.langSyncUid : null);
     }
@@ -73,7 +73,7 @@ export class EditableRte extends LitElement {
     onReset = () => {
         this.value = this.valueInitial;
         this.langSyncUid = this.langSyncUidInitial;
-        this.shadowRoot.querySelector('.slot').innerText = this.valueInitial;
+        this.shadowRoot.querySelector('.slot').innerHTML = this.valueInitial;
     };
 
     render() {
@@ -101,6 +101,7 @@ export class EditableRte extends LitElement {
                     <reset-button @click="${this.onReset}"></reset-button>
                 </div>`;
         }
+        // TODO use RTE ckedit or tiptap
         return html`
             <span
                     class=${classMap({slot: true, synced: this.isSynced, changed: this.changed,})}
@@ -108,12 +109,12 @@ export class EditableRte extends LitElement {
                     contenteditable="${this.isSynced ? 'false' : 'true'}"
                     data-placeholder="${this.value.length ? '' : (this.placeholder || '\u200B'/* placeholder keeps firefox from breaking out*/)}"
                     @input="${(event) => {
-                        this.value = event.currentTarget.innerText.trim();
+                        this.value = event.currentTarget.innerHTML.trim();
                         if (this.value.length === 0) {
-                            this.shadowRoot.querySelector('.slot').innerText = '';
+                            this.shadowRoot.querySelector('.slot').innerHTML = '';
                         }
                     }}"
-                    @blur="${() => this.shadowRoot.querySelector('.slot').innerText = this.value}"
+                    @blur="${() => this.shadowRoot.querySelector('.slot').innerHTML = this.value}"
             ></span>
             ${buttons}
         `;
