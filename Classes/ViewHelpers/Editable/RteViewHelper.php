@@ -13,6 +13,7 @@ use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Core\Domain\RecordInterface;
+use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Fluid\ViewHelpers\Format\HtmlViewHelper;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
@@ -96,6 +97,8 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
         $site = $request->getAttribute('site');
         $syncLanguage = $this->recordService->getSyncLanguageForField($site, $editable->record, 'value');
 
+        $fieldId = $editable->record->getMainType() . '-' . $editable->record->getUid() . '-' . $editable->field;
+        $this->tag->addAttribute('id', $fieldId . '-placeholder-ckeditor5');
         $this->tag->addAttribute('table', $editable->record->getMainType());
         $this->tag->addAttribute('uid', $editable->record->getUid());
         $this->tag->addAttribute('field', $editable->field);
