@@ -1,0 +1,40 @@
+/**
+ * Custom styles for CKEditor to make it blend with the surrounding content.
+ * TODO move this into the <editable-rte>
+ */
+
+.ck.ck-editor {
+  border: none !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.ck-content {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  /* Add your own custom styles here */
+}
+.ck.ck-editor__editable_inline {
+  padding: 0 !important;
+}
+
+
+.ck-editor__top {
+  display: none;
+  position: absolute !important;
+  top: -40px;
+  left: 0;
+  right: 0;
+
+  *:hover > & {
+    display: block;
+  }
+}
+
+.ck.ck-editor__editable_inline > :first-child {
+  margin-top: 0 !important;
+}
+.ck.ck-editor__editable_inline>:last-child {
+  margin-bottom: 0 !important;
+}

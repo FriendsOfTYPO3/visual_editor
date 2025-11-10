@@ -52,18 +52,15 @@ const configuration = {
     SpecialCharacters, SpecialCharactersEssentials,
     HorizontalLine,
   ],
-  // toolbar: [
-  //   'undo', 'redo', '|', 'bold', 'italic', '|',
-  //   'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor',
-  // ],
   toolbar: [
-    "style", "heading", "|",
-    "bold", "italic", "subscript", "superscript", "|",
-    "bulletedList", "numberedList", "blockQuote", "alignment", "|",
-    "findAndReplace", "link", "|",
-    "removeFormat", "undo", "redo", "|",
-    "insertTable", "|",
-    "specialCharacters", "horizontalLine", "sourceEditing",
+    'undo', 'redo', '|',
+    'style', 'heading', '|',
+    'bold', 'italic', 'subscript', 'superscript', '|',
+    'bulletedList', 'numberedList', 'blockQuote', 'alignment', '|',
+    'findAndReplace', 'link', '|',
+    'removeFormat', 'undo', 'redo', '|',
+    'insertTable', '|',
+    'specialCharacters', 'horizontalLine', 'sourceEditing',
   ],
 };
 
@@ -73,7 +70,6 @@ const configuration = {
  * @param onChangeCallback { (html: string) => void }
  */
 export async function initRte(element, options, onChangeCallback) {
-
 
   const editor = await Editor.create(element, configuration);
   editor.model.document.on('change:data', () => onChangeCallback(editor.getData()));

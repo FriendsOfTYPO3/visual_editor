@@ -105,7 +105,7 @@ export class EditableInput extends LitElement {
         return html`
             <span
                     class=${classMap({slot: true, synced: this.isSynced, changed: this.changed,})}
-                    style="--button-count: ${buttonCount};--deg: ${Math.random() * 360}deg;"
+                    style="--button-count: ${buttonCount};"
                     contenteditable="${this.isSynced ? 'false' : 'plaintext-only'}"
                     role="textbox"
                     spellcheck="true"
@@ -139,8 +139,25 @@ export class EditableInput extends LitElement {
         min-height: 1lh;
 
         border-radius: 4px;
-        padding-left: 4px;
-        padding-right: max(5px, calc(0.8em * var(--button-count) + 5px * 2 * var(--button-count)));
+        /*
+        // problem with this: (inset shadow is cut off)
+        //border-top: 4px solid transparent;
+        //border-bottom: 4px solid transparent;
+        //border-left: 4px solid transparent;
+        //border-right: max(5px, calc(0.8em * var(--button-count) + 5px * 2 * var(--button-count)));
+        //box-sizing: content-box !important;
+
+        // problem with this: element is to big, even if margin is negative */
+
+        padding: 4px
+            max(5px, calc(0.8em * var(--button-count) + 5px * 2 * var(--button-count)))
+            4px
+            4px;
+        margin:
+            -4px
+            calc(max(0px, calc(0.8em * var(--button-count) + 5px * 2 * var(--button-count))) * -1)
+            -4px
+            -4px;
 
         &:after {
           content: attr(data-placeholder);
