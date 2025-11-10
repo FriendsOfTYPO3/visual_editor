@@ -150,14 +150,10 @@ export class EditableInput extends LitElement {
         // problem with this: element is to big, even if margin is negative */
 
         padding: 4px
-            max(5px, calc(0.8em * var(--button-count) + 5px * 2 * var(--button-count)))
+            max(4px, calc(0.8em * var(--button-count) + 4px * 2 * var(--button-count)))
             4px
             4px;
-        margin:
-            -4px
-            calc(max(0px, calc(0.8em * var(--button-count) + 5px * 2 * var(--button-count))) * -1)
-            -4px
-            -4px;
+        margin: -4px;
 
         &:after {
           content: attr(data-placeholder);
@@ -195,8 +191,6 @@ export class EditableInput extends LitElement {
         bottom: 0;
 
         pointer-events: none;
-
-        color: #444;
 
         & > * {
           height: 0.8em;

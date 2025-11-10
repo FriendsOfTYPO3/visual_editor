@@ -49,9 +49,7 @@ export class EditaraSaveButton extends LitElement {
     async _save() {
         this.saving = true;
         const value = this.changes;
-        console.log({value});
         const body = JSON.stringify(value, null, 2);
-        console.log('Saving to DB:', body);
         const response = await fetch(window.location.href, {
             method: 'POST',
             headers: {

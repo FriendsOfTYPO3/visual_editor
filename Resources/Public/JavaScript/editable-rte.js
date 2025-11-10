@@ -17,16 +17,19 @@ export class EditableRte extends LitElement {
         field: {type: String,},
         valueInitial: {type: String,},
         placeholder: {type: String,},
-        langSyncUid: {type: Number,},
+        langSyncUid: {type: Number,}, // TODO implement language sync
         langSyncUidInitial: {},
         options: {type: Object,},
     };
 
-    firstUpdated() {
-      initRte(this, this.options || {}, (html) => {
+    async firstUpdated() {
+      const editor = await initRte(this, this.options || {}, (html) => {
         this.value = html;
-        console.log(`RTE content changed ${this.table}:${this.uid}.${this.field}`, html);
+        changesStore.set(this.table, this.uid, this.field, html, this.isSynced ? this.langSyncUid : null);
+        this.changed = changesStore.hasChanges(this.table, this.uid, this.field);
       });
+      const html = editor.getData();
+      changesStore.setInitial(this.table, this.uid, this.field, html, this.isSynced ? this.langSyncUid : null);
     }
 }
 

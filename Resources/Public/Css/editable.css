@@ -13,13 +13,25 @@
   background: none !important;
   border: none !important;
   box-shadow: none !important;
-  /* Add your own custom styles here */
+  border-radius: 4px !important;
+  padding: 4px !important;
+  margin: -4px !important;
 }
-.ck.ck-editor__editable_inline {
-  padding: 0 !important;
+/**
+  * Highlight the editable area on hover and focus:
+ */
+.ck-content:hover, .ck-content:focus {
+  box-shadow: 0 0 4px 0 rgba(0,0,0,0.50) inset !important;
+  outline: 0 !important;
+  backdrop-filter: blur(10px) invert(20%) !important;
+}
+editable-rte[changed] + * .ck-content {
+  backdrop-filter: blur(10px) hue-rotate(120deg) invert(30%) !important;
 }
 
-
+/**
+  * (for now): Simulate InlineEditor of CKEditor
+ */
 .ck-editor__top {
   display: none;
   position: absolute !important;

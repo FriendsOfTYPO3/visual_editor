@@ -2,7 +2,6 @@ import Modal from '@typo3/backend/modal.js';
 
 console.log('%cEditara middleFrameScript init', 'color: green; font-size: 10px;');
 
-
 function reloadAllChildFrames() {
     const iframes = document.querySelectorAll('iframe');
     iframes.forEach((iframe) => {

@@ -21,6 +21,17 @@ class ChangesStore extends EventTarget {
         this.#initial[table][uid]['__languageSyncUid'] = langSyncUid;
     }
 
+  /**
+   *
+   * @param table {string}
+   * @param uid {number}
+   * @param field {string}
+   * @returns {boolean}
+   */
+    hasChanges(table, uid, field) {
+        return !!(this.#changes[table] && this.#changes[table][uid] && this.#changes[table][uid][field]);
+    }
+
     get initial() {
         return structuredClone(this.#initial);
     }
