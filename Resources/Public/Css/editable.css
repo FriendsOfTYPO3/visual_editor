@@ -1,13 +1,7 @@
 /**
  * Custom styles for CKEditor to make it blend with the surrounding content.
- * TODO move this into the <editable-rte>
+ * TODO move this into the <editable-rte>?
  */
-
-.ck.ck-editor {
-  border: none !important;
-  background: none !important;
-  box-shadow: none !important;
-}
 
 .ck-content {
   background: none !important;
@@ -35,11 +29,11 @@ editable-rte[changed] + * .ck-content {
 .ck-editor__top {
   display: none;
   position: absolute !important;
-  top: -40px;
+  bottom: 100%; /* position it over the element */
   left: 0;
   right: 0;
 
-  *:hover > & {
+  &:has(+ * > .ck-focused) {
     display: block;
   }
 }

@@ -1,7 +1,6 @@
-import {css, html, LitElement} from 'lit';
-import {classMap} from 'lit/directives/class-map.js';
+import {LitElement} from 'lit';
 import {changesStore} from './changes-store.js';
-import {initRte} from './initRte.js';
+import {initCKEditor} from './initCKEditor.js';
 
 /**
  * @extends {HTMLElement}
@@ -23,9 +22,10 @@ export class EditableRte extends LitElement {
     };
 
     async firstUpdated() {
-      const editor = await initRte(this, this.options || {}, (html) => {
-        this.value = html;
-        changesStore.set(this.table, this.uid, this.field, html, this.isSynced ? this.langSyncUid : null);
+      const editor = await initCKEditor(this, this.options || {}, this);
+      editor.model.document.on('change:data', () => {
+        this.value = editor.getData();
+        changesStore.set(this.table, this.uid, this.field, this.value, this.isSynced ? this.langSyncUid : null);
         this.changed = changesStore.hasChanges(this.table, this.uid, this.field);
       });
       const html = editor.getData();
