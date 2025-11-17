@@ -53,9 +53,10 @@ final readonly class BrickService
 
         $cacheKey = str_replace('\\','_', __CLASS__ . '_' . $templateBrick->getUid() . '_' . $name);
         if ($this->runtimeCache->has($cacheKey)) {
-            // allow overwriting? better not
+            // enforce single call per editable per rendering
             throw new \RuntimeException('Editable with name "' . $name . '" already exists in templateBrick:' . $templateBrick->getUid());
         }
+        $this->runtimeCache->set($cacheKey, true);
 
         $record = null;
         foreach ($templateBrick->get('editables') as $editable) {
@@ -67,7 +68,6 @@ final readonly class BrickService
         if (!$record) {
             $record = $this->createEditableRecord($templateBrick, $name, $type);
         }
-        $this->runtimeCache->set($cacheKey, true);
         return new Editable($name, $type, $type->getField(), $record);
     }
 

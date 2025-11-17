@@ -34,8 +34,8 @@ Improvements for UX:
     - [ ] inline title text editing
     - [ ] inline description editing ?? how is this shown?
     - [ ] drag and drop (upload) to change image
-- [ ] text
-  - [ ] reset changes button (revert to last saved version)
+- [x] text
+  - [x] reset changes button (revert to last saved version)
 
 features:
 - [ ] blocks
@@ -88,3 +88,14 @@ new editables:
   - using TCA type group?
 - [ ] video
 - [ ] password??? no use case here?
+
+
+## Commands that would be useful:
+- remove area from template:
+  - `typo3 editara:removeArea TemplateABC xyz`
+  - if you removed an e:area name=xyz from Template ABC you need to remove all the necessary template_bricks from the DB
+- remove editable from template:
+  - `typo3 editara:removeEditable TemplateABC editableName`
+- convert editable type:
+  - `typo3 editara:convertEditable TemplateABC editableName newType`
+  - e.g. convert an input editable to a rte editable
