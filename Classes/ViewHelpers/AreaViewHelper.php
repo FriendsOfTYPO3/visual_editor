@@ -64,9 +64,11 @@ final class AreaViewHelper extends AbstractViewHelper
 
             if ($editMode) {
                 $attributes = [
-                    'area-name' => $name,
+                    'class' => 'editara-focus',
+                    'areaName' => $name,
                     'uid' => $templateBrick->getUid(),
-                    'parent-uid' => $parent->getUid(),
+                    'parentUid' => $parent->getUid(),
+                    'templateName' => $templateBrick->get('template_name'),
                 ];
                 $result .= '<editara-area-brick ' . GeneralUtility::implodeAttributes($attributes) . '>';
             }

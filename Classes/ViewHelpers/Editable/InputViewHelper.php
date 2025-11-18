@@ -110,6 +110,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
         $site = $request->getAttribute('site');
         $syncLanguage = $this->recordService->getSyncLanguageForField($site, $editable->record, 'value');
 
+        $this->tag->addAttribute('class', 'editara-focus');
         $this->tag->addAttribute('table', $editable->record->getMainType());
         $this->tag->addAttribute('uid', $editable->record->getUid());
         $this->tag->addAttribute('field', $editable->field);
