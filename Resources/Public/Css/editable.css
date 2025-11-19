@@ -20,7 +20,7 @@
   backdrop-filter: blur(10px) invert(20%) !important;
 }
 
-editable-rte[changed] + * .ck-content {
+editable-rte[changed] .ck-content {
   backdrop-filter: blur(10px) hue-rotate(120deg) invert(30%) !important;
 }
 

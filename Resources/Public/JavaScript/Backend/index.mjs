@@ -1,6 +1,7 @@
 import Modal from '@typo3/backend/modal.js';
 import {onMessage, stopListeningMessages} from '../Shared/iframe-messaging.mjs';
 import './editara-backend-save-button.mjs';
+import './editara-spotlight-toggle.mjs';
 
 
 console.log('%cEditara backend index.js init', 'color: green; font-size: 10px;');

@@ -201,6 +201,7 @@ function selectElements(selectorToHighlight) {
 }
 
 let currentSelectorToHighlight;
+
 /**
  * Aktiviert das Spotlight-Overlay und schneidet für alle Matches
  * des übergebenen Selectors „Löcher“ ins Overlay.

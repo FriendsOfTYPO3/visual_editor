@@ -131,6 +131,7 @@ export class EditableInput extends LitElement {
       :host {
         position: relative;
         display: inline-block;
+        --button-size: min(0.8em, 32px);
       }
 
       .slot {
@@ -148,9 +149,8 @@ export class EditableInput extends LitElement {
         //box-sizing: content-box !important;
 
         // problem with this: element is to big, even if margin is negative */
-
         padding: 4px
-            max(4px, calc(0.8em * var(--button-count) + 4px * 2 * var(--button-count)))
+            calc(4px + var(--button-size) * var(--button-count) + 4px * 2 * var(--button-count))
             4px
             4px;
         margin: -4px;
@@ -183,18 +183,18 @@ export class EditableInput extends LitElement {
       .buttons {
         display: inline-flex;
         align-items: center;
-        gap: 5px;
+        gap: 4px;
 
         position: absolute;
-        right: 5px;
+        right: 4px;
         top: 0;
         bottom: 0;
 
         pointer-events: none;
 
         & > * {
-          height: 0.8em;
-          width: 0.8em;
+          height: var(--button-size);
+          aspect-ratio: 1;
 
           cursor: pointer;
           pointer-events: initial;

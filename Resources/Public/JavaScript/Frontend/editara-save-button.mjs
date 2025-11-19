@@ -1,6 +1,7 @@
 import {css, html, LitElement} from 'lit';
 import {changesStore} from './changes-store.mjs';
 import {isDirectMode, onMessage, sendMessage} from '../Shared/iframe-messaging.mjs';
+import {getObjectLeafCount} from "../Shared/get-object-leaf-count.mjs";
 
 /**
  * @extends {HTMLElement}
@@ -53,10 +54,7 @@ export class EditaraSaveButton extends LitElement {
   }
 
   get count() {
-    // iterate other the tables and count the uids:
-    return Object.values(this.changes).reduce((acc, tableChanges) => {
-      return acc + Object.keys(tableChanges).length;
-    }, 0);
+    return getObjectLeafCount(this.changes);
   }
 
   async _save() {

@@ -10,6 +10,7 @@ export const isDirectMode = window.parent === window;
  * @property doSave {null}
  * @property onSave {null}
  * @property saveEnded {null}
+ * @property spotlight {Boolean}
  */
 
 /**

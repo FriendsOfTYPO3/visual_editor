@@ -135,16 +135,20 @@ class PageEditModuleController
         $buttonBar = $view->getDocHeaderComponent()->getButtonBar();
 
         // Save
-        if ($saveButton = $this->makeSaveButton($buttonBar)) {
-            $buttonBar->addButton($saveButton);
+        if ($button = $this->makeSaveButton($buttonBar)) {
+            $buttonBar->addButton($button);
         }
         // View
-        if ($editButton = $this->makeViewButton($buttonBar)) {
-            $buttonBar->addButton($editButton);
+        if ($button = $this->makeViewButton($buttonBar)) {
+            $buttonBar->addButton($button);
         }
-        // View
-        if ($editButton = $this->makeEditButton($buttonBar, $request)) {
-            $buttonBar->addButton($editButton);
+        // Edit Page Properties
+        if ($button = $this->makeEditButton($buttonBar, $request)) {
+            $buttonBar->addButton($button);
+        }
+        // Edit Page Properties
+        if ($button = $this->makeSpotlightToggleButton($buttonBar)) {
+            $buttonBar->addButton($button);
         }
 
         // Reload
@@ -376,6 +380,29 @@ class PageEditModuleController
             ->setAttributes(['disabled' => true])
             ->setLabel('Save')
             ->setIcon($this->iconFactory->getIcon('actions-save', IconSize::SMALL))
+            ->setShowLabelText(true);
+    }
+
+    private function makeSpotlightToggleButton(ButtonBar $buttonBar): ?ButtonInterface
+    {
+        if (
+            $this->pageRecord->getVersionInfo()->getState() === VersionState::DELETE_PLACEHOLDER
+        ) {
+            return null;
+        }
+
+        $previewUriBuilder = PreviewUriBuilder::create($this->pageRecord->getRawRecord()->toArray());
+        if (!$previewUriBuilder->isPreviewable()) {
+            return null;
+        }
+
+
+        $button = $buttonBar->makeButton(GenericButton::class);
+        assert($button instanceof GenericButton);
+        return $button
+            ->setTag('editara-spotlight-toggle')
+            ->setLabel('Spotlight')
+            ->setIcon($this->iconFactory->getIcon('actions-toggle-off', IconSize::SMALL))
             ->setShowLabelText(true);
     }
 }
