@@ -240,7 +240,7 @@ export class EditableAreaBrick extends LitElement {
 
     .border {
       position: relative;
-      outline: 2px dashed red;
+      /*outline: 2px dashed red;*/
     }
 
     .border:after {
@@ -262,7 +262,13 @@ export class EditableAreaBrick extends LitElement {
       box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.5) inset;
     }
 
+    /* TODO this dose not work, should be visible if the body is hovered */
+    *:hover > .button-bar {
+      display: block;
+    }
+
     .button-bar {
+      display: none;
       cursor: grab;
       position: absolute;
       bottom: 100%;
