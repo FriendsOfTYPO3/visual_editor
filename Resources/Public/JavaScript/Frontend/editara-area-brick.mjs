@@ -240,7 +240,6 @@ export class EditableAreaBrick extends LitElement {
 
     .border {
       position: relative;
-      /*outline: 2px dashed red;*/
     }
 
     .border:after {
@@ -251,30 +250,27 @@ export class EditableAreaBrick extends LitElement {
       bottom: 0;
       right: 0;
       pointer-events: none;
-      outline-offset: 1px;
-    }
-
-    .border:hover {
-      outline: 2px ridge red;
     }
 
     .border:hover:after {
+      outline: 2px ridge black;
+      outline-offset: 2px;
       box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.5) inset;
     }
 
     /* TODO this dose not work, should be visible if the body is hovered */
     *:hover > .button-bar {
-      display: block;
+      opacity: 0.5;
     }
 
     .button-bar {
-      display: none;
       cursor: grab;
       position: absolute;
       bottom: 100%;
       left: 0;
       background: #000;
-      opacity: 0.5; /* TODO change to 0.5 */
+      opacity: 0.001;
+      /*opacity: 0.5;*/
       color: white;
       padding: 4px;
       min-width: 200px;
