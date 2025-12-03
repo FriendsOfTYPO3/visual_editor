@@ -170,13 +170,17 @@ export class EditableAreaBrick extends LitElement {
       return;
     }
 
-    const html = await response.text();
-    this.saving = false;
-    sendMessage('updateChangesCount', 0);
-    sendMessage('saveEnded');
 
-    // TODO only replace the changed elements instead of reloading the whole page
-    console.log('Save response:', html);
+    const sourceElement = document.getElementById(data.table + ':' + data.uid);
+    if(event.dataTransfer.dropEffect === 'move') {
+      if (position === 'above') {
+        this.parentNode.insertBefore(sourceElement, this);
+      } else {
+        this.parentNode.insertBefore(sourceElement, this.nextSibling);
+      }
+      return;
+    }
+    // For copy we just reload the page to show the new element
 
     if (isDirectMode) {
       window.location.reload();

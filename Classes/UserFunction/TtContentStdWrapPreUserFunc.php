@@ -41,33 +41,14 @@ final readonly class TtContentStdWrapPreUserFunc
         $record = $this->recordFactory->createResolvedRecordFromDatabaseRow($table, $data);
         assert($record instanceof Record);
 
-        $colPos = $record->get('colPos');
-
-        $cmd = [
-            $table => [
-                $record->getUid() => [
-                    'move' => [
-                        'action' => 'paste',
-                        'target' => $record->getPid(),
-                        // pid if moving at the top of colPos
-                        // -tt_content.uid if moving below a specific record
-                        'update' => [
-                            'colPos' => $colPos,
-                            'sys_language_uid' => $record->getLanguageId(), // if you move between languages
-                        ],
-                    ],
-                ],
-            ],
-        ];
-
         $div = GeneralUtility::makeInstance(TagBuilder::class, 'editara-area-brick');
         $recordTypeLabel = $this->getRecirdTypeLabel($record);
         $div->addAttribute('elementName', $recordTypeLabel);
         $div->addAttribute('table', $table);
-        $div->addAttribute('id', 'cc' . $record->getUid());
+        $div->addAttribute('id', $table. ':' . $record->getUid());
         $div->addAttribute('uid', (string)$record->getUid());
         $div->addAttribute('pid', (string)$record->getPid());
-        $div->addAttribute('colPos', $colPos);
+        $div->addAttribute('colPos', $record->get('colPos'));
         $div->addAttribute('sys_language_uid', $record->getLanguageId());
         $div->setContent($content);
 
