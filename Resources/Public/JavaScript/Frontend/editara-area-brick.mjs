@@ -78,9 +78,7 @@ export class EditableAreaBrick extends LitElement {
         }
       }
     })
-    this.style.display = 'none';
-
-    this.loading = false;
+    this.remove();
   }
 
   _alternativeActions() {
