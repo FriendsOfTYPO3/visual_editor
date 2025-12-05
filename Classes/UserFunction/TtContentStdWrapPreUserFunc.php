@@ -43,7 +43,7 @@ final readonly class TtContentStdWrapPreUserFunc
         assert($record instanceof Record);
         $schema = $this->tcaSchema->get($record->getMainType()); // TODO use getFullType (if flux is not used)
 
-        $div = GeneralUtility::makeInstance(TagBuilder::class, 'editara-area-brick');
+        $div = GeneralUtility::makeInstance(TagBuilder::class, 'editara-content-element');
         $recordTypeLabel = $this->getRecirdTypeLabel($record);
         $div->addAttribute('elementName', $recordTypeLabel);
         $div->addAttribute('table', $table);

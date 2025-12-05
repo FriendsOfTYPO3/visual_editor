@@ -1,5 +1,5 @@
 import {LitElement, css} from 'lit';
-import {changesStore} from './changes-store.mjs';
+import {changesStore} from '@andersundsehr/editara/Frontend/changes-store.mjs';
 import {ClassicEditor as Editor} from '@ckeditor/ckeditor5-editor-classic';
 // import {InlineEditor as Editor} from '@ckeditor/ckeditor5-editor-inline'; // TODO fix issues with inline editor
 import {initCKEditorInstance} from '@typo3/rte-ckeditor/init-ckeditor-instance.js';

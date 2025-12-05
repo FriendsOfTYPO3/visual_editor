@@ -1,8 +1,8 @@
 import {css, html, LitElement} from 'lit';
-import {changesStore} from './changes-store.mjs';
-import {isDirectMode, onMessage, sendMessage} from '../Shared/iframe-messaging.mjs';
-import {getObjectLeafCount} from "../Shared/get-object-leaf-count.mjs";
-import {useDataHandler} from "./api.mjs";
+import {changesStore} from '@andersundsehr/editara/Frontend/changes-store.mjs';
+import {isDirectMode, onMessage, sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
+import {getObjectLeafCount} from "@andersundsehr/editara/Shared/get-object-leaf-count.mjs";
+import {useDataHandler} from "@andersundsehr/editara/Frontend/api.mjs";
 
 /**
  * @extends {HTMLElement}
@@ -22,7 +22,6 @@ export class EditaraSaveButton extends LitElement {
 
     changesStore.addEventListener('changes', e => {
       this.changes = e.detail.changes;
-      console.log('Changes updated:', this.changes);
 
       sendMessage('updateChangesCount', this.count);// TODO handle this in parent
     });

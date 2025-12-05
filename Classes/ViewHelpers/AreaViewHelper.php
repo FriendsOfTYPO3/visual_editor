@@ -73,11 +73,11 @@ final class AreaViewHelper extends AbstractViewHelper
                     'parentUid' => $parent->getUid(),
                     'templateName' => $brickTemplate->title,
                 ];
-                $result .= '<editara-area-brick ' . GeneralUtility::implodeAttributes($attributes) . '>';
+                $result .= '<editara-content-element ' . GeneralUtility::implodeAttributes($attributes) . '>';
             }
             $result .= $this->renderTemplate($brickTemplate, $templateBrick);
             if ($editMode) {
-                $result .= "</editara-area-brick>";
+                $result .= "</editara-content-element>";
             }
         }
         if (!$result) {

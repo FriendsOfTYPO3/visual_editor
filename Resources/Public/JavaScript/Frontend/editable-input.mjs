@@ -1,6 +1,6 @@
 import {css, html, LitElement} from 'lit';
 import {classMap} from 'lit/directives/class-map.js';
-import {changesStore} from './changes-store.mjs';
+import {changesStore} from '@andersundsehr/editara/Frontend/changes-store.mjs';
 
 /**
  * @extends {HTMLElement}

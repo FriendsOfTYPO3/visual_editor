@@ -1,5 +1,5 @@
 import {css, html, LitElement} from 'lit';
-import {dragInProgressStore} from "../stores/drag-store.mjs";
+import {dragInProgressStore} from "@andersundsehr/editara/Frontend/stores/drag-store.mjs";
 
 /**
  * @extends {HTMLElement}

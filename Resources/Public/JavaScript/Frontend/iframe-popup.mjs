@@ -1,5 +1,5 @@
 import {css, html, LitElement} from 'lit';
-import {isDirectMode, sendMessage} from "../Shared/iframe-messaging.mjs";
+import {isDirectMode, sendMessage} from "@andersundsehr/editara/Shared/iframe-messaging.mjs";
 
 
 /**

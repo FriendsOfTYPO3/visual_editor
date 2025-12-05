@@ -1,12 +1,11 @@
 import {css, html, LitElement} from 'lit';
-import {isDirectMode, sendMessage} from "../Shared/iframe-messaging.mjs";
-import {useDataHandler} from "./api.mjs";
-import {dragInProgressStore} from "./stores/drag-store.mjs";
+import {useDataHandler} from "@andersundsehr/editara/Frontend/api.mjs";
+import {dragInProgressStore} from "@andersundsehr/editara/Frontend/stores/drag-store.mjs";
 
 /**
  * @extends {HTMLElement}
  */
-export class EditableAreaBrick extends LitElement {
+export class EditaraContentElement extends LitElement {
   static properties = {
     elementName: {type: String},
     table: {type: String},
@@ -16,10 +15,8 @@ export class EditableAreaBrick extends LitElement {
     sys_language_uid: {type: Number},
     hidden: {type: Boolean},
     hiddenFieldName: {type: String},
-    // areaName: {type: String},
-    showDropAreas: {type: Boolean, state: true, attribute: false},
-    dragIsOverAbove: {type: Boolean, state: true, attribute: false},
-    dragIsOverBelow: {type: Boolean, state: true, attribute: false},
+
+    dragInProgress: {type: Boolean, state: true, attribute: false},
 
     loading: {type: Boolean, state: true, attribute: true},
   };
@@ -75,150 +72,17 @@ export class EditableAreaBrick extends LitElement {
     super();
 
     dragInProgressStore.addEventListener('change', () => {
-      const data = dragInProgressStore.value;
-      this.dragIsOverAbove = false;
-      this.dragIsOverBelow = false;
-      if (!data) {
-        this.showDropAreas = false;
-        return;
-      }
-
-      if (data.uid === this.uid && data.table === this.table) {
-        this.showDropAreas = false;
-        return;
-      }
-
-      if (this.isAnyOfMyParents(data.table, data.uid)) {
-        this.showDropAreas = false;
-        return;
-      }
-
-      this.showDropAreas = true;
-    });
-  }
-
-  /**
-   * @param {DragEvent} event
-   */
-  _dragOver(event) {
-    if (!this.canDropHere(event)) {
-      return;
-    }
-    event.preventDefault();
-  }
-
-  canDropHere(event) {
-    const dataString = event.dataTransfer.getData('text/editara-drag');
-    if (!dataString) {
-      return false;
-    }
-    const data = JSON.parse(dataString);
-    if (data.uid === this.uid && data.table === this.table) {
-      // Prevent dropping on itself
-      return false;
-    }
-    if (this.isAnyOfMyParents(data.table, data.uid)) {
-      // Prevent dropping a parent into one of its children
-      return false;
-    }
-    return true;
-  }
-
-  /**
-   * @param {DragEvent} event
-   * @param {'above'|'below'} position
-   */
-  _dragEnter(event, position) {
-    if (!this.canDropHere(event)) {
-      return;
-    }
-    if (position === 'above') {
-      this.dragIsOverAbove = true;
-    } else {
-      this.dragIsOverBelow = true;
-    }
-  }
-
-  /**
-   * @param {DragEvent} event
-   * @param {'above'|'below'} position
-   */
-  _dragLeave(event, position) {
-    if (position === 'above') {
-      this.dragIsOverAbove = false;
-    } else {
-      this.dragIsOverBelow = false;
-    }
-  }
-
-  /**
-   * @param {DragEvent} event
-   * @param {'above'|'below'} position
-   */
-  async _drop(event, position) {
-    const dataString = event.dataTransfer.getData('text/editara-drag');
-    if (!dataString) {
-      return;
-    }
-    event.preventDefault();
-    const data = JSON.parse(dataString);
-
-    await useDataHandler({}, {
-      [data.table]: {
-        [data.uid]: {
-          [event.dataTransfer.dropEffect]: {
-            action: 'paste',
-            target: position === 'above' ? this.pid : -this.uid,
-            update: {
-              colPos: this.colpos,
-              sys_language_uid: this.sys_language_uid,
-            },
-          }
-        }
-      }
+      this.dragInProgress = !!dragInProgressStore.value;
     });
 
-    const sourceElement = document.getElementById(data.table + ':' + data.uid);
-    if (event.dataTransfer.dropEffect === 'move') {
-      if (position === 'above') {
-        this.parentNode.insertBefore(sourceElement, this);
-      } else {
-        this.parentNode.insertBefore(sourceElement, this.nextSibling);
-      }
-      return;
+    if (this.parentElement.tagName.toLowerCase() !== 'editara-column') {
+      const message = 'Error: <editara-content-element> must be inside an <editara-column> element.';
+      this.innerHTML = `<editara-error text="${message}"/>`;
+      throw new Error(message);
     }
-    // For copy we just reload the page to show the new element
-
-    if (isDirectMode) {
-      window.location.reload();
-      return;
-    }
-    // window.location.hash = '#cc' + data.uid; // TODO handle this from the parent, put the content element in the center of the screen after the reload!
-    sendMessage('reloadFrames');
   }
 
   render() {
-    const hasPrecedingSibling = this.parentElement && this.parentElement.firstElementChild !== this && this.parentElement.firstElementChild instanceof EditableAreaBrick;
-
-    /**
-     * @param {'above'|'below'} position
-     */
-    const dropArea = (position) => {
-      const active = this.showDropAreas ? 'active' : '';
-      const over = (position === 'above' ? this.dragIsOverAbove : this.dragIsOverBelow) ? 'over' : '';
-      return html`
-        <div class="dropArea ${position} ${active} ${over}"
-             @dragover="${this._dragOver}"
-             @dragenter="${(e) => this._dragEnter(e, position)}"
-             @dragleave="${(e) => this._dragLeave(e, position)}"
-             @drop="${(e) => this._drop(e, position)}"
-        >
-          DROP HERE
-        </div>`;
-    };
-
-    const dropAreaAbove = hasPrecedingSibling ? () => null : dropArea;
-
     // TODO make it possible to use <typo3-backend-icon> here
     const actionsToggleOff = html`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="1em">
@@ -273,7 +137,7 @@ export class EditableAreaBrick extends LitElement {
       <div class="border ${this.hidden ? 'hidden' : ''} ${this.loading ? 'loading' : ''}">
         <editara-drag-handle
           table="${this.table}" uid="${this.uid}"
-          class="button-bar ${this.showDropAreas ? 'dragAndDropActive' : ''}"
+          class="button-bar ${this.dragInProgress ? 'dragAndDropActive' : ''}"
         >
           <span class="button-bar-headline" title="uid:${this.uid}">⠿ ${this.elementName}</span>
           <a class="button" @click="${this._openEdit}">${actionsOpen}</a>
@@ -282,9 +146,14 @@ export class EditableAreaBrick extends LitElement {
           <a class="button" @click="${this._alternativeActions}">${actionsMenuAlternative}</a>
           <a class="button" @click="${this._addAbove}">${actionsDocumentAdd}</a>
         </editara-drag-handle>
-        ${dropAreaAbove('above')}
         <slot></slot>
-        ${dropArea('below')}
+        <editara-drop-zone
+          table="${this.table}"
+          uid="${this.uid}"
+          target="${-this.uid}"
+          colPos="${this.colpos}"
+          sys_language_uid="${this.sys_language_uid}"
+        ></editara-drop-zone>
       </div>
     `;
   }
@@ -425,25 +294,6 @@ export class EditableAreaBrick extends LitElement {
       }
     }
   `;
-
-  /**
-   * @param {string} table
-   * @param {number} uid
-   * @param {HTMLElement} element
-   * @returns {boolean}
-   */
-  isAnyOfMyParents(table, uid, element = this.parentElement) {
-    if (element instanceof EditableAreaBrick) {
-      if (element.table === table && element.uid === uid) {
-        return true;
-      }
-    }
-    const parentElement = element.parentElement;
-    if (!parentElement) {
-      return false;
-    }
-    return this.isAnyOfMyParents(table, uid, parentElement);
-  }
 }
 
-customElements.define('editara-area-brick', EditableAreaBrick);
+customElements.define('editara-content-element', EditaraContentElement);

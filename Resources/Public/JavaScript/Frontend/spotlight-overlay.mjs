@@ -177,7 +177,6 @@ function selectElements(selectorToHighlight) {
     let result = [];
     el.querySelectorAll('*').forEach(
       child => {
-        console.log(child.style.position);
         if (['absolute', 'fixed'].includes(window.getComputedStyle(child).position)) {
           result.push(child);
         }
