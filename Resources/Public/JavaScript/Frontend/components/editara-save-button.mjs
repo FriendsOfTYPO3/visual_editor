@@ -1,5 +1,5 @@
 import {css, html, LitElement} from 'lit';
-import {changesStore} from '@andersundsehr/editara/Frontend/changes-store.mjs';
+import {changesStore} from '@andersundsehr/editara/Frontend/stores/changes-store.mjs';
 import {isDirectMode, onMessage, sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
 import {getObjectLeafCount} from "@andersundsehr/editara/Shared/get-object-leaf-count.mjs";
 import {useDataHandler} from "@andersundsehr/editara/Frontend/api.mjs";

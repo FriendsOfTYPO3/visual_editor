@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getObjectLeafCount } from './get-object-leaf-count.mjs';
+import { getObjectLeafCount } from '@andersundsehr/editara/Shared/get-object-leaf-count.mjs';
 
 // Simple flat object
 test('getObjectLeafCount counts leaves in a flat object', () => {
