@@ -4,8 +4,6 @@ import '@andersundsehr/editara/Backend/editara-backend-save-button.mjs';
 import '@andersundsehr/editara/Backend/editara-spotlight-toggle.mjs';
 
 
-console.log('%cEditara backend index.js init', 'color: green; font-size: 10px;');
-
 function reloadAllChildFrames() {
     const iframes = document.querySelectorAll('iframe');
     iframes.forEach((iframe) => {

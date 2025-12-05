@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Andersundsehr\Editara\ViewHelpers;
 
-use Andersundsehr\Editara\Service\BrickService;
+use Andersundsehr\Editara\Service\EditaraService;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -16,7 +16,7 @@ final class DropAreaViewHelper extends AbstractViewHelper
 {
     protected $escapeOutput = false;
 
-    public function __construct(private readonly BrickService $brickService)
+    public function __construct(private readonly EditaraService $editaraService)
     {
     }
 
@@ -31,7 +31,7 @@ final class DropAreaViewHelper extends AbstractViewHelper
 
     public function render(): mixed
     {
-        if (!$this->brickService->isEditMode()) {
+        if (!$this->editaraService->isEditMode()) {
             return $this->renderChildren();
         }
 

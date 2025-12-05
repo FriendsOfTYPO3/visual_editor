@@ -2,18 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\Dto;
+namespace Andersundsehr\Editara\EditableResult;
 
-use TYPO3\CMS\Core\Resource\FileReference;
-
-final readonly class Image implements EditableResult
+final readonly class Input implements EditableResult
 {
     public function __construct(
         public string $name,
         public string $html,
-        public Editable $editable,
         public bool $isEmpty,
-        public ?FileReference $image,
+        public string $value,
     ) {}
 
     public function __toString(): string

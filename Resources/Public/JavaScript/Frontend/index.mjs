@@ -1,5 +1,4 @@
 import '@andersundsehr/editara/Frontend/components/reset-button.mjs';
-import '@andersundsehr/editara/Frontend/components/translation-selector.mjs';
 import '@andersundsehr/editara/Frontend/components/editable-input.mjs';
 import '@andersundsehr/editara/Frontend/components/editable-rte.mjs';
 import '@andersundsehr/editara/Frontend/components/editara-content-element.mjs';
@@ -7,6 +6,7 @@ import '@andersundsehr/editara/Frontend/components/editara-column.mjs';
 import '@andersundsehr/editara/Frontend/components/editara-save-button.mjs';
 import '@andersundsehr/editara/Frontend/components/editara-drag-handle.mjs';
 import '@andersundsehr/editara/Frontend/components/editara-drop-zone.mjs';
+import '@andersundsehr/editara/Frontend/components/editara-icon.mjs';
 import '@andersundsehr/editara/Frontend/iframe-popup.mjs';
 import {onMessage, sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
 import {highlight, reset} from "@andersundsehr/editara/Frontend/spotlight-overlay.mjs";

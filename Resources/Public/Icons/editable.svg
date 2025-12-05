@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect x="4" y="8" width="24" height="16" rx="2" fill="#e0e0e0" stroke="#333" stroke-width="2"/>
-  <path d="M10 16 l4 4 l8 -8" stroke="#4caf50" stroke-width="2" fill="none"/>
-  <text x="16" y="28" text-anchor="middle" font-size="6" fill="#333" font-family="Arial">Edit</text>
-</svg>

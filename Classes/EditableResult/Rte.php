@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\Dto;
+namespace Andersundsehr\Editara\EditableResult;
 
-final readonly class Input implements EditableResult
+final readonly class Rte implements EditableResult
 {
     public function __construct(
         public string $name,
         public string $html,
-        public Editable $editable,
         public bool $isEmpty,
         public string $value,
     ) {}

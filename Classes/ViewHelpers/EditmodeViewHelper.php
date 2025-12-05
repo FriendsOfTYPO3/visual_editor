@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Andersundsehr\Editara\ViewHelpers;
 
-use Andersundsehr\Editara\Service\BrickService;
+use Andersundsehr\Editara\Service\EditaraService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractConditionViewHelper;
 
 final class EditmodeViewHelper extends AbstractConditionViewHelper
 {
     public function __construct(
-        private readonly BrickService $brickService,
+        private readonly EditaraService $editaraService,
     ) {}
 
 
@@ -22,7 +22,7 @@ final class EditmodeViewHelper extends AbstractConditionViewHelper
      */
     public function render()
     {
-        if ($this->brickService->isEditMode()) {
+        if ($this->editaraService->isEditMode()) {
             return $this->renderThenChild();
         }
         return $this->renderElseChild();

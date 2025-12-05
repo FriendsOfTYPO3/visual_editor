@@ -19,8 +19,6 @@ export class EditableRte extends LitElement {
     field: {type: String},
     valueInitial: {type: String},
     placeholder: {type: String},
-    langSyncUid: {type: Number}, // TODO implement language sync
-    langSyncUidInitial: {},
     options: {type: Object},
   };
 
@@ -45,11 +43,11 @@ export class EditableRte extends LitElement {
     const editor = await initCKEditorInstance(this.options || {}, element.firstElementChild, element.firstElementChild, Editor);
     editor.model.document.on('change:data', () => {
       this.value = editor.getData();
-      changesStore.set(this.table, this.uid, this.field, this.value, this.isSynced ? this.langSyncUid : null);
+      changesStore.set(this.table, this.uid, this.field, this.value);
       this.changed = changesStore.hasChanges(this.table, this.uid, this.field);
     });
     const html = editor.getData();
-    changesStore.setInitial(this.table, this.uid, this.field, html, this.isSynced ? this.langSyncUid : null);
+    changesStore.setInitial(this.table, this.uid, this.field, html);
 
     // reset CSS
     removeRuleBySelector('.ck.ck-editor__editable_inline > :first-child');

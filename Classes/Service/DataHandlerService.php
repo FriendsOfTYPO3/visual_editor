@@ -20,46 +20,9 @@ use function is_int;
 
 final readonly class DataHandlerService
 {
-
     public function __construct(
-        private RecordFactory $recordFactory,
         private TcaSchemaFactory $tcaSchema,
-    )
-    {
-    }
-
-    public function createRecordInDb(string $table, array $row): Record
-    {
-        $newUid = $this->createRow($table, $row);
-        // saved, now loading...
-
-        $rowFromDb = BackendUtility::getRecordWSOL($table, $newUid);
-        $record = $this->recordFactory->createResolvedRecordFromDatabaseRow($table, $rowFromDb);
-        assert($record instanceof Record, 'Record is not instance of Record');
-        return $record;
-    }
-
-    public function createRow(string $table, array $row): mixed
-    {
-        $data = [
-            $table => [
-                'NEW12345' => $row,
-            ],
-        ];
-        $cmd = [];
-
-        $this->validateData($data);
-        $this->validateCmd($cmd);
-
-        $dataHandler = GeneralUtility::makeInstance(DataHandler::class); // never use DataHandler over DI!!
-        $dataHandler->start($data, $cmd);
-        $dataHandler->process_datamap();
-        if (count($dataHandler->errorLog) > 0) {
-            throw new RuntimeException('Error creating row in table ' . $table . ': ' . implode(', ', $dataHandler->errorLog));
-        }
-        $newUid = $dataHandler->substNEWwithIDs['NEW12345'];
-        unset($dataHandler);
-        return $newUid;
+    ) {
     }
 
     /**
@@ -145,5 +108,4 @@ final readonly class DataHandlerService
             }
         }
     }
-
 }

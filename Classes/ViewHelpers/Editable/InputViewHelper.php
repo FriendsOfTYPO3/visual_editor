@@ -4,29 +4,20 @@ declare(strict_types=1);
 
 namespace Andersundsehr\Editara\ViewHelpers\Editable;
 
-use Andersundsehr\Editara\Dto\Editable;
-use Andersundsehr\Editara\Dto\Input;
-use Andersundsehr\Editara\Dto\Rte;
-use Andersundsehr\Editara\Enum\EditableType;
-use Andersundsehr\Editara\Middleware\EditaraPersistenceMiddleware;
-use Andersundsehr\Editara\Service\BrickService;
+use Andersundsehr\Editara\EditableResult\Input;
+use Andersundsehr\Editara\Service\EditaraService;
 use Andersundsehr\Editara\Service\RecordService;
 use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
-use TYPO3\CMS\Core\Domain\RawRecord;
-use TYPO3\CMS\Core\Domain\Record;
-use TYPO3\CMS\Core\Domain\Record\ComputedProperties;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Frontend\Page\PageInformation;
-use TYPO3Fluid\Fluid\Core\Parser\ParsingState;
-use TYPO3Fluid\Fluid\Core\Parser\SyntaxTree\ViewHelperNode;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
 
-use TYPO3Fluid\Fluid\Core\ViewHelper\ViewHelperNodeInitializedEventInterface;
-use function assert;
+use function get_debug_type;
 use function htmlspecialchars;
 use function str_replace;
+use function trim;
 
 #[Autoconfigure(public: true)]
 final class InputViewHelper extends AbstractTagBasedViewHelper
@@ -34,7 +25,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
     protected $tagName = 'editable-input';
 
     public function __construct(
-        private readonly BrickService $brickService,
+        private readonly EditaraService $editaraService,
         private readonly RecordService $recordService,
     ) {
         parent::__construct();
@@ -44,49 +35,40 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
     {
         parent::initializeArguments();
 
-        $this->registerArgument('name', 'string', 'The editable name', false, '');
-        $this->registerArgument('record', 'object', 'A Record API Object (field is also needed)');
-        $this->registerArgument('field', 'string', 'record', false, '');
+        $this->registerArgument('record', 'object', 'A Record API Object (field is also needed)', true);
+        $this->registerArgument('field', 'string', 'record', true);
 
         $this->registerArgument('allowNewLines', 'bool', 'allows newLines and converts them to <br>', false, false);
-        $this->registerArgument('default', 'string', 'will be in .value but will not be saved in the DB', false, '');
+        $this->registerArgument('default', 'string', 'will be in .value but will not be saved in the DB (children used first)', false, '');
     }
 
     public function render(): Input
     {
-        $name = $this->arguments['name'];
+        $this->editaraService->init();
+
         $record = $this->arguments['record'];
         $field = $this->arguments['field'];
 
         $allowNewLines = $this->arguments['allowNewLines'];
-        $default = $this->arguments['default'] ?: $this->renderChildren();
+        $default = trim($this->renderChildren() ?: '') ?: $this->arguments['default'];
 
-        if (!($name xor $record)) {
-            throw new InvalidArgumentException('You must provide either "name" or "record"+"field" arguments not both or none.');
-        }
-        if ($record && !$field) {
-            throw new InvalidArgumentException('When providing "record" argument you must also provide "field" argument.');
-        }
         if ($record instanceof PageInformation) {
             $record = $this->recordService->getPageRecordAsRecordInterface($record);
         }
-        if ($record && !$record instanceof RecordInterface) {
+        if (!$record instanceof RecordInterface) {
             throw new InvalidArgumentException(
                 sprintf(
-                    "The \"record\" argument must be an instance of %s or %s. %s given",
+                    'The "record" argument must be an instance of %s or %s. %s given',
                     RecordInterface::class,
                     PageInformation::class,
-                    is_object($record) ? $record::class : gettype($record),
+                    get_debug_type($record),
                 ),
             );
         }
-        if ($record && $field) {
-            $editable = $this->brickService->getEditableFromRecord($this->renderingContext, $record, $field, EditableType::input);
-        } else {
-            $editable = $this->brickService->getEditable($this->renderingContext, $name, EditableType::input);
-        }
 
-        $value = $editable->getValue() ?? '';
+        $name = $record->getMainType() . '[' . $record->getUid() . '][' . $field . ']';
+
+        $value = $record->get($field) ?? '';
         $value = str_replace("\r\n", "\n", $value);
         if ($allowNewLines) {
             // convert <br> to new lines for editing (old content might have <br>)
@@ -94,7 +76,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
         }
 
         $escapedValue = htmlspecialchars($value);
-        if (!$this->brickService->isEditMode()) {
+        if (!$this->editaraService->isEditMode()) {
             $escapedValue = htmlspecialchars($value ?: $default ?: '');
         }
 
@@ -104,30 +86,23 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
             $escapedValue = str_replace("\n", '<br>', $escapedValue);
         }
 
-        if (!$this->brickService->isEditMode()) {
-            return new Input($name, $escapedValue, $editable, ($value ?: $default) === '', $value ?: $default);
+        if (!$this->editaraService->isEditMode()) {
+            return new Input($name, $escapedValue, ($value ?: $default) === '', $value ?: $default);
         }
 
-        $request = $this->renderingContext->getAttribute(ServerRequestInterface::class);
-        $site = $request->getAttribute('site');
-        $syncLanguage = $this->recordService->getSyncLanguageForField($site, $editable->record, 'value');
-
         $this->tag->addAttribute('class', 'editara-focus');
-        $this->tag->addAttribute('table', $editable->record->getMainType());
-        $this->tag->addAttribute('uid', $editable->record->getUid());
-        $this->tag->addAttribute('field', $editable->field);
+        $this->tag->addAttribute('table', $record->getMainType());
+        $this->tag->addAttribute('uid', $record->getUid());
+        $this->tag->addAttribute('field', $field);
 
-        $this->tag->addAttribute('name', $editable->name);
-        $this->tag->addAttribute('langSyncUid', $syncLanguage?->getLanguageId() ?? false);
-        $this->tag->addAttribute('title', 'Edit field ' . $editable->name);
+        $this->tag->addAttribute('name', $name);
+        $this->tag->addAttribute('title', 'Edit field ' . $name);
         $this->tag->addAttribute('allowNewLines', $allowNewLines);
         $this->tag->addAttribute('placeholder', $default);
 
         $this->tag->setContent($escapedValue);
 
         $this->tag->forceClosingTag(true);
-        $input = new Input($name, $this->tag->render(), $editable, ($value ?: $default ?: '') === '', $value ?: $default ?: '');
-        EditaraPersistenceMiddleware::$editableResults[] = $input;
-        return $input;
+        return new Input($name, $this->tag->render(), ($value ?: $default ?: '') === '', $value ?: $default ?: '');
     }
 }

@@ -16,8 +16,6 @@ export class EditableInput extends LitElement {
         field: {type: String,},
         valueInitial: {type: String,},
         placeholder: {type: String,},
-        langSyncUid: {type: Number,},
-        langSyncUidInitial: {},
         allowNewLines: {type: Boolean, },
     };
 
@@ -56,22 +54,16 @@ export class EditableInput extends LitElement {
           aTag.removeAttribute('href');
         }
         this.shadowRoot.querySelector('.slot').innerText = this.valueInitial || '\n';
-        this.langSyncUidInitial = this.langSyncUid;
-        changesStore.setInitial(this.table, this.uid, this.field, this.valueInitial, this.isSynced ? this.langSyncUid : null);
-    }
-
-    get isSynced() {
-        return typeof this.langSyncUid === 'number';
+        changesStore.setInitial(this.table, this.uid, this.field, this.valueInitial);
     }
 
     updated(changedProperties) {
         this.changed = this.value !== this.valueInitial;
-        changesStore.set(this.table, this.uid, this.field, this.value, this.isSynced ? this.langSyncUid : null);
+        changesStore.set(this.table, this.uid, this.field, this.value);
     }
 
     onReset = () => {
         this.value = this.valueInitial;
-        this.langSyncUid = this.langSyncUidInitial;
         this.shadowRoot.querySelector('.slot').innerText = this.valueInitial;
     };
 
@@ -82,21 +74,6 @@ export class EditableInput extends LitElement {
             buttonCount = 1;
             buttons = html`
                 <div class="buttons">
-                    <reset-button @click="${this.onReset}"></reset-button>
-                </div>`;
-        }
-        if (window.editaraInfo.currentLanguageId !== 0 && this.table === 'editable') {
-            // TODO why is the allowLanguageSynchronization not working with default langauge?
-            // TODO only show if the table + field allows language synchronization
-            // TODO only show all languages if it is table:editable
-            // TODO other tables should only show the same as in the backend  (default (0) lang + l10n_source lang)
-            buttonCount = 2;
-            buttons = html`
-                <div class="buttons">
-                    <translation-selector
-                            .value="${this.langSyncUid ?? ''}"
-                            @value-changed="${(e) => this.langSyncUid = e.detail.value}"
-                    ></translation-selector>
                     <reset-button @click="${this.onReset}"></reset-button>
                 </div>`;
         }

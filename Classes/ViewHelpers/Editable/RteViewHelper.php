@@ -6,16 +6,14 @@ namespace Andersundsehr\Editara\ViewHelpers\Editable;
 
 use Andersundsehr\Editara\Core\RichtText\RichTextConfigurationService;
 use Andersundsehr\Editara\Core\RichtText\RichTextConfigurationServiceDto;
-use Andersundsehr\Editara\Dto\Editable;
-use Andersundsehr\Editara\Dto\Rte;
-use Andersundsehr\Editara\Enum\EditableType;
-use Andersundsehr\Editara\Middleware\EditaraPersistenceMiddleware;
-use Andersundsehr\Editara\Service\BrickService;
+use Andersundsehr\Editara\EditableResult\Rte;
+use Andersundsehr\Editara\Service\EditaraService;
 use Andersundsehr\Editara\Service\RecordService;
 use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Core\Configuration\Richtext;
+use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Html\RteHtmlParser;
 use TYPO3\CMS\Core\Page\AssetCollector;
@@ -24,6 +22,7 @@ use TYPO3\CMS\Fluid\ViewHelpers\Format\HtmlViewHelper;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
 use function json_encode;
+use function sprintf;
 
 #[Autoconfigure(public: true)]
 final class RteViewHelper extends AbstractTagBasedViewHelper
@@ -31,7 +30,7 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
     protected $tagName = 'editable-rte';
 
     public function __construct(
-        private readonly BrickService $brickService,
+        private readonly EditaraService $editaraService,
         private readonly RecordService $recordService,
         private readonly AssetCollector $assetCollector,
         private readonly RichTextConfigurationService $richTextConfigurationService,
@@ -47,78 +46,61 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
     {
         parent::initializeArguments();
 
-        $this->registerArgument('name', 'string', 'The editable name', false, '');
         $this->registerArgument('record', 'object', 'A Record API Object (field is also needed)');
         $this->registerArgument('field', 'string', 'record', false, '');
 
-        $this->registerArgument('default', 'string', 'will be in .value but will not be saved in the DB', false, '');
+        $this->registerArgument('default', 'string', 'will be in .value but will not be saved in the DB (children used first)', false, '');
     }
 
     public function render(): Rte
     {
-        $name = $this->arguments['name'];
+        $this->editaraService->init();
+
         $record = $this->arguments['record'];
         $field = $this->arguments['field'];
 
         $default = trim($this->renderChildren() ?: '') ?: $this->arguments['default'];
 
-        if (!($name xor $record)) {
-            throw new InvalidArgumentException('You must provide either "name" or "record"+"field" arguments not both or none.');
-        }
-        if ($record && !$field) {
-            throw new InvalidArgumentException('When providing "record" argument you must also provide "field" argument.');
-        }
         if ($record instanceof PageInformation) {
             $record = $this->recordService->getPageRecordAsRecordInterface($record);
         }
-        if ($record && !$record instanceof RecordInterface) {
+        if (!$record instanceof RecordInterface) {
             throw new InvalidArgumentException(
                 sprintf(
-                    "The \"record\" argument must be an instance of %s or %s. %s given",
+                    'The "record" argument must be an instance of %s or %s. %s given',
                     RecordInterface::class,
                     PageInformation::class,
-                    is_object($record) ? $record::class : gettype($record),
+                    get_debug_type($record),
                 ),
             );
         }
-        if ($record && $field) {
-            $editable = $this->brickService->getEditableFromRecord($this->renderingContext, $record, $field, EditableType::rte);
-        } else {
-            $editable = $this->brickService->getEditable($this->renderingContext, $name, EditableType::rte);
-        }
 
-        $value = $editable->getValue() ?? '';
+        $name = $record->getMainType() . '[' . $record->getUid() . '][' . $field . ']';
 
+        $value = $record->get($field) ?? '';
 
-        if (!$this->brickService->isEditMode()) {
+        if (!$this->editaraService->isEditMode()) {
             $escapedValue = $this->text2html($value ?: $default);
-            return new Rte($name, $escapedValue, $editable, ($value ?: $default) === '', $value ?: $default);
+            return new Rte($name, $escapedValue, ($value ?: $default) === '', $value ?: $default);
         }
 
-        [$options, $processingConfiguration] = $this->getOptions($editable, $default);
+        [$options, $processingConfiguration] = $this->getOptions($record, $field, $default);
         $escapedValue = $this->rteHtmlParser->transformTextForRichTextEditor($value, $processingConfiguration);
 
-        $request = $this->renderingContext->getAttribute(ServerRequestInterface::class);
-        $site = $request->getAttribute('site');
-        $syncLanguage = $this->recordService->getSyncLanguageForField($site, $editable->record, 'value');
-
         $this->tag->addAttribute('class', 'editara-focus');
-        $this->tag->addAttribute('table', $editable->record->getMainType());
-        $this->tag->addAttribute('uid', $editable->record->getUid());
-        $this->tag->addAttribute('field', $editable->field);
+        $this->tag->addAttribute('table', $record->getMainType());
+        $this->tag->addAttribute('uid', $record->getUid());
+        $this->tag->addAttribute('field', $field);
 
-        $this->tag->addAttribute('name', $editable->name);
-        $this->tag->addAttribute('langSyncUid', $syncLanguage?->getLanguageId() ?? false);
-        $this->tag->addAttribute('title', 'Edit field ' . $editable->name);
+        $this->tag->addAttribute('name', $name);
+        $this->tag->addAttribute('title', 'Edit field ' . $name);
         $this->tag->addAttribute('placeholder', $default);
         $this->tag->addAttribute('options', $options);
 
         $this->tag->setContent($escapedValue);
 
         $this->tag->forceClosingTag(true);
-        $rte = new Rte($name, $this->tag->render(), $editable, ($value ?: $default) === '', $value ?: $default);
-        EditaraPersistenceMiddleware::$editableResults[] = $rte;
-        return $rte;
+        return new Rte($name, $this->tag->render(), ($value ?: $default) === '', $value ?: $default);
     }
 
     private function text2html(string $value): string
@@ -134,28 +116,28 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
     /**
      * @return array{0:string, 1:array<mixed>}
      */
-    private function getOptions(Editable $editable, string $placeholder): array
+    private function getOptions(Record $record, string $field, string $placeholder): array
     {
-        $schema = $this->tcaSchema->get($editable->record->getFullType());
+        $schema = $this->tcaSchema->get($record->getFullType());
         $richtextConfiguration = $this->richtext->getConfiguration(
-            $editable->record->getMainType(),
-            $editable->field,
-            $editable->record->getPid(),
-            $editable->record->getRecordType(),
-            $schema->getField($editable->field)->getConfiguration(),
+            $record->getMainType(),
+            $field,
+            $record->getPid(),
+            $record->getRecordType(),
+            $schema->getField($field)->getConfiguration(),
         );
 
         $richTextConfigurationServiceDto = new RichTextConfigurationServiceDto(
-            tableName: $editable->record->getMainType(),
-            uid: $editable->record->getUid(),
-            fieldName: $editable->field,
-            recordTypeValue: $editable->record->getRecordType(),
-            effectivePid: $editable->record->getPid(),
+            tableName: $record->getMainType(),
+            uid: $record->getUid(),
+            fieldName: $field,
+            recordTypeValue: $record->getRecordType(),
+            effectivePid: $record->getPid(),
             richtextConfigurationName: $richtextConfiguration['preset'],
             label: 'Text',
             placeholder: $placeholder,
             readOnly: false,
-            data: $editable->record->getRawRecord()->toArray(),
+            data: $record->getRawRecord()->toArray(),
             additionalConfiguration: $richtextConfiguration['editor']['config'],
             externalPlugins: $richtextConfiguration['editor']['externalPlugins'],
         );

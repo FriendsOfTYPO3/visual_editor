@@ -11,14 +11,12 @@ class ChangesStore extends EventTarget {
      * @param uid {number}
      * @param field {string}
      * @param value {string}
-     * @param langSyncUid {number|null}
      * @return {void}
      */
-    setInitial(table, uid, field, value, langSyncUid) {
+    setInitial(table, uid, field, value) {
         this.#initial[table] = this.#initial[table] || {};
         this.#initial[table][uid] = this.#initial[table][uid] || {};
         this.#initial[table][uid][field] = value;
-        this.#initial[table][uid]['__languageSyncUid'] = langSyncUid;
     }
 
   /**
@@ -46,20 +44,15 @@ class ChangesStore extends EventTarget {
      * @param uid {number}
      * @param field {string}
      * @param value {string}
-     * @param langSyncUid {number|null}
      * @return {void}
      */
-    set(table, uid, field, value, langSyncUid) {
+    set(table, uid, field, value) {
         const oldChanges = structuredClone(this.#changes);
         this.#changes[table] = this.#changes[table] || {};
         this.#changes[table][uid] = this.#changes[table][uid] || {};
         this.#changes[table][uid][field] = value;
         if (this.#changes[table][uid][field] === this.#initial[table][uid][field]) {
             delete this.#changes[table][uid][field];
-        }
-        this.#changes[table][uid]['__languageSyncUid'] = langSyncUid;
-        if (this.#changes[table][uid]['__languageSyncUid'] === this.#initial[table][uid]['__languageSyncUid']) {
-            delete this.#changes[table][uid]['__languageSyncUid'];
         }
         if (Object.keys(this.#changes[table][uid]).length === 0) {
             delete this.#changes[table][uid];

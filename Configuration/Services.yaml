@@ -6,6 +6,3 @@ services:
   Andersundsehr\Editara\:
     resource: '../Classes/*'
     exclude: '../Classes/Domain/Model/*'
-  Andersundsehr\Editara\Backend\Controller\DocumentModuleController:
-    tags:
-      - backend.controller

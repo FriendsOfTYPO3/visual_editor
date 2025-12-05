@@ -22,9 +22,6 @@ use function json_decode;
 
 class EditaraPersistenceMiddleware implements MiddlewareInterface
 {
-    /** @var list<\Andersundsehr\Editara\Dto\EditableResult> */
-    public static $editableResults = [];
-
     public function __construct(
         private readonly Context $context,
         private readonly DataHandlerService $dataHandlerService,
@@ -35,11 +32,6 @@ class EditaraPersistenceMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if (!$this->shouldSaveStuff($request)) {
-//            $params = $request->getQueryParams();
-//            if (isset($params['editara']) && true) {
-//                $handler->handle($request);
-//                return new HtmlResponse($this->renderOnlyInputFields());
-//            }
             return $handler->handle($request);
         }
         return $this->saveStuff($request);
@@ -122,21 +114,4 @@ class EditaraPersistenceMiddleware implements MiddlewareInterface
         }
         return $frontendPageInformation;
     }
-
-//    private function renderOnlyInputFields(): string
-//    {
-//        $reflectionClass = new ReflectionClass($this->pageRenderer);
-//        $assetIncludes = $reflectionClass->getMethod('renderJavaScriptAndCss')->invoke($this->pageRenderer);
-//        $assetIncludes = implode('', $assetIncludes); // TODO renderJavaScriptAndCss is not public! this will not work
-//
-//        $editable = '';
-//        foreach(self::$editableResults as $editableResult) {
-//            $record = $editableResult->editable->record;
-//            $fullType = $record->getFullType();
-//            $label = '<strong>' . htmlspecialchars($fullType . '[' . $record->getUid() . ']' . $editableResult->editable->field) . ':</strong><br>&nbsp;&nbsp;&nbsp;';
-//            $html = $label . $editableResult->html . '<br>';
-//            $editable .= '<div style="padding: 5px; border: 1px solid black;">' . $html . '</div>';
-//        }
-//        return $assetIncludes . $editable;
-//    }
 }

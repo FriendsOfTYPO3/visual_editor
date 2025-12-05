@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\Dto;
+namespace Andersundsehr\Editara\EditableResult;
 
 interface EditableResult
 {
@@ -13,9 +13,6 @@ interface EditableResult
         get;
     }
     public bool $isEmpty {
-        get;
-    }
-    public Editable $editable {
         get;
     }
 

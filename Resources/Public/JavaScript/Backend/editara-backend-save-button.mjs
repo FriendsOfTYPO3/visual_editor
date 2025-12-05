@@ -48,13 +48,13 @@ export class EditaraBackendSaveButton extends LitElement {
   }
 
   render() {
-    let s = 'Save';
+    let s = 'Save';  // TODO label
     if (this.count > 0) {
       const label = this.count === 1 ? 'change' : 'changes';
-      s = html`Save ${this.count} ${label}`;
+      s = html`Save ${this.count} ${label}`; // TODO label
     }
     if (this.saving) {
-      s = html`Saveing ...`;
+      s = html`Saveing ...`; // TODO label
     }
     return html`
       <typo3-backend-icon identifier="actions-save" size="small"></typo3-backend-icon>

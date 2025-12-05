@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Andersundsehr\Editara\UserFunction;
 
-use Andersundsehr\Editara\Service\BrickService;
+use Andersundsehr\Editara\Service\EditaraService;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Core\Domain\Record;
@@ -22,7 +22,7 @@ final readonly class TtContentStdWrapPreUserFunc
 {
     public function __construct(
         private RecordFactory $recordFactory,
-        private BrickService $brickService,
+        private EditaraService $editaraService,
         private TcaSchemaFactory $tcaSchema,
     )
     {
@@ -30,7 +30,7 @@ final readonly class TtContentStdWrapPreUserFunc
 
     public function __invoke(string $content, array $conf, ServerRequestInterface $request): string
     {
-        if (!$this->brickService->isEditMode()) {
+        if (!$this->editaraService->isEditMode()) {
             return $content;
         }
 
@@ -44,8 +44,8 @@ final readonly class TtContentStdWrapPreUserFunc
         $schema = $this->tcaSchema->get($record->getMainType()); // TODO use getFullType (if flux is not used)
 
         $div = GeneralUtility::makeInstance(TagBuilder::class, 'editara-content-element');
-        $recordTypeLabel = $this->getRecirdTypeLabel($record);
-        $div->addAttribute('elementName', $recordTypeLabel);
+        $contentTypeLabel = $this->getContentTypeLabel($record);
+        $div->addAttribute('elementName', $contentTypeLabel);
         $div->addAttribute('table', $table);
         $div->addAttribute('id', $table. ':' . $record->getUid());
         $div->addAttribute('uid', (string)$record->getUid());
@@ -61,7 +61,7 @@ final readonly class TtContentStdWrapPreUserFunc
         return $div->render();
     }
 
-    private function getRecirdTypeLabel(Record $record): string
+    private function getContentTypeLabel(Record $record): string
     {
         $recordType = $record->getRecordType();
         foreach ($GLOBALS['TCA']['tt_content']['columns']['CType']['config']['items'] as $item) {

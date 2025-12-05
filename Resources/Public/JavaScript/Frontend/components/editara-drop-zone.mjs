@@ -178,14 +178,6 @@ export class EditableDropZone extends LitElement {
       isOver: this.isOver > 0,
       above: this.target >= 0,
     };
-    const dropIcon = html`
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="2em">
-        <g>
-          <path fill="#AAA" d="M.5 10.5v-5h2.293l1 1H6.5v4z"/>
-          <path fill="#666" d="m2.586 6 .707.707.293.293H6v3H1V6h1.586M3 5H0v6h7V6H4L3 5z"/>
-        </g>
-        <path fill="currentColor" d="M13 11 9 8.5 13 6v2h3v1h-3z"/>
-      </svg>`;
     return html`
       <div class=${classMap(classes)}
            @dragover="${this._dragOver}"
@@ -193,7 +185,7 @@ export class EditableDropZone extends LitElement {
            @dragleave="${this._dragLeave}"
            @drop="${this._drop}"
       >
-        ${dropIcon}
+        <editara-icon name="apps-pagetree-drag-move-into" width="2em"/>
       </div>
     `;
   }
