@@ -1,101 +1,102 @@
-# Layout & Content Fusion
+# EXT:intuitive_editing
 
-# TODOS:
+Next Generation Frontend Editing for TYPO3 CMS
 
-Questions at Core Team:
-- l10n_source as language select in TCA for the record.
-  - allowLanguageSynchronization also in default language if l10n_source is set to other language?
-- JS API for Link, Image, etc. for use in Frontend.
-- How to handle Relations (TCA type "group")?
-  - generate tca field for each table automatically?
-- How to handle things like maxitems (config from ViewHelper into FormEngine TCA/DataHandler)?
-- Besserer Typescript support für Extension entwickler!
+This extension provides intuitive editing features for content elements in TYPO3 CMS.
 
+## Features
+- Inline editing It looks perfectly like the frontend output (WYSIWYG)
+- Drag-and-drop repositioning of content elements
+- Real-time preview of changes without page reloads
+- User-friendly interface for non-technical editors
 
-- [ ] ignore hidden, start and endtime for editable and template_brick in edit mode for Record API
-  - or remove the function from the tables
-    - we could add a hideInLanguage option to editable
+TODO put screenshots here
 
-Improvements for UX:
-- [ ] link
-  - [ ] allow language synchronization in edit mode
-  - [ ] show open target page in new tab button
-    - [ ] if t3:// link open linked element in edit view (in new tab)
-    - [ ] if external link open in new tab
-- [ ] checkbox
-  - [ ] save changes
-  - [ ] allow langauge synchronization
-- [ ] image
-  - [ ] allow language synchronization
-  - [ ] make the complete image the edit button
-    - [ ] add a hover effect to indicate editability
-  - nice to have (better UX):
-    - [ ] inline alt text editing
-    - [ ] inline title text editing
-    - [ ] inline description editing ?? how is this shown?
-    - [ ] drag and drop (upload) to change image
-- [x] text
-  - [x] reset changes button (revert to last saved version)
+## Installation
 
-features:
-- [ ] blocks
-    - [ ] handle blocks like bricks? or with named indexes? => probably like bricks
-    - [ ] how to handle Language synchronization?
+1. `composer require andersundsehr/intuitive_editing` (or install via Extension Manager)
+2. add the SiteSet to your site configuration
+3. Add `e:input`, `e:rte`, `e:dropArea` to your templates (see below)
+4. Clear caches
+5. Start editing!
 
-- [ ] bricks/content elements
-  - [ ] allow nesting of template bricks
-  - [ ] how to handle Language synchronization?
+## Where to add the ViewHelpers
 
-- [ ] support arbitrary records in editable viewHelpers.
-    - `<e:editable.input record="{page}" field="nav_title" />`
-    - `<e:editable.input record="{product}" field="teaserText" />`
+### Input/Rte Fields
+Replace the output of your texts with the `e:input`/`e:rte` ViewHelper.
 
-- [ ] snippets ? 
-  - https://docs.pimcore.com/platform/Pimcore/Documents/Editables/Snippet
-- [ ] scheduled blocks ? 
-  - https://docs.pimcore.com/platform/Pimcore/Documents/Editables/Scheduled_Block
-  - or is this something for the start- and end-time?
+- record is already a [Record](https://docs.typo3.org/permalink/t3coreapi:record-objects) object:
+````html
+before:
+<h1>{record.header}</h1>
 
-- [ ] make it possible to add custom editables
+after:
+<h1><e:input record="{record}" field="header" /></h1>
+````
+- data is an array of the complete database row:
+````html
+before:
+<h1>{data.header}</h1>
 
-considerations:
-- [ ] full workspaces support => hopefully yes
-- [ ] permissions handling only per Document/Page? => probably yes
-- [ ] migration tool from tt_content to template bricks?
-- [ ] cache handling:
-  - [ ] send response header to prevent caching of editable content in frontend?
-  - [ ] Disable typo3 cache so no editable are saved to pages cache?
+after:
+<h1><e:input record="{e:record.fromArray(data: data, table: 'tt_content')}" field="header" /></h1>
+````
+- you only have the uid and the string you want to output:
+````html
+before:
+<h1>{header}</h1>
 
-new editables:
-- [ ] number
-- [ ] email? (input with specific validation)
-- [ ] uuid? (input with specific validation)
-- [ ] slug? (should be similar to input, but with slug validation, unique check?)
-- [ ] json? (would show a nice json editor)
-- [ ] code? (would show a nice code editor) (html,css,javascript,...)
-- [ ] textarea (multi-line text)
-- [ ] rich text editor
-- [ ] date picker
-- [ ] file single/multi
-- [ ] folder?
-- [ ] select / dropdown
-- [ ] multi-select
-- [ ] radio buttons
-- [ ] color picker
-- [ ] Category?
-- [ ] Country?
-- [ ] relation (select related record from other tables) (single/multi?)
-  - using TCA type group?
-- [ ] video
-- [ ] password??? no use case here?
+after:
+<h1><e:input record="{e:record.fromUid(uid: uid, table: 'tt_content')}" field="header" /></h1>
+````  
 
+### Drop Area
+Add the `e:dropArea` ViewHelper to the container element that holds your content elements.
 
-## Commands that would be useful:
-- remove area from template:
-  - `typo3 editara:removeArea TemplateABC xyz`
-  - if you removed an e:area name=xyz from Template ABC you need to remove all the necessary template_bricks from the DB
-- remove editable from template:
-  - `typo3 editara:removeEditable TemplateABC editableName`
-- convert editable type:
-  - `typo3 editara:convertEditable TemplateABC editableName newType`
-  - e.g. convert an input editable to a rte editable
+search for:
+- `v:content.render`:
+  ````html
+  before:
+  <v:content.render column="0"/>
+  
+  after:
+  <e:dropArea colPos="0">
+    <v:content.render column="0"/>
+  </e:dropArea>
+  ````
+- `flux:content.render`:
+  ````html
+  before:
+  <v:content.render column="0"/>
+  
+  after:
+  <e:dropArea colPos="{data.uid}00">
+    <flux:content.render area="column0"/>
+  </e:dropArea>
+  ````
+- `f:cObject`:
+  ````html
+  before:
+  <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{pageUid: '{data.uid}', colPos: '3'}"/>
+  
+  after:
+  <e:dropArea colPos="3">
+    <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{pageUid: '{data.uid}', colPos: '3'}"/>
+  </e:dropArea>
+  ````
+- TODO example for EXT:container
+- TODO example for EXT:gridelements
+- TODO example for EXT:mask
+- TODO example for CONTENT TypoScript object?
+
+## License and Authors: License type, contributors, contact information
+
+This extension is licensed under the [GPL-2.0-or-later](https://spdx.org/licenses/GPL-2.0-or-later.html) license.
+
+# with ♥️ from anders und sehr GmbH
+
+> If something did not work 😮  
+> or you appreciate this Extension 🥰 let us know.
+
+> We are always looking for great people to join our team!
+> https://www.andersundsehr.com/karriere/
