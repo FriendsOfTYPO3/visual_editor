@@ -151,6 +151,8 @@ export class EditableDropZone extends LitElement {
       if (!sourceElement) {
         throw new Error('Cannot find source element for drop operation: ' + data.table + ':' + data.uid);
       }
+      sourceElement.setAttribute('colPos', this.colPos);
+      sourceElement.setAttribute('sys_language_uid', this.sys_language_uid);
       switch (firstParent.tagName.toLowerCase()) {
         case 'editara-content-element':
           // append after the area brick

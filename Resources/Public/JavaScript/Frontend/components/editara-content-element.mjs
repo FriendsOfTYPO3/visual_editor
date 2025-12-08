@@ -1,7 +1,6 @@
 import {css, html, LitElement} from 'lit';
 import {useDataHandler} from "@andersundsehr/editara/Frontend/api.mjs";
 import {dragInProgressStore} from "@andersundsehr/editara/Frontend/stores/drag-store.mjs";
-import {popupIframe} from "@andersundsehr/editara/Frontend/iframe-popup.mjs";
 import {isDirectMode, sendMessage} from "@andersundsehr/editara/Shared/iframe-messaging.mjs";
 
 /**
@@ -14,7 +13,7 @@ export class EditaraContentElement extends LitElement {
     table: {type: String},
     uid: {type: Number},
     pid: {type: Number},
-    colpos: {type: Number},
+    colPos: {type: Number},
     sys_language_uid: {type: Number},
     isHidden: {type: Boolean},
     hiddenFieldName: {type: String},
@@ -114,7 +113,7 @@ export class EditaraContentElement extends LitElement {
           table="${this.table}"
           uid="${this.uid}"
           target="${-this.uid}"
-          colPos="${this.colpos}"
+          colPos="${this.colPos}"
           sys_language_uid="${this.sys_language_uid}"
         ></editara-drop-zone>
       </div>
