@@ -70,11 +70,6 @@ export class EditaraContentElement extends LitElement {
     this.remove();
   }
 
-  _alternativeActions() {
-    // TODO implement alternative actions (the same as in the backend page/layout Module)
-    alert('not implemented yet');
-  }
-
   _addAbove() {
     // TODO we need to create the content element above the current one (not below)
 
@@ -113,7 +108,6 @@ export class EditaraContentElement extends LitElement {
           <a class="button" href="${this.editUrl}" @click="${this._openEdit}"><editara-icon name="actions-open"/></a>
           <a class="button" @click="${this._toggleHidden}"><editara-icon name="${toggleIcon}"/></a>
           <a class="button" @click="${this._delete}"><editara-icon name="actions-delete"/></a>
-          <a class="button" @click="${this._alternativeActions}"><editara-icon name="actions-menu-alternative"/></a>
           <a class="button" @click="${this._addAbove}"><editara-icon name="actions-document-add"/></a>
         </editara-drag-handle>
         <slot></slot>
