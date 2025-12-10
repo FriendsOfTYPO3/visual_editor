@@ -1,6 +1,6 @@
 import {css, html, LitElement} from 'lit';
 import {classMap} from 'lit/directives/class-map.js';
-import {changesStore} from '@andersundsehr/editara/Frontend/stores/changes-store.mjs';
+import {dataHandlerStore} from "@andersundsehr/editara/Frontend/stores/data-handler-store.mjs";
 
 /**
  * @extends {HTMLElement}
@@ -37,9 +37,9 @@ export class EditableInput extends LitElement {
             e.stopPropagation();
             e.preventDefault();
         })
-      changesStore.addEventListener('changes', () => {
-        this.changed = changesStore.hasChanges(this.table, this.uid, this.field);
-        this.valueInitial = changesStore.initial[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
+      dataHandlerStore.addEventListener('change', () => {
+        this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
+        this.valueInitial = dataHandlerStore.initialData[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
       })
     }
 
@@ -54,12 +54,12 @@ export class EditableInput extends LitElement {
           aTag.removeAttribute('href');
         }
         this.shadowRoot.querySelector('.slot').innerText = this.valueInitial || '\n';
-        changesStore.setInitial(this.table, this.uid, this.field, this.valueInitial);
+        dataHandlerStore.setInitialData(this.table, this.uid, this.field, this.valueInitial);
     }
 
     updated(changedProperties) {
         this.changed = this.value !== this.valueInitial;
-        changesStore.set(this.table, this.uid, this.field, this.value);
+        dataHandlerStore.setData(this.table, this.uid, this.field, this.value);
     }
 
     onReset = () => {

@@ -4,6 +4,7 @@ import {isDirectMode, sendMessage} from "@andersundsehr/editara/Shared/iframe-me
 import {useDataHandler} from "@andersundsehr/editara/Frontend/api.mjs";
 import {dragInProgressStore} from "@andersundsehr/editara/Frontend/stores/drag-store.mjs";
 import {flipInsertBefore} from "@andersundsehr/editara/Frontend/flip-insert-before.mjs";
+import {dataHandlerStore} from "@andersundsehr/editara/Frontend/stores/data-handler-store.mjs";
 
 /**
  * @extends {HTMLElement}
@@ -17,14 +18,14 @@ export class EditableDropZone extends LitElement {
     sys_language_uid: {type: Number},
 
     show: {type: Boolean, state: true, attribute: false},
-    isOver: {type: Number, state: true, attribute: false},
+    isDragHovering: {type: Number, state: true, attribute: false},
   };
 
   get uid() {
     return this.target < 0 ? -this.target : 0;
   }
 
-  get isTop(){
+  get isTop() {
     return this.target >= 0;
   }
 
@@ -80,7 +81,7 @@ export class EditableDropZone extends LitElement {
 
   constructor() {
     super();
-    this.isOver = 0;
+    this.isDragHovering = 0;
 
     dragInProgressStore.addEventListener('change', () => {
       this.show = this.shouldShow();
@@ -101,7 +102,7 @@ export class EditableDropZone extends LitElement {
    * @param {DragEvent} event
    */
   _dragEnter(event) {
-    this.isOver++;
+    this.isDragHovering++;
   }
 
   /**
@@ -109,9 +110,9 @@ export class EditableDropZone extends LitElement {
    */
   _dragLeave(event) {
     // Sometimes dragleave is triggered when entering child elements, so we count the enters and leaves
-    this.isOver--;
-    if (this.isOver < 0) {
-      this.isOver = 0;
+    this.isDragHovering--;
+    if (this.isDragHovering < 0) {
+      this.isDragHovering = 0;
     }
   }
 
@@ -127,62 +128,70 @@ export class EditableDropZone extends LitElement {
     const data = JSON.parse(dataString);
 
 
-    const cmd = {
-      [data.table]: {
-        [data.uid]: {
-          [event.dataTransfer.dropEffect]: {
-            action: 'paste',
-            target: this.target,
-            update: {
-              colPos: this.colPos,
-              sys_language_uid: this.sys_language_uid,
-            },
-          }
-        }
-      }
+    const actionData = {
+      action: 'paste',
+      target: this.target,
+      update: {
+        colPos: this.colPos,
+        sys_language_uid: this.sys_language_uid,
+      },
     };
-    await useDataHandler({}, cmd);
 
-    this.isOver = 0; // reset
-
-    if (event.dataTransfer.dropEffect === 'move') {
-      const firstParent = findFirstParent(['editara-content-element', 'editara-column'], this.parentElement);
-
-      if (!firstParent) {
-        throw new Error('Cannot find parent editara-content-element or editara-column for drop zone');
+    if (event.dataTransfer.dropEffect === 'copy') {
+      // For copy we ask the user and if confirmed we do an immediate useDataHandler call
+      // if not, we do nothing
+      const question = (dataHandlerStore.changesCount > 1 ? 'Save all changes, and ' : '') + 'copy the element?'; // TODO label
+      const confirmCopy = confirm(question);
+      if (!confirmCopy) {
+        return;
       }
-      const sourceElement = document.getElementById(data.table + ':' + data.uid);
-      if (!sourceElement) {
-        throw new Error('Cannot find source element for drop operation: ' + data.table + ':' + data.uid);
-      }
-      sourceElement.setAttribute('colPos', this.colPos);
-      sourceElement.setAttribute('sys_language_uid', this.sys_language_uid);
 
-      switch (firstParent.tagName.toLowerCase()) {
-        case 'editara-content-element':
-          // append after the area brick
-          flipInsertBefore(firstParent.parentNode, sourceElement, firstParent.nextSibling);
-          return;
-        case 'editara-column':
-          // append as first child of the column
-          flipInsertBefore(firstParent, sourceElement, firstParent.firstChild);
-          return;
-      }
-    }
+      dataHandlerStore.setCmd(data.table, data.uid, event.dataTransfer.dropEffect, actionData);
+      await useDataHandler(dataHandlerStore.data, dataHandlerStore.cmd);
+      dataHandlerStore.markSaved();
 
-    // For copy we just reload the page to show the new element
-    if (isDirectMode) {
-      window.location.reload();
+      if (isDirectMode) {
+        window.location.reload();
+        return;
+      }
+      sendMessage('reloadFrames');
       return;
     }
-    sendMessage('reloadFrames');
+
+    dataHandlerStore.setCmd(data.table, data.uid, event.dataTransfer.dropEffect, actionData);
+
+
+    this.isDragHovering = 0; // reset
+
+    const firstParent = findFirstParent(['editara-content-element', 'editara-column'], this.parentElement);
+
+    if (!firstParent) {
+      throw new Error('Cannot find parent editara-content-element or editara-column for drop zone');
+    }
+    const sourceElement = document.getElementById(data.table + ':' + data.uid);
+    if (!sourceElement) {
+      throw new Error('Cannot find source element for drop operation: ' + data.table + ':' + data.uid);
+    }
+    sourceElement.setAttribute('colPos', this.colPos);
+    sourceElement.setAttribute('sys_language_uid', this.sys_language_uid);
+
+    switch (firstParent.tagName.toLowerCase()) {
+      case 'editara-content-element':
+        // append after the area brick
+        flipInsertBefore(firstParent.parentNode, sourceElement, firstParent.nextSibling);
+        return;
+      case 'editara-column':
+        // append as first child of the column
+        flipInsertBefore(firstParent, sourceElement, firstParent.firstChild);
+        return;
+    }
   }
 
   render() {
     const classes = {
       dropArea: true,
       visible: this.show,
-      isOver: this.isOver > 0,
+      isOver: this.isDragHovering > 0,
       above: this.target >= 0,
     };
 
@@ -202,8 +211,8 @@ export class EditableDropZone extends LitElement {
     :host {
       display: block;
     }
-    
-    .add-button{
+
+    .add-button {
       border-radius: 0.2em;
       border: black solid 1px;
       color: white;

@@ -1,9 +1,9 @@
 import {LitElement, css} from 'lit';
-import {changesStore} from '@andersundsehr/editara/Frontend/stores/changes-store.mjs';
 import {ClassicEditor as Editor} from '@ckeditor/ckeditor5-editor-classic';
 // import {InlineEditor as Editor} from '@ckeditor/ckeditor5-editor-inline'; // TODO fix issues with inline editor
 import {initCKEditorInstance} from '@typo3/rte-ckeditor/init-ckeditor-instance.js';
 import {removeRuleBySelector} from '@andersundsehr/editara/Shared/remove-rule-by-selector.mjs';
+import {dataHandlerStore} from "@andersundsehr/editara/Frontend/stores/data-handler-store.mjs";
 
 /**
  * @extends {HTMLElement}
@@ -30,9 +30,9 @@ export class EditableRte extends LitElement {
   constructor() {
     super();
 
-    changesStore.addEventListener('changes', () => {
-      this.changed = changesStore.hasChanges(this.table, this.uid, this.field);
-      this.valueInitial = changesStore.initial[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
+    dataHandlerStore.addEventListener('change', () => {
+      this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
+      this.valueInitial = dataHandlerStore.initialData[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
     })
   }
 
@@ -43,11 +43,11 @@ export class EditableRte extends LitElement {
     const editor = await initCKEditorInstance(this.options || {}, element.firstElementChild, element.firstElementChild, Editor);
     editor.model.document.on('change:data', () => {
       this.value = editor.getData();
-      changesStore.set(this.table, this.uid, this.field, this.value);
-      this.changed = changesStore.hasChanges(this.table, this.uid, this.field);
+      dataHandlerStore.setData(this.table, this.uid, this.field, this.value);
+      this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
     });
     const html = editor.getData();
-    changesStore.setInitial(this.table, this.uid, this.field, html);
+    dataHandlerStore.setInitialData(this.table, this.uid, this.field, html);
 
     // reset CSS
     removeRuleBySelector('.ck.ck-editor__editable_inline > :first-child');

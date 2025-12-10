@@ -3,6 +3,7 @@ import {useDataHandler} from "@andersundsehr/editara/Frontend/api.mjs";
 import {dragInProgressStore} from "@andersundsehr/editara/Frontend/stores/drag-store.mjs";
 import {isDirectMode, sendMessage} from "@andersundsehr/editara/Shared/iframe-messaging.mjs";
 import {openModal} from "@andersundsehr/editara/Frontend/iframe-popup.mjs";
+import {dataHandlerStore} from "@andersundsehr/editara/Frontend/stores/data-handler-store.mjs";
 
 /**
  * @extends {HTMLElement}
@@ -20,8 +21,6 @@ export class EditaraContentElement extends LitElement {
     hiddenFieldName: {type: String},
 
     dragInProgress: {type: Boolean, state: true, attribute: false},
-
-    loading: {type: Boolean, state: true, attribute: true},
   };
 
   /**
@@ -37,36 +36,12 @@ export class EditaraContentElement extends LitElement {
   }
 
   async _toggleHidden() {
-    this.loading = true;
-
-    // TODO we could optimistically update the UI here, and not wait for the response and only on save we send the data to the backend
-    await useDataHandler({
-      [this.table]: {
-        [this.uid]: {
-          [this.hiddenFieldName]: !this.isHidden,
-        }
-      }
-    });
+    dataHandlerStore.setData(this.table, this.uid, this.hiddenFieldName, !this.isHidden);
     this.isHidden = !this.isHidden;
-
-    this.loading = false;
   }
 
   async _delete() {
-    this.loading = true;
-
-    if (!confirm('Are you sure you want to delete this element?')) {
-      this.loading = false;
-      return;
-    }
-
-    await useDataHandler({}, {
-      [this.table]: {
-        [this.uid]: {
-          delete: 1,
-        }
-      }
-    })
+    dataHandlerStore.setCmd(this.table, this.uid, 'delete', 1);
     this.remove();
   }
 
@@ -95,10 +70,17 @@ export class EditaraContentElement extends LitElement {
     }
   }
 
+  /**
+   * @param changedProperties {Map<PropertyKey, unknown>}
+   */
+  firstUpdated(changedProperties) {
+    dataHandlerStore.setInitialData(this.table, this.uid, this.hiddenFieldName, this.isHidden);
+  }
+
   render() {
     const toggleIcon = this.isHidden ? 'actions-toggle-off' : 'actions-toggle-on';
     return html`
-      <div class="border ${this.isHidden ? 'hidden' : ''} ${this.loading ? 'loading' : ''}">
+      <div class="border ${this.isHidden ? 'hidden' : ''}">
         <editara-drag-handle
           table="${this.table}" uid="${this.uid}"
           class="button-bar ${this.dragInProgress ? 'dragAndDropActive' : ''}"
@@ -145,20 +127,6 @@ export class EditaraContentElement extends LitElement {
       outline: 1px solid #d1d1d1;
       outline-offset: 0px;
       box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.5) inset;
-    }
-
-    .border.loading:after {
-      animation: textclip 0.6s infinite alternate ease-in-out;
-      border-radius: 2px;
-      background: rgba(0, 0, 0, 0.5);
-      outline: 1px solid black;
-    }
-
-    @keyframes textclip {
-      to {
-        background: rgba(0, 0, 0, 0.95);
-        outline: 1px solid #d1d1d1;
-      }
     }
 
     .border.hidden {
