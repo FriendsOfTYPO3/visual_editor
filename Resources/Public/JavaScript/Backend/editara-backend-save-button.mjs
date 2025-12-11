@@ -1,5 +1,5 @@
 import {css, html, LitElement} from 'lit';
-import {onMessage, sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
+import {onMessage, onMessageDebounced, sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
 
 /**
  * @extends {HTMLElement}

@@ -28,18 +28,17 @@ use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Localization\LanguageService;
+use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchema;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Site\Entity\Site;
-use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Versioning\VersionState;
-
 use function array_key_first;
 use function assert;
 use function count;
@@ -47,7 +46,7 @@ use function is_array;
 
 
 #[AsController]
-class PageEditModuleController
+class PageEditController
 {
     private SiteLanguage $selectedLanguage;
 
@@ -66,24 +65,30 @@ class PageEditModuleController
         private readonly IconFactory $iconFactory,
         private readonly RecordFactory $recordFactory,
         private readonly TcaSchemaFactory $tcaSchemaFactory,
-    ) {}
+        private readonly PackageManager $packageManager,
+    ) {
+    }
 
     protected function initialize(ServerRequestInterface $request): void
     {
         $backendUser = $this->getBackendUser();
-        $pageUid = (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? throw new InvalidArgumentException('Missing "id" query parameter'));
+        $pageUid = (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? throw new InvalidArgumentException('Missing "id" query parameter',));
         $this->moduleData = $request->getAttribute('moduleData');
         $pageInfo = BackendUtility::readPageAccess($pageUid, $backendUser->getPagePermsClause(Permission::PAGE_SHOW));
         if (!$pageInfo || count($pageInfo) === 1) {
             // if $pageInfo is "empty" it will have the property "_thePath"
-            throw new InvalidArgumentException('Page record not found for id ' . (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? 0));
+            throw new InvalidArgumentException('Page record not found for id ' . (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? 0),);
         }
         $record = $this->recordFactory->createResolvedRecordFromDatabaseRow('pages', $pageInfo);
-        assert($record instanceof Record, 'RecordFactory did not return a Record for pages record, this should not happen');
+        if (!$record instanceof Record) {
+            throw new InvalidArgumentException('RecordFactory did not return a Record for pages record, this should not happen');
+        }
         $this->pageRecord = $record;
 
         $site = $request->getAttribute('site');
-        assert($site instanceof Site, 'site attribute must be an instance of ' . Site::class . ' not ' . (is_object($site) ? $site::class : gettype($site)));
+        if (!$site instanceof Site) {
+            throw new InvalidArgumentException('No site found for page id ' . $pageUid);
+        }
         $this->site = $site;
         $this->availableLanguages = $site->getAvailableLanguages($backendUser, false, $pageUid);
         $this->selectedLanguage = $site->getLanguageById((int)($this->moduleData->get('language') ?? 0));
@@ -93,10 +98,25 @@ class PageEditModuleController
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
-        $this->initialize($request);
+        try {
+            $this->initialize($request);
+        } catch (InvalidArgumentException $e) {
+            $view = $this->moduleTemplateFactory->create($request);
+            $languageService = $this->getLanguageService();
+
+            // Page uid 0 or no access.
+            $view->setTitle($languageService->sL('LLL:EXT:backend/Resources/Private/Language/locallang_mod.xlf:mlang_tabs_tab'));
+            $view->assignMultiple([
+                'pageId' => $request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? 0,
+                'siteName' => $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'] ?? '',
+            ]);
+            return $view->renderResponse('PageLayout/PageModuleNoAccess');
+        }
+
         $this->pageRenderer->getJavaScriptRenderer()->addJavaScriptModuleInstruction(
-            JavaScriptModuleInstruction::create('@andersundsehr/editara/Backend/index.mjs')
+            JavaScriptModuleInstruction::create('@andersundsehr/editara/Backend/index.mjs'),
         );
+
 
         $view = $this->moduleTemplateFactory->create($request);
         $view->setTitle('Edit Page · ' . $this->pageRecord->get('title'));
@@ -109,10 +129,8 @@ class PageEditModuleController
             (string)($request->getQueryParams()['returnUrl'] ?? ''),
         ) ?: $this->uriBuilder->buildUriFromRoute('web_edit');
 
-        $view->assignMultiple([
-            // Always add rootPageId as additional field to have a reference for new records
-            'returnUrl' => $returnUrl,
-        ]);
+        // Always add rootPageId as additional field to have a reference for new records
+        $view->assign('returnUrl', $returnUrl);
 
         $this->makeButtons($view, $request);
         $this->makeActionMenu($view);
@@ -134,22 +152,29 @@ class PageEditModuleController
     {
         $buttonBar = $view->getDocHeaderComponent()->getButtonBar();
 
+        // Auto Save
+        if ($button = $this->makeAutoSaveButton($buttonBar)) {
+            $buttonBar->addButton($button, buttonGroup: 1);
+        }
         // Save
         if ($button = $this->makeSaveButton($buttonBar)) {
-            $buttonBar->addButton($button);
+            $buttonBar->addButton($button, buttonGroup: 1);
         }
+
         // View
         if ($button = $this->makeViewButton($buttonBar)) {
-            $buttonBar->addButton($button);
+            $buttonBar->addButton($button, buttonGroup: 2);
         }
         // Edit Page Properties
         if ($button = $this->makeEditButton($buttonBar, $request)) {
-            $buttonBar->addButton($button);
+            $buttonBar->addButton($button, buttonGroup: 2);
         }
+
         // Spotlight Toggle
         if ($button = $this->makeSpotlightToggleButton($buttonBar)) {
-            $buttonBar->addButton($button);
+            $buttonBar->addButton($button, buttonGroup: 3);
         }
+
         /*
          * TODO add Preview Settings button
          * Preview Settings: (saved in user preferences)
@@ -249,12 +274,12 @@ class PageEditModuleController
             ->where(
                 $queryBuilder->expr()->eq(
                     $languageCapability->getTranslationOriginPointerField()->getName(),
-                    $queryBuilder->createNamedParameter($this->pageRecord->getUid(), Connection::PARAM_INT)
+                    $queryBuilder->createNamedParameter($this->pageRecord->getUid(), Connection::PARAM_INT),
                 ),
                 $queryBuilder->expr()->eq(
                     $languageCapability->getLanguageField()->getName(),
-                    $queryBuilder->createNamedParameter($languageId, Connection::PARAM_INT)
-                )
+                    $queryBuilder->createNamedParameter($languageId, Connection::PARAM_INT),
+                ),
             )
             ->setMaxResults(1)
             ->executeQuery()
@@ -303,10 +328,11 @@ class PageEditModuleController
         $actionMenu->setLabel('HI');
 
         foreach ($this->availableLanguages as $language) {
+            $href = (string)$this->uriBuilder->buildUriFromRoute('web_edit', ['id' => $this->pageRecord->getUid(), 'language' => $language->getLanguageId()]);
             $menuItem = $actionMenu
                 ->makeMenuItem()
                 ->setTitle($language->getTitle())
-                ->setHref((string)$this->uriBuilder->buildUriFromRoute('web_edit', ['id' => $this->pageRecord->getUid(), 'language' => $language->getLanguageId()]));
+                ->setHref($href);
             if ($language->getLanguageId() === $this->selectedLanguage->getLanguageId()) {
                 $menuItem->setActive(true);
                 $defaultKey = null;
@@ -369,6 +395,39 @@ class PageEditModuleController
     {
         return $GLOBALS['BE_USER'];
     }
+
+    private function makeAutoSaveButton(ButtonBar $buttonBar)
+    {
+        if (
+            $this->pageRecord->getVersionInfo()->getState() === VersionState::DELETE_PLACEHOLDER
+        ) {
+            return null;
+        }
+
+        $previewUriBuilder = PreviewUriBuilder::create($this->pageRecord->getRawRecord()->toArray());
+        if (!$previewUriBuilder->isPreviewable()) {
+            return null;
+        }
+
+
+        $button = $buttonBar->makeButton(GenericButton::class);
+        assert($button instanceof GenericButton);
+        $active = $this->getBackendUser()->workspace;
+        return $button
+            ->setTag('editara-backend-auto-save-button')
+            ->setAttributes([
+                ...($active ? [] : ['disabled' => true]),
+                'workspace' => $active,
+                'isWorkspaceInstalled' => $this->packageManager->isPackageActive('workspaces'),
+                'data-bs-toggle' => 'tooltip',
+                'data-bs-html' => 'true',
+            ])
+            ->setLabel('Autosave') // TODO label
+            ->setIcon($this->iconFactory->getIcon('actions-toggle-off', IconSize::SMALL))
+            ->setTitle($active ? 'Autosave is to Workspace' : 'to enable, switch to a Workspace') // TODO label
+            ->setShowLabelText(true);
+    }
+
 
     private function makeSaveButton(ButtonBar $buttonBar)
     {

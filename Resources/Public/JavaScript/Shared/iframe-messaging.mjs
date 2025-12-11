@@ -13,6 +13,7 @@ export const isDirectMode = window.parent === window;
  * @property spotlight {Boolean}
  * @property pageChanged {Boolean}
  * @property openInMiddleFrame {String}
+ * @property change {Number}
  */
 
 /**
@@ -28,6 +29,9 @@ export function sendMessage(command, detail = null) {
   top.postMessage(message, '*');
 }
 
+/**
+ * @type {Partial<{[K in keyof EditaraCommandDetailMap]: array<(detail: EditaraCommandDetailMap[K]) => void>}>}
+ */
 const messageListeners = {};
 let isMessageListenerInitialized = false;
 
@@ -37,16 +41,35 @@ let isMessageListenerInitialized = false;
  * @param callback {(detail: EditaraCommandDetailMap[K]) => void}
  */
 export function onMessage(command, callback) {
-  messageListeners[`editara_${command}`] = callback;
+  messageListeners[`editara_${command}`] = messageListeners[`editara_${command}`] || [];
+  messageListeners[`editara_${command}`].push(callback);
   if (!isMessageListenerInitialized) {
     isMessageListenerInitialized = true;
 
     top.addEventListener('message', (event) => {
       if (messageListeners[event.data.command]) {
-        messageListeners[event.data.command](event.data.detail);
+        for(const callback of messageListeners[event.data.command]) {
+          callback(event.data.detail);
+        }
       }
     });
   }
+}
+/**
+ * @template {keyof EditaraCommandDetailMap} K
+ * @param command {K}
+ * @param callback {(detail: EditaraCommandDetailMap[K]) => void}
+ * @param delay {number}
+ */
+export function onMessageDebounced(command, callback, delay = 300) {
+  let timeoutId;
+  const debouncedCallback = (detail) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      callback(detail);
+    }, delay);
+  };
+  onMessage(command, debouncedCallback);
 }
 
 /**

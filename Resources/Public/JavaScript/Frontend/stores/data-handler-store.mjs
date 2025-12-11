@@ -91,7 +91,7 @@ class DataHandlerStore extends EventTarget {
 
     const detail = {data: this.data, cmd: this.cmd};
 
-    const oldDetail = this.#oldDetail || {};
+    const oldDetail = this.#oldDetail;
     this.#oldDetail = detail;
     if (JSON.stringify(oldDetail) === JSON.stringify(this.#oldDetail)) {
       return;

@@ -1,6 +1,6 @@
 <?php
 
-use Andersundsehr\Editara\Backend\Controller\PageEditModuleController;
+use Andersundsehr\Editara\Backend\Controller\PageEditController;
 
 return [
     'web_edit' => [
@@ -12,7 +12,7 @@ return [
         'labels' => 'LLL:EXT:editara/Resources/Private/Language/locallang_mod.xlf',
         'routes' => [
             '_default' => [
-                'target' => PageEditModuleController::class . '::__invoke',
+                'target' => PageEditController::class . '::__invoke',
             ],
         ],
         'moduleData' => [

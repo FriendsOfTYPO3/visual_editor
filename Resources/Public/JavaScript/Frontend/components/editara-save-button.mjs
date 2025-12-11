@@ -19,6 +19,7 @@ export class EditaraSaveButton extends LitElement {
     sendMessage('updateChangesCount', this.count);
 
     dataHandlerStore.addEventListener('change', e => {
+      sendMessage('change', dataHandlerStore.changesCount);
       if (dataHandlerStore.changesCount === this.count) {
         return;
       }

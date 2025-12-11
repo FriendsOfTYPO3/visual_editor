@@ -62,7 +62,7 @@ search for:
   after:
   <f:editable.dropArea colPos="0">
     <v:content.render column="0"/>
-  </e:editable.dropArea>
+  </f:editable.dropArea>
   ````
 - `flux:content.render`:
   ````html
@@ -72,7 +72,7 @@ search for:
   after:
   <f:editable.dropArea colPos="{data.uid}00">
     <flux:content.render area="column0"/>
-  </e:editable.dropArea>
+  </f:editable.dropArea>
   ````
 - `f:cObject`:
   ````html
