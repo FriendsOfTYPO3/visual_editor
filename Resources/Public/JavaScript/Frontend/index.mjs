@@ -8,8 +8,9 @@ import '@andersundsehr/editara/Frontend/components/editara-drag-handle.mjs';
 import '@andersundsehr/editara/Frontend/components/editara-drop-zone.mjs';
 import '@andersundsehr/editara/Frontend/components/editara-icon.mjs';
 import '@andersundsehr/editara/Frontend/iframe-popup.mjs';
-import {onMessage, sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
+import {sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
 import {highlight, reset} from "@andersundsehr/editara/Frontend/spotlight-overlay.mjs";
+import { spotlightActive} from "@andersundsehr/editara/Shared/local-store.js";
 
 if (window.location.hash === '#editara-close') {
   sendMessage('closeModal');
@@ -21,16 +22,18 @@ const element = document.createElement('editara-save-button');
 document.body.appendChild(element);
 
 (function spotlight() {
-  onMessage('spotlight', (active) => {
-    if (active) {
+  spotlightActive.addEventListener('currentWindowChange', () => {
+    if (spotlightActive.get()) {
       highlight('.editara-focus');
     } else {
       reset();
     }
   });
-  const active = localStorage.getItem('editara-spotlight-active') === 'true';
-  if (active) {
+
+  if (spotlightActive.get()) {
     highlight('.editara-focus');
+  } else {
+    reset();
   }
 })();
 

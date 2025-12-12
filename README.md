@@ -1,5 +1,4 @@
 # TYPO3 extension `visual_editor`
-___
 
 Next Generation Frontend Editing for TYPO3 CMS.
 
@@ -24,7 +23,8 @@ TODO put gifs here
 ## Where to add the ViewHelpers
 
 ### Input/Rte Fields
-Replace the output of your texts with the `f:editable.input`/`f:editable.rte` ViewHelper.
+Replace the output of your texts with the `f:render.input`/`f:render.richText` ViewHelper.
+Replace the output of your texts with the `f:render.text`/`f:render.richText` ViewHelper.
 
 - record is already a [Record](https://docs.typo3.org/permalink/t3coreapi:record-objects) object:
 ````html
@@ -32,7 +32,7 @@ before:
 <h1>{record.header}</h1>
 
 after:
-<h1><f:editable.input record="{record}" field="header" /></h1>
+<h1><f:render.input record="{record}" field="header" /></h1>
 ````
 - data is an array of the complete database row:
 ````html
@@ -40,7 +40,7 @@ before:
 <h1>{data.header}</h1>
 
 after:
-<h1><f:editable.input record="{e:record.fromArray(data: data, table: 'tt_content')}" field="header" /></h1>
+<h1><f:render.input record="{e:record.fromArray(data: data, table: 'tt_content')}" field="header" /></h1>
 ````
 - you only have the uid and the string you want to output:
 ````html
@@ -48,7 +48,7 @@ before:
 <h1>{header}</h1>
 
 after:
-<h1><f:editable.input record="{e:record.fromUid(uid: uid, table: 'tt_content')}" field="header" /></h1>
+<h1><f:render.input record="{e:record.fromUid(uid: uid, table: 'tt_content')}" field="header" /></h1>
 ````  
 
 ### Drop Area

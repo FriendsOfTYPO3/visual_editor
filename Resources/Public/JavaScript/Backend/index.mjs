@@ -1,8 +1,9 @@
 import Modal from '@typo3/backend/modal.js';
 import {onMessage, stopListeningMessages} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
-import '@andersundsehr/editara/Backend/editara-backend-auto-save-button.mjs';
+import '@andersundsehr/editara/Backend/editara-auto-save-toggle.mjs';
 import '@andersundsehr/editara/Backend/editara-backend-save-button.mjs';
 import '@andersundsehr/editara/Backend/editara-spotlight-toggle.mjs';
+import '@andersundsehr/editara/Backend/editara-show-empty-toggle.mjs';
 import {ModuleStateStorage} from '@typo3/backend/storage/module-state-storage.js';
 
 
@@ -14,7 +15,6 @@ function reloadAllChildFrames() {
 }
 
 /**
- *
  * @param src {string}
  * @param title {string}
  * @param size {'medium' | 'large' | 'full'}

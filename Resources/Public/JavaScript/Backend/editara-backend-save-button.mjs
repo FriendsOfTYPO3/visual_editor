@@ -1,5 +1,5 @@
 import {css, html, LitElement} from 'lit';
-import {onMessage, onMessageDebounced, sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
+import {onMessage, sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
 
 /**
  * @extends {HTMLElement}
@@ -13,15 +13,9 @@ export class EditaraBackendSaveButton extends LitElement {
 
   willUpdate(changedProperties) {
     this.disabled = this.saving === true || this.count === 0;
-    /** @type {HTMLElement} */
-    const e = this;
-    if (this.disabled) {
-      this.classList.remove('btn-primary');
-      this.classList.add('btn-default');
-    } else {
-      this.classList.add('btn-warning');
-      this.classList.remove('btn-default');
-    }
+
+    this.classList.toggle('btn-default', this.disabled);
+    this.classList.toggle('btn-warning', !this.disabled);
   }
 
   constructor() {

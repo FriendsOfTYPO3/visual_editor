@@ -1,6 +1,7 @@
 import {css, html, LitElement} from 'lit';
 import {classMap} from 'lit/directives/class-map.js';
 import {dataHandlerStore} from "@andersundsehr/editara/Frontend/stores/data-handler-store.mjs";
+import {showEmptyActive} from "@andersundsehr/editara/Shared/local-store.js";
 
 /**
  * @extends {HTMLElement}
@@ -17,6 +18,7 @@ export class EditableInput extends LitElement {
     valueInitial: {type: String,},
     placeholder: {type: String,},
     allowNewLines: {type: Boolean,},
+    showEmpty: {type: Boolean,},
   };
 
   constructor() {
@@ -37,6 +39,10 @@ export class EditableInput extends LitElement {
       e.stopPropagation();
       e.preventDefault();
     })
+    this.showEmpty = showEmptyActive.get();
+    showEmptyActive.addEventListener('currentWindowChange', () => {
+      this.showEmpty = showEmptyActive.get();
+    });
     dataHandlerStore.addEventListener('change', () => {
       this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
       this.valueInitial = dataHandlerStore.initialData[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
@@ -47,20 +53,32 @@ export class EditableInput extends LitElement {
    * @param changedProperties {Map<PropertyKey, unknown>}
    */
   firstUpdated(changedProperties) {
+    if (this.placeholder === '') {
+      this.placeholder = this.title;
+    }
     const aTag = this.closest('a');
     if (aTag) {
       // disable links above editable inputs to prevent navigation when clicking
       aTag.dataset.href = aTag.href;
       aTag.removeAttribute('href');
     }
-    this.shadowRoot.querySelector('.slot').innerText = this.valueInitial || '\n';
+    this.shadowRoot.querySelector('.slot').innerText = this.valueInitial || '';
     dataHandlerStore.setInitialData(this.table, this.uid, this.field, this.valueInitial);
   }
 
   updated(changedProperties) {
-    this.changed = this.value !== this.valueInitial;
+    this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
     dataHandlerStore.setData(this.table, this.uid, this.field, this.value);
-    this.classList.toggle('empty', this.value === '');
+    const hideEmpty = !this.showEmpty && this.value === '';
+    if (hideEmpty) {
+      this.style.display = 'none';
+      if (this.parentElement.innerText === '') {
+        this.parentElement.display = 'none';
+      }
+    } else {
+      this.style.display = '';
+      this.parentElement.display = '';
+    }
   }
 
   onReset = () => {
@@ -81,11 +99,7 @@ export class EditableInput extends LitElement {
     const parentIsInline = getComputedStyle(this.parentElement).display.startsWith('inline');
     /** @type {HTMLElement} */
     const e = this;
-    if (parentIsInline) {
-      this.classList.remove('block');
-    } else {
-      this.classList.add('block');
-    }
+    this.classList.toggle('block', !parentIsInline);
     return html`
       <span
         class=${classMap({slot: true, synced: this.isSynced, changed: this.changed, block: !parentIsInline})}
@@ -121,16 +135,12 @@ export class EditableInput extends LitElement {
     :host(.block) {
       display: block;
     }
-    :host(.empty) {
-      display: inline !important;
-      /* we do not want that it takes up any vertical space. */
-      line-height: 0 !important;
-    }
 
     .slot {
       min-width: 15px;
       display: inline-block;
       min-height: 1lh;
+      cursor: text;
 
       border-radius: 4px;
       /*
@@ -146,7 +156,7 @@ export class EditableInput extends LitElement {
       padding: 4px var(--padding-right) 4px 4px;
       margin: -4px;
 
-      &:after {
+      &:before {
         content: attr(data-placeholder);
         color: #555;
       }

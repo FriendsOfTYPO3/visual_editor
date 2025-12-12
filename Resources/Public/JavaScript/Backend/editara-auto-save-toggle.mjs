@@ -1,10 +1,12 @@
 import {css, html, LitElement} from 'lit';
 import {onMessageDebounced, sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
+import {autoSaveActive} from "@andersundsehr/editara/Shared/local-store.js";
+
 
 /**
  * @extends {HTMLElement}
  */
-export class EditaraBackendAutoSaveButton extends LitElement {
+export class EditaraAutoSaveToggle extends LitElement {
   static properties = {
     workspace: {type: Number},
     isWorkspaceInstalled: {type: Number},
@@ -13,23 +15,18 @@ export class EditaraBackendAutoSaveButton extends LitElement {
   };
 
   willUpdate(changedProperties) {
-    if (this.active) {
-      this.classList.add('btn-primary');
-      this.classList.remove('btn-default');
-    } else {
-      this.classList.remove('btn-primary');
-      this.classList.add('btn-default');
-    }
+    this.classList.toggle('btn-primary', this.active);
+    this.classList.toggle('active', this.active);
+    this.classList.toggle('btn-default', !this.active);
   }
 
   firstUpdated(changedProperties) {
     // default set if workspace is active
     this.active = this.workspace !== 0;
 
-    const setting = localStorage.getItem('editara-autosave-active');
     // if user has a stored setting, use that:
-    if (this.active && setting === 'true' || setting === 'false') {
-      this.active = setting === 'true';
+    if (this.active) {
+      this.active = autoSaveActive.get();
     }
   }
 
@@ -49,7 +46,7 @@ export class EditaraBackendAutoSaveButton extends LitElement {
       e.preventDefault();
       this.active = !this.active;
 
-      localStorage.setItem('editara-autosave-active', this.active ? 'true' : 'false');
+      autoSaveActive.set(this.active);
 
       if (this.active && this.count > 0) {
         sendMessage('doSave');
@@ -71,4 +68,4 @@ export class EditaraBackendAutoSaveButton extends LitElement {
   `;
 }
 
-customElements.define('editara-backend-auto-save-button', EditaraBackendAutoSaveButton);
+customElements.define('editara-auto-save-toggle', EditaraAutoSaveToggle);

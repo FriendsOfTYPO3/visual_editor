@@ -161,17 +161,21 @@ class PageEditController
             $buttonBar->addButton($button, buttonGroup: 1);
         }
 
-        // View
-        if ($button = $this->makeViewButton($buttonBar)) {
+        // Spotlight Toggle
+        if ($button = $this->makeSpotlightToggleButton($buttonBar)) {
             $buttonBar->addButton($button, buttonGroup: 2);
         }
-        // Edit Page Properties
-        if ($button = $this->makeEditButton($buttonBar, $request)) {
+        // Show Empty Toggle
+        if ($button = $this->makeShowEmptyToggleButton($buttonBar)) {
             $buttonBar->addButton($button, buttonGroup: 2);
         }
 
-        // Spotlight Toggle
-        if ($button = $this->makeSpotlightToggleButton($buttonBar)) {
+        // View
+        if ($button = $this->makeViewButton($buttonBar)) {
+            $buttonBar->addButton($button, buttonGroup: 3);
+        }
+        // Edit Page Properties
+        if ($button = $this->makeEditButton($buttonBar, $request)) {
             $buttonBar->addButton($button, buttonGroup: 3);
         }
 
@@ -222,8 +226,7 @@ class PageEditController
             ->setDataAttributes($previewDataAttributes ?? [])
             ->setDisabled(!$previewDataAttributes)
             ->setTitle($this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.showPage'))
-            ->setIcon($this->iconFactory->getIcon('actions-view-page', IconSize::SMALL))
-            ->setShowLabelText(true);
+            ->setIcon($this->iconFactory->getIcon('actions-view-page', IconSize::SMALL));
     }
 
     /**
@@ -313,7 +316,6 @@ class PageEditController
         return $buttonBar->makeLinkButton()
             ->setHref((string)$this->uriBuilder->buildUriFromRoute('record_edit', $params))
             ->setTitle($this->getLanguageService()->sL('LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:editPageProperties'))
-            ->setShowLabelText(true)
             ->setIcon($this->iconFactory->getIcon('actions-page-open', IconSize::SMALL));
     }
 
@@ -414,7 +416,7 @@ class PageEditController
         assert($button instanceof GenericButton);
         $active = $this->getBackendUser()->workspace;
         return $button
-            ->setTag('editara-backend-auto-save-button')
+            ->setTag('editara-auto-save-toggle')
             ->setAttributes([
                 ...($active ? [] : ['disabled' => true]),
                 'workspace' => $active,
@@ -472,6 +474,29 @@ class PageEditController
         return $button
             ->setTag('editara-spotlight-toggle')
             ->setLabel('Spotlight')
+            ->setIcon($this->iconFactory->getIcon('actions-toggle-off', IconSize::SMALL))
+            ->setShowLabelText(true);
+    }
+
+    private function makeShowEmptyToggleButton(ButtonBar $buttonBar): ?ButtonInterface
+    {
+        if (
+            $this->pageRecord->getVersionInfo()->getState() === VersionState::DELETE_PLACEHOLDER
+        ) {
+            return null;
+        }
+
+        $previewUriBuilder = PreviewUriBuilder::create($this->pageRecord->getRawRecord()->toArray());
+        if (!$previewUriBuilder->isPreviewable()) {
+            return null;
+        }
+
+
+        $button = $buttonBar->makeButton(GenericButton::class);
+        assert($button instanceof GenericButton);
+        return $button
+            ->setTag('editara-show-empty-toggle')
+            ->setLabel('Show empty')
             ->setIcon($this->iconFactory->getIcon('actions-toggle-off', IconSize::SMALL))
             ->setShowLabelText(true);
     }

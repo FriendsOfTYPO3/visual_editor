@@ -1,11 +1,11 @@
 import {html, LitElement} from 'lit';
-import {spotlightActive} from "@andersundsehr/editara/Shared/local-store.js";
-
+import {sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
+import {showEmptyActive} from "@andersundsehr/editara/Shared/local-store.js";
 
 /**
  * @extends {HTMLElement}
  */
-export class EditaraSpotlightToggle extends LitElement {
+export class EditaraShowEmptyToggle extends LitElement {
   static properties = {
     active: {type: Boolean, reflect: true,},
     label: {type: String,},
@@ -21,17 +21,18 @@ export class EditaraSpotlightToggle extends LitElement {
 
     this.label = this.innerText;
     this.innerHTML = '';
-    this.active = spotlightActive.get();
+    this.active = showEmptyActive.get();
+    sendMessage('showEmpty', this.active);
 
-    spotlightActive.addEventListener('currentWindowChange', () => {
-      this.active = spotlightActive.get();
+    showEmptyActive.addEventListener('currentWindowChange', () => {
+      this.active = showEmptyActive.get();
     });
-
     this.addEventListener('click', (e) => {
       e.preventDefault();
 
       this.active = !this.active;
-      spotlightActive.set(this.active);
+      showEmptyActive.set(this.active);
+      sendMessage('showEmpty', this.active);
     })
   }
 
@@ -49,4 +50,4 @@ export class EditaraSpotlightToggle extends LitElement {
   }
 }
 
-customElements.define('editara-spotlight-toggle', EditaraSpotlightToggle);
+customElements.define('editara-show-empty-toggle', EditaraShowEmptyToggle);

@@ -10,10 +10,10 @@ export const isDirectMode = window.parent === window;
  * @property doSave {null}
  * @property onSave {null}
  * @property saveEnded {null}
- * @property spotlight {Boolean}
  * @property pageChanged {Boolean}
  * @property openInMiddleFrame {String}
  * @property change {Number}
+ * @property localStoreChange {String}
  */
 
 /**
