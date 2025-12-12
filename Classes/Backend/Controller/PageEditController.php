@@ -474,7 +474,7 @@ class PageEditController
         return $button
             ->setTag('editara-spotlight-toggle')
             ->setLabel('Spotlight')
-            ->setIcon($this->iconFactory->getIcon('actions-toggle-off', IconSize::SMALL))
+            ->setIcon($this->iconFactory->getIcon('actions-lightbulb', IconSize::SMALL))
             ->setShowLabelText(true);
     }
 
@@ -497,7 +497,7 @@ class PageEditController
         return $button
             ->setTag('editara-show-empty-toggle')
             ->setLabel('Show empty')
-            ->setIcon($this->iconFactory->getIcon('actions-toggle-off', IconSize::SMALL))
+            ->setIcon($this->iconFactory->getIcon('actions-hyphen', IconSize::SMALL))
             ->setShowLabelText(true);
     }
 }

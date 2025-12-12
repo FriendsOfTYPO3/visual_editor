@@ -44,7 +44,7 @@ export class EditaraShowEmptyToggle extends LitElement {
 
   render() {
     return html`
-      <typo3-backend-icon identifier="${this.active ? 'actions-toggle-on' : 'actions-toggle-off'}" size="small"></typo3-backend-icon>
+      <typo3-backend-icon identifier="${this.active ? 'actions-eye' : 'actions-hyphen'}" size="small"></typo3-backend-icon>
       ${this.label}
     `;
   }

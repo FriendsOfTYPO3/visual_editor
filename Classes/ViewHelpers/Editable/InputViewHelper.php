@@ -92,7 +92,6 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
             return new Input($name, $escapedValue, ($value ?: $default) === '', $value ?: $default);
         }
 
-        $this->tag->addAttribute('class', 'editara-focus');
         $this->tag->addAttribute('table', $record->getMainType());
         $this->tag->addAttribute('uid', $record->getUid());
         $this->tag->addAttribute('field', $field);

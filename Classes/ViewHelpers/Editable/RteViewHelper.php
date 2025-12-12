@@ -88,7 +88,6 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
         [$options, $processingConfiguration] = $this->getOptions($record, $field, $default);
         $escapedValue = $this->rteHtmlParser->transformTextForRichTextEditor($value, $processingConfiguration);
 
-        $this->tag->addAttribute('class', 'editara-focus');
         $this->tag->addAttribute('table', $record->getMainType());
         $this->tag->addAttribute('uid', $record->getUid());
         $this->tag->addAttribute('field', $field);

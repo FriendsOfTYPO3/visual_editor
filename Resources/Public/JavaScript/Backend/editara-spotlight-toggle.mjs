@@ -43,7 +43,7 @@ export class EditaraSpotlightToggle extends LitElement {
 
   render() {
     return html`
-      <typo3-backend-icon identifier="${this.active ? 'actions-toggle-on' : 'actions-toggle-off'}" size="small"></typo3-backend-icon>
+      <typo3-backend-icon identifier="${this.active ? 'actions-lightbulb-on' : 'actions-lightbulb'}" size="small"></typo3-backend-icon>
       ${this.label}
     `;
   }

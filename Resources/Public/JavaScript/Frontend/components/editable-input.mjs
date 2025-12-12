@@ -69,7 +69,8 @@ export class EditableInput extends LitElement {
   updated(changedProperties) {
     this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
     dataHandlerStore.setData(this.table, this.uid, this.field, this.value);
-    const hideEmpty = !this.showEmpty && this.value === '';
+
+    const hideEmpty = !this.showEmpty && this.value === '' && !this.matches(':focus-within') && !this.changed;
     if (hideEmpty) {
       this.style.display = 'none';
       if (this.parentElement.innerText === '') {

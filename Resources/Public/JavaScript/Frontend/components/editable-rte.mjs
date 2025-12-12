@@ -64,7 +64,7 @@ export class EditableRte extends LitElement {
   }
 
   updated(changedProperties) {
-    const hideEmpty = !this.showEmpty && this.value === '';
+    const hideEmpty = !this.showEmpty && this.value === '' && !this.matches(':focus-within') && !this.changed;
     if (hideEmpty) {
       this.style.display = 'none';
       if (this.parentElement.innerText === '') {

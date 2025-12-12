@@ -16,7 +16,7 @@ TODO put gifs here
 
 1. `composer require andersundsehr/visual_editor` (or install via Extension Manager)
 2. add the SiteSet to your site configuration
-3. Add `f:editable.input`, `f:editable.rte`, `f:editable.dropArea` to your templates (see below)
+3. Add `f:editable.input`, `f:editable.rte`, `f:render.dropArea` to your templates (see below)
 4. Clear caches
 5. Start editing!
 
@@ -61,9 +61,9 @@ search for:
   <v:content.render column="0"/>
   
   after:
-  <f:editable.dropArea colPos="0">
+  <f:render.dropArea colPos="0">
     <v:content.render column="0"/>
-  </f:editable.dropArea>
+  </f:render.dropArea>
   ````
 - `flux:content.render`:
   ````html
@@ -71,9 +71,9 @@ search for:
   <flux:content.render area="column0"/>
   
   after:
-  <f:editable.dropArea colPos="{data.uid}00">
+  <f:render.dropArea colPos="{data.uid}00">
     <flux:content.render area="column0"/>
-  </f:editable.dropArea>
+  </f:render.dropArea>
   ````
 - `f:cObject`:
   ````html
@@ -81,9 +81,9 @@ search for:
   <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{pageUid: '{data.uid}', colPos: '3'}"/>
   
   after:
-  <f:editable.dropArea colPos="3">
+  <f:render.dropArea colPos="3">
     <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{pageUid: '{data.uid}', colPos: '3'}"/>
-  </f:editable.dropArea>
+  </f:render.dropArea>
   ````
 - TODO example for EXT:container
 - TODO example for EXT:gridelements

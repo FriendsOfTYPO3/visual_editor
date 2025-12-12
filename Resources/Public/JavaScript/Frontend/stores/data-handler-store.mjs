@@ -126,7 +126,7 @@ class DataHandlerStore extends EventTarget {
    * @return {boolean}
    */
   hasChangedData(table, uid, field) {
-    return !!(this.#data[table] && this.#data[table][uid] && this.#data[table][uid][field]);
+    return !!(this.#data[table] !== undefined && this.#data[table][uid] !== undefined && this.#data[table][uid][field] !== undefined);
   }
 
   getCmdChanges() {

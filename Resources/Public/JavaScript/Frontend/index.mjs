@@ -22,19 +22,16 @@ const element = document.createElement('editara-save-button');
 document.body.appendChild(element);
 
 (function spotlight() {
-  spotlightActive.addEventListener('currentWindowChange', () => {
+  const setSpotlight = () => {
     if (spotlightActive.get()) {
-      highlight('.editara-focus');
+      highlight('editable-input, editable-rte');
     } else {
       reset();
     }
-  });
+  };
+  spotlightActive.addEventListener('currentWindowChange', setSpotlight);
 
-  if (spotlightActive.get()) {
-    highlight('.editara-focus');
-  } else {
-    reset();
-  }
+  setSpotlight();
 })();
 
 if (window.editaraInfo) {

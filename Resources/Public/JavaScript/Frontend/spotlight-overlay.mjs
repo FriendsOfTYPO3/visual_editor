@@ -12,7 +12,8 @@ let currentTargets = [];
 let isActive = false;
 let listenersAdded = false;
 
-const HOLE_PADDING = 8; // Abstand um das aktive Element
+const HOLE_PADDING_BLOCK = 8; // Distance around the active element
+const HOLE_PADDING_INLINE = 10; // Distance around the active element
 
 function ensureStyle() {
   if (styleEl) return;
@@ -52,7 +53,7 @@ function ensureOverlay() {
 function ensureSvgMask() {
   if (svgEl && maskEl && maskBgRect) return;
 
-  // SVG-Container
+  // SVG container
   svgEl = document.createElementNS(SVG_NS, 'svg');
   svgEl.setAttribute('id', 'spotlight-svg');
   svgEl.setAttribute('width', '0');
@@ -63,20 +64,20 @@ function ensureSvgMask() {
   svgEl.style.left = '0';
   svgEl.style.pointerEvents = 'none';
 
-  // Maske
+  // Mask
   maskEl = document.createElementNS(SVG_NS, 'mask');
   maskEl.setAttribute('id', 'spotlight-mask');
   maskEl.setAttribute('maskUnits', 'userSpaceOnUse');
   maskEl.setAttribute('maskContentUnits', 'userSpaceOnUse');
 
-  // Hintergrund (weiß = Overlay sichtbar)
+  // Background (white = overlay visible)
   maskBgRect = document.createElementNS(SVG_NS, 'rect');
   maskBgRect.setAttribute('id', 'spotlight-mask-bg');
   maskBgRect.setAttribute('x', '0');
   maskBgRect.setAttribute('y', '0');
   maskBgRect.setAttribute('fill', 'white');
 
-  // Grundfläche auf aktuelle Viewportgröße setzen
+  // Set base area to the current viewport size
   maskBgRect.setAttribute('width', window.innerWidth);
   maskBgRect.setAttribute('height', window.innerHeight);
 
@@ -118,16 +119,16 @@ function updateMask() {
     const hole = document.createElementNS(SVG_NS, 'rect');
     hole.setAttribute('data-spotlight-hole', 'true');
 
-    const x = rect.left - HOLE_PADDING;
-    const y = rect.top - HOLE_PADDING;
-    const w = rect.width + HOLE_PADDING * 2;
-    const h = rect.height + HOLE_PADDING * 2;
+    const x = rect.left - HOLE_PADDING_INLINE;
+    const y = rect.top - HOLE_PADDING_BLOCK;
+    const w = rect.width + HOLE_PADDING_INLINE * 2;
+    const h = rect.height + HOLE_PADDING_BLOCK * 2;
 
     hole.setAttribute('x', x);
     hole.setAttribute('y', y);
     hole.setAttribute('width', w);
     hole.setAttribute('height', h);
-    hole.setAttribute('fill', 'black'); // schwarz = Loch in der Maske
+    hole.setAttribute('fill', 'black'); // black = hole in the mask
 
     maskEl.appendChild(hole);
   });
@@ -202,8 +203,8 @@ function selectElements(selectorToHighlight) {
 let currentSelectorToHighlight;
 
 /**
- * Aktiviert das Spotlight-Overlay und schneidet für alle Matches
- * des übergebenen Selectors „Löcher“ ins Overlay.
+ * Activates the spotlight overlay and cuts 'holes' into the overlay for all
+ * matches of the passed selector.
  *
  * @param {string} selectorToHighlight
  */
@@ -214,7 +215,7 @@ export function highlight(selectorToHighlight) {
   currentTargets = selectElements(selectorToHighlight);
 
   if (!currentTargets.length) {
-    // Nichts zum Highlighten → lieber alles zurücksetzen
+    // Nothing to highlight → reset everything instead
     reset();
     return;
   }
@@ -226,7 +227,7 @@ export function highlight(selectorToHighlight) {
 }
 
 /**
- * Deaktiviert das Spotlight-Overlay und entfernt alle Löcher.
+ * Deactivates the spotlight overlay and removes all holes.
  */
 export function reset() {
   isActive = false;
