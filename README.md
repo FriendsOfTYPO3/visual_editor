@@ -23,7 +23,7 @@ TODO put gifs here
 ## Where to add the ViewHelpers
 
 ### Input/Rte Fields
-Replace the output of your texts with the `f:render.input`/`f:render.richText` ViewHelper.
+Replace the output of your texts with the `f:render.input`/`f:render.rte` ViewHelper.
 
 - record is already a [Record](https://docs.typo3.org/permalink/t3coreapi:record-objects) object:
 ````html
