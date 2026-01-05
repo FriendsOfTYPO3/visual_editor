@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\ViewHelpers\Editable;
+namespace TYPO3\CMS\VisualEditor\ViewHelpers\Render;
 
-use Andersundsehr\Editara\EditableResult\Input;
-use Andersundsehr\Editara\Service\EditaraService;
-use Andersundsehr\Editara\Service\RecordService;
 use InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
+use TYPO3\CMS\VisualEditor\EditableResult\Input;
+use TYPO3\CMS\VisualEditor\Service\EditModeService;
+use TYPO3\CMS\VisualEditor\Service\RecordService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
 
 use function get_debug_type;
@@ -26,7 +26,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
     protected $tagName = 'editable-input';
 
     public function __construct(
-        private readonly EditaraService $editaraService,
+        private readonly EditModeService $editModeService,
         private readonly RecordService $recordService,
         private readonly TcaSchemaFactory $tcaSchema,
     ) {
@@ -46,7 +46,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
 
     public function render(): Input
     {
-        $this->editaraService->init();
+        $this->editModeService->init();
 
         $record = $this->arguments['record'];
         $field = $this->arguments['field'];
@@ -78,7 +78,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
         }
 
         $escapedValue = htmlspecialchars($value);
-        if (!$this->editaraService->isEditMode()) {
+        if (!$this->editModeService->isEditMode()) {
             $escapedValue = htmlspecialchars($value ?: $default ?: '');
         }
 
@@ -88,7 +88,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
             $escapedValue = str_replace("\n", '<br>', $escapedValue);
         }
 
-        if (!$this->editaraService->isEditMode()) {
+        if (!$this->editModeService->isEditMode()) {
             return new Input($name, $escapedValue, ($value ?: $default) === '', $value ?: $default);
         }
 

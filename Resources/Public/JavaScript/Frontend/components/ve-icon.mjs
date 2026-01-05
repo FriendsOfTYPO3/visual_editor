@@ -5,7 +5,7 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
  * @extends {HTMLElement}
  * TODO we should use <typo3-backend-icon > in frontend as well (make this possible)
  */
-export class EditaraIcon extends LitElement {
+export class VeIcon extends LitElement {
   static properties = {
     name: {type: String},
     width: {type: String},
@@ -54,4 +54,4 @@ export class EditaraIcon extends LitElement {
   `;
 }
 
-customElements.define('editara-icon', EditaraIcon);
+customElements.define('ve-icon', VeIcon);

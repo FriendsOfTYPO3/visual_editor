@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\Service;
+namespace TYPO3\CMS\VisualEditor\Service;
 
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
@@ -11,7 +11,7 @@ use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use function assert;
 
-final readonly class EditaraService
+final readonly class EditModeService
 {
     public function __construct(
         private AssetCollector $assetCollector,
@@ -24,7 +24,7 @@ final readonly class EditaraService
     {
         $queryParams = $this->getRequest()->getQueryParams();
 
-        if (!($queryParams['editara'] ?? false)) {
+        if (!($queryParams['editMode'] ?? false)) {
             return false;
         }
 
@@ -37,10 +37,10 @@ final readonly class EditaraService
         if (!$this->isEditMode()) {
             return;
         }
-        $this->assetCollector->addStyleSheet('editable', 'EXT:editara/Resources/Public/Css/editable.css');
-        $this->assetCollector->addJavaScriptModule('@andersundsehr/editara/Frontend/index.mjs');
+        $this->assetCollector->addStyleSheet('editable', 'EXT:visual_editor/Resources/Public/Css/editable.css');
+        $this->assetCollector->addJavaScriptModule('@typo3/visual-editor/Frontend/index.mjs');
 
-        if (!$this->assetCollector->hasInlineJavaScript('editaraLangInfo')) {
+        if (!$this->assetCollector->hasInlineJavaScript('veLangInfo')) {
             $request = $GLOBALS['TYPO3_REQUEST'];
             assert($request instanceof ServerRequestInterface);
 
@@ -63,9 +63,9 @@ final readonly class EditaraService
                 'newContentUrl' => $newContentUrl,
             ];
             $this->assetCollector->addInlineJavaScript(
-                'editaraLangInfo',
+                'veLangInfo',
                 'window.TYPO3 = window.TYPO3 || {};
-window.editaraInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
+window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
                 [
                     'type' => 'text/javascript',
                 ],

@@ -1,11 +1,11 @@
 <?php
 
-use Andersundsehr\Editara\Middleware\EditaraPersistenceMiddleware;
+use TYPO3\CMS\VisualEditor\Middleware\PersistenceMiddleware;
 
 return [
     'frontend' => [
-        'andersundsehr/editara/editara-persistence-middleware' => [
-            'target' => EditaraPersistenceMiddleware::class,
+        'typo3/cms-visual-editor/persistence-middleware' => [
+            'target' => PersistenceMiddleware::class,
             'before' => [
                 'typo3/cms-frontend/prepare-tsfe-rendering',
             ],

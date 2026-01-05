@@ -1,9 +1,9 @@
 import Modal from '@typo3/backend/modal.js';
-import {onMessage, stopListeningMessages} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
-import '@andersundsehr/editara/Backend/editara-auto-save-toggle.mjs';
-import '@andersundsehr/editara/Backend/editara-backend-save-button.mjs';
-import '@andersundsehr/editara/Backend/editara-spotlight-toggle.mjs';
-import '@andersundsehr/editara/Backend/editara-show-empty-toggle.mjs';
+import {onMessage, stopListeningMessages} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
+import '@typo3/visual-editor/Backend/components/ve-auto-save-toggle.mjs';
+import '@typo3/visual-editor/Backend/components/ve-backend-save-button.mjs';
+import '@typo3/visual-editor/Backend/components/ve-spotlight-toggle.mjs';
+import '@typo3/visual-editor/Backend/components/ve-show-empty-toggle.mjs';
 import {ModuleStateStorage} from '@typo3/backend/storage/module-state-storage.js';
 
 

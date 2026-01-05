@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\ViewHelpers;
+namespace TYPO3\CMS\VisualEditor\ViewHelpers;
 
-use Andersundsehr\Editara\Service\EditaraService;
+use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractConditionViewHelper;
 
-final class EditmodeViewHelper extends AbstractConditionViewHelper
+final class EditModeViewHelper extends AbstractConditionViewHelper
 {
     public function __construct(
-        private readonly EditaraService $editaraService,
+        private readonly EditModeService $editModeService,
     ) {}
 
 
@@ -22,7 +22,7 @@ final class EditmodeViewHelper extends AbstractConditionViewHelper
      */
     public function render()
     {
-        if ($this->editaraService->isEditMode()) {
+        if ($this->editModeService->isEditMode()) {
             return $this->renderThenChild();
         }
         return $this->renderElseChild();

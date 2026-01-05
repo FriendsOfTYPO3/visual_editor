@@ -2,7 +2,7 @@ export const isDirectMode = window.parent === window;
 
 
 /**
- * @typedef {Object} EditaraCommandDetailMap
+ * @typedef {Object} VECommandDetailMap
  * @property openModal {{ src: string, title:string, size: 'medium' | 'large' | 'full', type: 'iframe' | 'ajax' }}
  * @property closeModal {null}
  * @property reloadFrames {null}
@@ -17,32 +17,32 @@ export const isDirectMode = window.parent === window;
  */
 
 /**
- * @template {keyof EditaraCommandDetailMap} K
+ * @template {keyof VECommandDetailMap} K
  * @param command {K}
- * @param detail {EditaraCommandDetailMap[K]}
+ * @param detail {VECommandDetailMap[K]}
  */
 export function sendMessage(command, detail = null) {
   const message = {
     detail,
-    command: `editara_${command}`,
+    command: `ve_${command}`,
   };
   top.postMessage(message, '*');
 }
 
 /**
- * @type {Partial<{[K in keyof EditaraCommandDetailMap]: array<(detail: EditaraCommandDetailMap[K]) => void>}>}
+ * @type {Partial<{[K in keyof VECommandDetailMap]: array<(detail: VECommandDetailMap[K]) => void>}>}
  */
 const messageListeners = {};
 let isMessageListenerInitialized = false;
 
 /**
- * @template {keyof EditaraCommandDetailMap} K
+ * @template {keyof VECommandDetailMap} K
  * @param command {K}
- * @param callback {(detail: EditaraCommandDetailMap[K]) => void}
+ * @param callback {(detail: VECommandDetailMap[K]) => void}
  */
 export function onMessage(command, callback) {
-  messageListeners[`editara_${command}`] = messageListeners[`editara_${command}`] || [];
-  messageListeners[`editara_${command}`].push(callback);
+  messageListeners[`ve_${command}`] = messageListeners[`ve_${command}`] || [];
+  messageListeners[`ve_${command}`].push(callback);
   if (!isMessageListenerInitialized) {
     isMessageListenerInitialized = true;
 
@@ -56,9 +56,9 @@ export function onMessage(command, callback) {
   }
 }
 /**
- * @template {keyof EditaraCommandDetailMap} K
+ * @template {keyof VECommandDetailMap} K
  * @param command {K}
- * @param callback {(detail: EditaraCommandDetailMap[K]) => void}
+ * @param callback {(detail: VECommandDetailMap[K]) => void}
  * @param delay {number}
  */
 export function onMessageDebounced(command, callback, delay = 300) {
@@ -73,7 +73,7 @@ export function onMessageDebounced(command, callback, delay = 300) {
 }
 
 /**
- * @template {keyof EditaraCommandDetailMap} K
+ * @template {keyof VECommandDetailMap} K
  * @param command {K}
  */
 export function stopListeningMessages(command) {

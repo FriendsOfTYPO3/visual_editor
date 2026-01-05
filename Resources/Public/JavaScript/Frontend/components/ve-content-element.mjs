@@ -1,13 +1,13 @@
 import {css, html, LitElement} from 'lit';
-import {dragInProgressStore} from "@andersundsehr/editara/Frontend/stores/drag-store.mjs";
-import {isDirectMode, sendMessage} from "@andersundsehr/editara/Shared/iframe-messaging.mjs";
-import {openModal} from "@andersundsehr/editara/Frontend/iframe-popup.mjs";
-import {dataHandlerStore} from "@andersundsehr/editara/Frontend/stores/data-handler-store.mjs";
+import {dragInProgressStore} from "@typo3/visual-editor/Frontend/stores/drag-store.mjs";
+import {isDirectMode, sendMessage} from "@typo3/visual-editor/Shared/iframe-messaging.mjs";
+import {openModal} from "@typo3/visual-editor/Frontend/components/ve-iframe-popup.mjs";
+import {dataHandlerStore} from "@typo3/visual-editor/Frontend/stores/data-handler-store.mjs";
 
 /**
  * @extends {HTMLElement}
  */
-export class EditaraContentElement extends LitElement {
+export class VeContentElement extends LitElement {
   static properties = {
     elementName: {type: String},
     editUrl: {type: String},
@@ -47,7 +47,7 @@ export class EditaraContentElement extends LitElement {
   _addAbove() {
     // TODO we need to create the content element above the current one (not below)
 
-    const newContentUrl = window.editaraInfo.newContentUrl
+    const newContentUrl = window.veInfo.newContentUrl
       .replace('__COL_POS__', this.colPos)
       .replace('__SYS_LANGUAGE_UID__', this.sys_language_uid)
       .replace('__UID_PID__', -this.uid);
@@ -62,9 +62,9 @@ export class EditaraContentElement extends LitElement {
       this.dragInProgress = !!dragInProgressStore.value;
     });
 
-    if (this.parentElement.tagName.toLowerCase() !== 'editara-column') {
-      const message = 'Error: <editara-content-element> must be inside an <editara-column> element.';
-      this.innerHTML = `<editara-error text="${message}"/>`;
+    if (this.parentElement.tagName.toLowerCase() !== 've-column') {
+      const message = 'Error: <ve-content-element> must be inside an <ve-column> element.';
+      this.innerHTML = `<ve-error text="${message}"/>`;
       throw new Error(message);
     }
   }
@@ -80,33 +80,33 @@ export class EditaraContentElement extends LitElement {
     const toggleIcon = this.isHidden ? 'actions-toggle-off' : 'actions-toggle-on';
     return html`
       <div class="border ${this.isHidden ? 'hidden' : ''}">
-        <editara-drag-handle
+        <ve-drag-handle
           table="${this.table}" uid="${this.uid}"
           class="button-bar ${this.dragInProgress ? 'dragAndDropActive' : ''}"
         >
           <span class="button-bar-headline" title="uid:${this.uid}">⠿ ${this.elementName}</span>
           <!-- TODO extract button bar as separate component -->
           <a class="button" href="${this.editUrl}" @click="${this._openEdit}">
-            <editara-icon name="actions-open"/>
+            <ve-icon name="actions-open"/>
           </a>
           <a class="button" @click="${this._toggleHidden}">
-            <editara-icon name="${toggleIcon}"/>
+            <ve-icon name="${toggleIcon}"/>
           </a>
           <a class="button" @click="${this._delete}">
-            <editara-icon name="actions-delete"/>
+            <ve-icon name="actions-delete"/>
           </a>
           <a class="button" @click="${this._addAbove}">
-            <editara-icon name="actions-document-add"/>
+            <ve-icon name="actions-document-add"/>
           </a>
-        </editara-drag-handle>
+        </ve-drag-handle>
         <slot></slot>
-        <editara-drop-zone
+        <ve-drop-zone
           table="${this.table}"
           uid="${this.uid}"
           target="${-this.uid}"
           colPos="${this.colPos}"
           sys_language_uid="${this.sys_language_uid}"
-        ></editara-drop-zone>
+        ></ve-drop-zone>
       </div>
     `;
   }
@@ -237,4 +237,4 @@ export class EditaraContentElement extends LitElement {
   `;
 }
 
-customElements.define('editara-content-element', EditaraContentElement);
+customElements.define('ve-content-element', VeContentElement);

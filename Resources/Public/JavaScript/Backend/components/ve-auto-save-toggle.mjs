@@ -1,12 +1,12 @@
 import {css, html, LitElement} from 'lit';
-import {onMessageDebounced, sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
-import {autoSaveActive} from "@andersundsehr/editara/Shared/local-store.js";
+import {onMessageDebounced, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
+import {autoSaveActive} from "@typo3/visual-editor/Shared/local-store.js";
 
 
 /**
  * @extends {HTMLElement}
  */
-export class EditaraAutoSaveToggle extends LitElement {
+export class VeAutoSaveToggle extends LitElement {
   static properties = {
     workspace: {type: Number},
     isWorkspaceInstalled: {type: Number},
@@ -68,4 +68,4 @@ export class EditaraAutoSaveToggle extends LitElement {
   `;
 }
 
-customElements.define('editara-auto-save-toggle', EditaraAutoSaveToggle);
+customElements.define('ve-auto-save-toggle', VeAutoSaveToggle);

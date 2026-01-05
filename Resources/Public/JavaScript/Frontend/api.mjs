@@ -6,6 +6,7 @@
  * @returns {Promise<void>}
  */
 export async function useDataHandler(data = {}, cmd = {}) {
+  // TODO add token to protect against CSRF
   const response = await fetch(window.location.href, {
     method: 'POST',
     headers: {

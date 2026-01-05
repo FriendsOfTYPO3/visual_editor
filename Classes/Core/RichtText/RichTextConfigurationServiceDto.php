@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\Core\RichtText;
+namespace TYPO3\CMS\VisualEditor\Core\RichtText;
 
 final readonly class RichTextConfigurationServiceDto
 {

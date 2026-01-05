@@ -1,22 +1,30 @@
 {
-  "name": "andersundsehr/editara",
-  "description": "Editara brings renderlets, editables, and areas to TYPO3 for structured pages, faster authoring, and clean integrations.",
+  "name": "friendsoftypo3/visual-editor",
+  "description": "visual_editor brings a modern WYSIWYG editing experience to TYPO3 CMS.",
+  "keywords": [
+    "typo3 cms", "typo3", "cms",
+    "core", "extension",
+    "visual",
+    "editor",
+    "visual editor",
+    "wysiwyg"
+  ],
   "type": "typo3-cms-extension",
   "license": [
     "GPL-2.0-or-later"
   ],
   "require": {
-    "typo3/cms-core": "^12.0 || ^13.0",
-    "php": "~8.4.0"
+    "typo3/cms-core": "^12.4.40 || ^13.4.22",
+    "php": "~8.4.0 || ~8.5.0"
   },
   "autoload": {
     "psr-4": {
-      "Andersundsehr\\Editara\\": "Classes/"
+      "TYPO3\\CMS\\VisualEditor\\": "Classes/"
     }
   },
   "extra": {
     "typo3/cms": {
-      "extension-key": "editara"
+      "extension-key": "visual_editor"
     }
   }
 }

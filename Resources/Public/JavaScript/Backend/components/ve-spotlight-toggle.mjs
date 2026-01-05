@@ -1,11 +1,11 @@
 import {html, LitElement} from 'lit';
-import {sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
-import {showEmptyActive} from "@andersundsehr/editara/Shared/local-store.js";
+import {spotlightActive} from "@typo3/visual-editor/Shared/local-store.js";
+
 
 /**
  * @extends {HTMLElement}
  */
-export class EditaraShowEmptyToggle extends LitElement {
+export class VeSpotlightToggle extends LitElement {
   static properties = {
     active: {type: Boolean, reflect: true,},
     label: {type: String,},
@@ -21,18 +21,17 @@ export class EditaraShowEmptyToggle extends LitElement {
 
     this.label = this.innerText;
     this.innerHTML = '';
-    this.active = showEmptyActive.get();
-    sendMessage('showEmpty', this.active);
+    this.active = spotlightActive.get();
 
-    showEmptyActive.addEventListener('currentWindowChange', () => {
-      this.active = showEmptyActive.get();
+    spotlightActive.addEventListener('currentWindowChange', () => {
+      this.active = spotlightActive.get();
     });
+
     this.addEventListener('click', (e) => {
       e.preventDefault();
 
       this.active = !this.active;
-      showEmptyActive.set(this.active);
-      sendMessage('showEmpty', this.active);
+      spotlightActive.set(this.active);
     })
   }
 
@@ -44,10 +43,10 @@ export class EditaraShowEmptyToggle extends LitElement {
 
   render() {
     return html`
-      <typo3-backend-icon identifier="${this.active ? 'actions-eye' : 'actions-hyphen'}" size="small"></typo3-backend-icon>
+      <typo3-backend-icon identifier="${this.active ? 'actions-lightbulb-on' : 'actions-lightbulb'}" size="small"></typo3-backend-icon>
       ${this.label}
     `;
   }
 }
 
-customElements.define('editara-show-empty-toggle', EditaraShowEmptyToggle);
+customElements.define('ve-spotlight-toggle', VeSpotlightToggle);

@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\UserFunction;
+namespace TYPO3\CMS\VisualEditor\UserFunction;
 
-use Andersundsehr\Editara\Service\EditaraService;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
@@ -15,6 +14,7 @@ use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
+use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use function assert;
 
@@ -23,7 +23,7 @@ final readonly class TtContentStdWrapPostUserFunc
 {
     public function __construct(
         private RecordFactory $recordFactory,
-        private EditaraService $editaraService,
+        private EditModeService $editModeService,
         private TcaSchemaFactory $tcaSchema,
         private UriBuilder $backendUriBuilder,
     )
@@ -32,7 +32,7 @@ final readonly class TtContentStdWrapPostUserFunc
 
     public function __invoke(string $content, array $conf, ServerRequestInterface $request): string
     {
-        if (!$this->editaraService->isEditMode()) {
+        if (!$this->editModeService->isEditMode()) {
             return $content;
         }
 
@@ -45,7 +45,7 @@ final readonly class TtContentStdWrapPostUserFunc
         assert($record instanceof Record);
         $schema = $this->tcaSchema->get($record->getMainType()); // TODO use getFullType (if flux is not used)
 
-        $div = GeneralUtility::makeInstance(TagBuilder::class, 'editara-content-element');
+        $div = GeneralUtility::makeInstance(TagBuilder::class, 've-content-element');
         $contentTypeLabel = $this->getContentTypeLabel($record);
         $div->addAttribute('elementName', $contentTypeLabel);
         $div->addAttribute('editUrl', $this->getEditUrl($record));

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\ViewHelpers\Record;
+namespace TYPO3\CMS\VisualEditor\ViewHelpers\Record;
 
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Domain\RecordInterface;
@@ -12,12 +12,12 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
  * This viewHelper should only be used in Legacy Project to convert array data to Record objects
  * usage:
  * ````html
- * <e:record.fromArray table="my_table" data="{data}" />
- * {e:record.fromArray(table: 'my_table', data: data)}
+ * <f:record.fromArray table="my_table" data="{data}" />
+ * {f:record.fromArray(table: 'my_table', data: data)}
  *
  * <!-- or in an editable.input: -->
- * <e:editable.input record="{e:record.fromArray(table: 'my_table', data: data)}" field="my_field" />
- * {e:editable.input(record: '{e:record.fromArray(table: \'my_table\', data: data)}', field: 'my_field')}
+ * <f:render.input record="{f:record.fromArray(table: 'my_table', data: data)}" field="my_field" />
+ * {f:render.input(record: '{f:record.fromArray(table: \'my_table\', data: data)}', field: 'my_field')}
  * ````
  */
 final class FromArrayViewHelper extends AbstractViewHelper

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\ViewHelpers\Record;
+namespace TYPO3\CMS\VisualEditor\ViewHelpers\Record;
 
 use Doctrine\DBAL\ParameterType;
 use TYPO3\CMS\Core\Context\Context;
@@ -20,12 +20,12 @@ use function sprintf;
  * This viewHelper should only be used in Legacy Project to convert array data to Record objects
  * usage:
  * ````html
- * <e:record.load table="my_table" uid="12" />
- * {e:record.load(table: 'my_table', uid: 12)}
+ * <f:record.load table="my_table" uid="12" />
+ * {f:record.load(table: 'my_table', uid: 12)}
  *
  * <!-- or in an editable.input: -->
- * <e:editable.input record="{e:record.load(table: 'my_table', uid: 12)}" field="my_field" />
- * {e:editable.input(record: '{e:record.load(table: \'my_table\', uid: 12)}', field: 'my_field')}
+ * <f:render.input record="{f:record.load(table: 'my_table', uid: 12)}" field="my_field" />
+ * {f:render.input(record: '{f:record.load(table: \'my_table\', uid: 12)}', field: 'my_field')}
  * ````
  */
 final class LoadViewHelper extends AbstractViewHelper

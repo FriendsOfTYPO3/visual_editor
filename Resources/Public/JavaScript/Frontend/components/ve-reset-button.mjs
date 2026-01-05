@@ -3,7 +3,7 @@ import {css, html, LitElement} from 'lit';
 /**
  * @extends {HTMLElement}
  */
-export class ResetButton extends LitElement {
+export class VeResetButton extends LitElement {
 
   static styles = css`
         button {
@@ -27,10 +27,10 @@ export class ResetButton extends LitElement {
   render() {
     return html`
       <button @click="${this._click}" title="Reset changes">
-        <editara-icon name="actions-undo" width="100%"/>
+        <ve-icon name="actions-undo" width="100%"/>
       </button>
     `;
   }
 }
 
-customElements.define('reset-button', ResetButton);
+customElements.define('ve-reset-button', VeResetButton);

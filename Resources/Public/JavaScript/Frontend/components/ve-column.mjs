@@ -3,7 +3,7 @@ import {css, html, LitElement} from 'lit';
 /**
  * @extends {HTMLElement}
  */
-export class EditaraColumn extends LitElement {
+export class VeColumn extends LitElement {
   static properties = {
     target: {type: Number},
     colPos: {type: Number},
@@ -20,27 +20,27 @@ export class EditaraColumn extends LitElement {
   }
 
   render() {
-    const newContentUrl = window.editaraInfo.newContentUrl
+    const newContentUrl = window.veInfo.newContentUrl
       .replace('__COL_POS__', this.colPos)
       .replace('__SYS_LANGUAGE_UID__', this.sys_language_uid)
       .replace('__UID_PID__', this.target);
 
-    const editaraColumnHasChild = this.children.length > 0;
+    const columnHasChild = this.children.length > 0;
     const addButton = html`<div class="center">
-      <iframe-popup title="new Content" src="${newContentUrl}" type="ajax">
-        <editara-icon name="actions-document-add" width="2em"></editara-icon>
+      <ve-iframe-popup title="new Content" src="${newContentUrl}" type="ajax">
+        <ve-icon name="actions-document-add" width="2em"></ve-icon>
         Create new Content
-      </iframe-popup>
+      </ve-iframe-popup>
     </div>`;
     return html`
-      <div class="editara-column">
-        ${(editaraColumnHasChild ? '' : addButton)}
-        <editara-drop-zone
+      <div class="ve-column">
+        ${(columnHasChild ? '' : addButton)}
+        <ve-drop-zone
           table="tt_content"
           target="${this.target}"
           colPos="${this.colPos}"
           sys_language_uid="${this.sys_language_uid}"
-        ></editara-drop-zone>
+        ></ve-drop-zone>
         <slot></slot>
       </div>
     `;
@@ -50,7 +50,7 @@ export class EditaraColumn extends LitElement {
     :host {
     }
     
-    .editara-column {
+    .ve-column {
       position: relative;
     }
     
@@ -62,4 +62,4 @@ export class EditaraColumn extends LitElement {
   `;
 }
 
-customElements.define('editara-column', EditaraColumn);
+customElements.define('ve-column', VeColumn);

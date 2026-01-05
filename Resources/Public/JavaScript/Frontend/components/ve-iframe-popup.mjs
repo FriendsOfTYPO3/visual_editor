@@ -1,5 +1,5 @@
 import {css, html, LitElement} from 'lit';
-import {isDirectMode, sendMessage} from "@andersundsehr/editara/Shared/iframe-messaging.mjs";
+import {isDirectMode, sendMessage} from "@typo3/visual-editor/Shared/iframe-messaging.mjs";
 
 /**
  * @param {string} src
@@ -15,7 +15,7 @@ export function openModal(src, title, size = 'large', type = 'iframe') {
   }
 
   const message = {
-    src: src + '%23editara-close',
+    src: src + '%23ve-close',
     title,
     size,
     type,
@@ -26,7 +26,7 @@ export function openModal(src, title, size = 'large', type = 'iframe') {
 /**
  * @extends {HTMLElement}
  */
-export class IframePopup extends LitElement {
+export class VeIframePopup extends LitElement {
   static properties = {
     title: {type: String,},
     src: {type: String,},
@@ -68,4 +68,4 @@ export class IframePopup extends LitElement {
   }
 }
 
-customElements.define('iframe-popup', IframePopup);
+customElements.define('ve-iframe-popup', VeIframePopup);

@@ -1,12 +1,12 @@
 import {css, html, LitElement} from 'lit';
 import {classMap} from 'lit/directives/class-map.js';
-import {dataHandlerStore} from "@andersundsehr/editara/Frontend/stores/data-handler-store.mjs";
-import {showEmptyActive} from "@andersundsehr/editara/Shared/local-store.js";
+import {dataHandlerStore} from "@typo3/visual-editor/Frontend/stores/data-handler-store.mjs";
+import {showEmptyActive} from "@typo3/visual-editor/Shared/local-store.js";
 
 /**
  * @extends {HTMLElement}
  */
-export class EditableInput extends LitElement {
+export class VeEditableInput extends LitElement {
   static properties = {
     changed: {type: Boolean, reflect: true,},
     value: {type: String, reflect: true,},
@@ -94,7 +94,7 @@ export class EditableInput extends LitElement {
       buttonCount = 1;
       buttons = html`
         <div class="buttons">
-          <reset-button @click="${this.onReset}"></reset-button>
+          <ve-reset-button @click="${this.onReset}"></ve-reset-button>
         </div>`;
     }
     const parentIsInline = getComputedStyle(this.parentElement).display.startsWith('inline');
@@ -218,5 +218,4 @@ export class EditableInput extends LitElement {
   `;
 }
 
-// TODO prefix all components with editara-
-customElements.define('editable-input', EditableInput);
+customElements.define('ve-editable-input', VeEditableInput);

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\Backend\Controller;
+namespace TYPO3\CMS\VisualEditor\Backend\Controller;
 
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
@@ -114,7 +114,7 @@ class PageEditController
         }
 
         $this->pageRenderer->getJavaScriptRenderer()->addJavaScriptModuleInstruction(
-            JavaScriptModuleInstruction::create('@andersundsehr/editara/Backend/index.mjs'),
+            JavaScriptModuleInstruction::create('@typo3/visual-editor/Backend/index.mjs'),
         );
 
 
@@ -143,7 +143,7 @@ class PageEditController
             $this->pageRecord->getUid(),
             [
                 '_language' => $this->selectedLanguage->getLanguageId(),
-                'editara' => 1,
+                'editMode' => 1,
             ],
         );
     }
@@ -416,7 +416,7 @@ class PageEditController
         assert($button instanceof GenericButton);
         $active = $this->getBackendUser()->workspace;
         return $button
-            ->setTag('editara-auto-save-toggle')
+            ->setTag('ve-auto-save-toggle')
             ->setAttributes([
                 ...($active ? [] : ['disabled' => true]),
                 'workspace' => $active,
@@ -448,7 +448,7 @@ class PageEditController
         $button = $buttonBar->makeButton(GenericButton::class);
         assert($button instanceof GenericButton);
         return $button
-            ->setTag('editara-backend-save-button')
+            ->setTag('ve-backend-save-button')
             ->setAttributes(['disabled' => true])
             ->setLabel('Save')
             ->setIcon($this->iconFactory->getIcon('actions-save', IconSize::SMALL))
@@ -472,7 +472,7 @@ class PageEditController
         $button = $buttonBar->makeButton(GenericButton::class);
         assert($button instanceof GenericButton);
         return $button
-            ->setTag('editara-spotlight-toggle')
+            ->setTag('ve-spotlight-toggle')
             ->setLabel('Spotlight')
             ->setIcon($this->iconFactory->getIcon('actions-lightbulb', IconSize::SMALL))
             ->setShowLabelText(true);
@@ -495,7 +495,7 @@ class PageEditController
         $button = $buttonBar->makeButton(GenericButton::class);
         assert($button instanceof GenericButton);
         return $button
-            ->setTag('editara-show-empty-toggle')
+            ->setTag('ve-show-empty-toggle')
             ->setLabel('Show empty')
             ->setIcon($this->iconFactory->getIcon('actions-hyphen', IconSize::SMALL))
             ->setShowLabelText(true);

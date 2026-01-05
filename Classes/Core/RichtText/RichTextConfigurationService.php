@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\Core\RichtText;
+namespace TYPO3\CMS\VisualEditor\Core\RichtText;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
@@ -16,7 +16,6 @@ use TYPO3\CMS\RteCKEditor\Form\Element\Event\AfterGetExternalPluginsEvent;
 use TYPO3\CMS\RteCKEditor\Form\Element\Event\AfterPrepareConfigurationForEditorEvent;
 use TYPO3\CMS\RteCKEditor\Form\Element\Event\BeforeGetExternalPluginsEvent;
 use TYPO3\CMS\RteCKEditor\Form\Element\Event\BeforePrepareConfigurationForEditorEvent;
-
 use function array_replace_recursive;
 use function explode;
 use function is_array;

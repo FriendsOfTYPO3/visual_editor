@@ -1,12 +1,12 @@
 import {css, html, LitElement} from 'lit';
-import {isDirectMode, onMessage, sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
-import {useDataHandler} from "@andersundsehr/editara/Frontend/api.mjs";
-import {dataHandlerStore} from "@andersundsehr/editara/Frontend/stores/data-handler-store.mjs";
+import {isDirectMode, onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
+import {useDataHandler} from "@typo3/visual-editor/Frontend/api.mjs";
+import {dataHandlerStore} from "@typo3/visual-editor/Frontend/stores/data-handler-store.mjs";
 
 /**
  * @extends {HTMLElement}
  */
-export class EditaraSaveButton extends LitElement {
+export class VeSaveButton extends LitElement {
   static properties = {
     count: {type: Number},
     saving: {type: Boolean},
@@ -118,4 +118,4 @@ export class EditaraSaveButton extends LitElement {
   `;
 }
 
-customElements.define('editara-save-button', EditaraSaveButton);
+customElements.define('ve-save-button', VeSaveButton);

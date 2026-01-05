@@ -1,30 +1,30 @@
-import '@andersundsehr/editara/Frontend/components/reset-button.mjs';
-import '@andersundsehr/editara/Frontend/components/editable-input.mjs';
-import '@andersundsehr/editara/Frontend/components/editable-rte.mjs';
-import '@andersundsehr/editara/Frontend/components/editara-content-element.mjs';
-import '@andersundsehr/editara/Frontend/components/editara-column.mjs';
-import '@andersundsehr/editara/Frontend/components/editara-save-button.mjs';
-import '@andersundsehr/editara/Frontend/components/editara-drag-handle.mjs';
-import '@andersundsehr/editara/Frontend/components/editara-drop-zone.mjs';
-import '@andersundsehr/editara/Frontend/components/editara-icon.mjs';
-import '@andersundsehr/editara/Frontend/iframe-popup.mjs';
-import {sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
-import {highlight, reset} from "@andersundsehr/editara/Frontend/spotlight-overlay.mjs";
-import { spotlightActive} from "@andersundsehr/editara/Shared/local-store.js";
+import '@typo3/visual-editor/Frontend/components/ve-reset-button.mjs';
+import '@typo3/visual-editor/Frontend/components/ve-editable-input.mjs';
+import '@typo3/visual-editor/Frontend/components/ve-editable-rte.mjs';
+import '@typo3/visual-editor/Frontend/components/ve-content-element.mjs';
+import '@typo3/visual-editor/Frontend/components/ve-column.mjs';
+import '@typo3/visual-editor/Frontend/components/ve-save-button.mjs';
+import '@typo3/visual-editor/Frontend/components/ve-drag-handle.mjs';
+import '@typo3/visual-editor/Frontend/components/ve-drop-zone.mjs';
+import '@typo3/visual-editor/Frontend/components/ve-icon.mjs';
+import '@typo3/visual-editor/Frontend/components/ve-iframe-popup.mjs';
+import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
+import {highlight, reset} from "@typo3/visual-editor/Frontend/spotlight-overlay.mjs";
+import { spotlightActive} from "@typo3/visual-editor/Shared/local-store.js";
 
-if (window.location.hash === '#editara-close') {
+if (window.location.hash === '#ve-close') {
   sendMessage('closeModal');
   // this closes the window as it was a _target="_blank" opened window from the edit button (eg: editable: link)
   window.close();
 }
 
-const element = document.createElement('editara-save-button');
+const element = document.createElement('ve-save-button');
 document.body.appendChild(element);
 
 (function spotlight() {
   const setSpotlight = () => {
     if (spotlightActive.get()) {
-      highlight('editable-input, editable-rte');
+      highlight('ve-editable-input, ve-editable-rte');
     } else {
       reset();
     }
@@ -34,6 +34,6 @@ document.body.appendChild(element);
   setSpotlight();
 })();
 
-if (window.editaraInfo) {
-  sendMessage('pageChanged', window.editaraInfo.pageId);
+if (window.veInfo) {
+  sendMessage('pageChanged', window.veInfo.pageId);
 }

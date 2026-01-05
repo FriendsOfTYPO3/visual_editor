@@ -1,4 +1,4 @@
-import {getObjectLeafCount} from "@andersundsehr/editara/Shared/get-object-leaf-count.mjs";
+import {getObjectLeafCount} from "@typo3/visual-editor/Shared/get-object-leaf-count.mjs";
 
 /**
  * @method addEventListener(type: 'change', listener: (event: CustomEvent<{data: Object, cmd Object}>) => void): void

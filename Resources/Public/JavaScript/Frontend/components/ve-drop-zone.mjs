@@ -1,15 +1,15 @@
 import {css, html, LitElement} from 'lit';
 import {classMap} from 'lit/directives/class-map.js';
-import {isDirectMode, sendMessage} from "@andersundsehr/editara/Shared/iframe-messaging.mjs";
-import {useDataHandler} from "@andersundsehr/editara/Frontend/api.mjs";
-import {dragInProgressStore} from "@andersundsehr/editara/Frontend/stores/drag-store.mjs";
-import {flipInsertBefore} from "@andersundsehr/editara/Frontend/flip-insert-before.mjs";
-import {dataHandlerStore} from "@andersundsehr/editara/Frontend/stores/data-handler-store.mjs";
+import {isDirectMode, sendMessage} from "@typo3/visual-editor/Shared/iframe-messaging.mjs";
+import {useDataHandler} from "@typo3/visual-editor/Frontend/api.mjs";
+import {dragInProgressStore} from "@typo3/visual-editor/Frontend/stores/drag-store.mjs";
+import {flipInsertBefore} from "@typo3/visual-editor/Frontend/flip-insert-before.mjs";
+import {dataHandlerStore} from "@typo3/visual-editor/Frontend/stores/data-handler-store.mjs";
 
 /**
  * @extends {HTMLElement}
  */
-export class EditableDropZone extends LitElement {
+export class VeDropZone extends LitElement {
   static properties = {
     table: {type: String},
 
@@ -44,30 +44,30 @@ export class EditableDropZone extends LitElement {
     }
 
 
-    const firstParent = findFirstParent(['editara-content-element', 'editara-column'], this.parentElement);
+    const firstParent = findFirstParent(['ve-content-element', 've-column'], this.parentElement);
     if (!firstParent) {
-      const message = 'ERROR: Cannot find parent <editara-content-element> or <editara-column> for drop zone';
-      this.innerHTML = `<editara-error text="${message}"/>`;
+      const message = 'ERROR: Cannot find parent <ve-content-element> or <ve-column> for drop zone';
+      this.innerHTML = `<ve-error text="${message}"/>`;
       throw new Error(message);
     }
 
     switch (firstParent.tagName.toLowerCase()) {
-      case 'editara-content-element':
-        // my parent is a editara-content-element and the nextSibling of that is the dragged element => do not show drop zone (return false)
+      case 've-content-element':
+        // my parent is a ve-content-element and the nextSibling of that is the dragged element => do not show drop zone (return false)
         if (firstParent.nextSibling) {
           const nextSibling = firstParent.nextElementSibling;
-          if (nextSibling && nextSibling.tagName.toLowerCase() === 'editara-content-element') {
+          if (nextSibling && nextSibling.tagName.toLowerCase() === 've-content-element') {
             if (nextSibling.table === data.table && nextSibling.uid === data.uid) {
               return false;
             }
           }
         }
         break;
-      case 'editara-column':
-        // my parent is a editara-column and the firstSibling is the dragged element => do not show drop zone (return false)
+      case 've-column':
+        // my parent is a ve-column and the firstSibling is the dragged element => do not show drop zone (return false)
         if (firstParent.firstChild) {
           const firstChild = firstParent.firstElementChild;
-          if (firstChild && firstChild.tagName.toLowerCase() === 'editara-content-element') {
+          if (firstChild && firstChild.tagName.toLowerCase() === 've-content-element') {
             if (firstChild.table === data.table && firstChild.uid === data.uid) {
               return false;
             }
@@ -92,8 +92,8 @@ export class EditableDropZone extends LitElement {
    * @param {DragEvent} event
    */
   _dragOver(event) {
-    const isEditaraDrag = event.dataTransfer.types.includes('text/editara-drag');
-    if (isEditaraDrag) {
+    const isVEDrag = event.dataTransfer.types.includes('text/ve-drag');
+    if (isVEDrag) {
       event.preventDefault();
     }
   }
@@ -120,7 +120,7 @@ export class EditableDropZone extends LitElement {
    * @param {DragEvent} event
    */
   async _drop(event) {
-    const dataString = event.dataTransfer.getData('text/editara-drag');
+    const dataString = event.dataTransfer.getData('text/ve-drag');
     if (!dataString) {
       return;
     }
@@ -163,10 +163,10 @@ export class EditableDropZone extends LitElement {
 
     this.isDragHovering = 0; // reset
 
-    const firstParent = findFirstParent(['editara-content-element', 'editara-column'], this.parentElement);
+    const firstParent = findFirstParent(['ve-content-element', 've-column'], this.parentElement);
 
     if (!firstParent) {
-      throw new Error('Cannot find parent editara-content-element or editara-column for drop zone');
+      throw new Error('Cannot find parent ve-content-element or ve-column for drop zone');
     }
     const sourceElement = document.getElementById(data.table + ':' + data.uid);
     if (!sourceElement) {
@@ -176,11 +176,11 @@ export class EditableDropZone extends LitElement {
     sourceElement.setAttribute('sys_language_uid', this.sys_language_uid);
 
     switch (firstParent.tagName.toLowerCase()) {
-      case 'editara-content-element':
+      case 've-content-element':
         // append after the area brick
         flipInsertBefore(firstParent.parentNode, sourceElement, firstParent.nextSibling);
         return;
-      case 'editara-column':
+      case 've-column':
         // append as first child of the column
         flipInsertBefore(firstParent, sourceElement, firstParent.firstChild);
         return;
@@ -202,7 +202,7 @@ export class EditableDropZone extends LitElement {
            @dragleave="${this._dragLeave}"
            @drop="${this._drop}"
       >
-        <editara-icon name="apps-pagetree-drag-move-into" width="2em"/>
+        <ve-icon name="apps-pagetree-drag-move-into" width="2em"/>
       </div>
     `;
   }
@@ -269,7 +269,7 @@ export class EditableDropZone extends LitElement {
    * @returns {boolean}
    */
   isAnyOfMyParents(table, uid, element = this.parentElement) {
-    if (element instanceof EditableDropZone) {
+    if (element instanceof VeDropZone) {
       if (element.table === table && element.uid === uid) {
         return true;
       }
@@ -302,4 +302,4 @@ function findFirstParent(tagNamesToFind, element) {
   return findFirstParent(tagNamesToFind, parentElement);
 }
 
-customElements.define('editara-drop-zone', EditableDropZone);
+customElements.define('ve-drop-zone', VeDropZone);

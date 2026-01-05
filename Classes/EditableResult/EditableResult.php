@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\EditableResult;
+namespace TYPO3\CMS\VisualEditor\EditableResult;
 
 interface EditableResult
 {

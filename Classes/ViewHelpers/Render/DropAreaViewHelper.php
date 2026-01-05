@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\ViewHelpers;
+namespace TYPO3\CMS\VisualEditor\ViewHelpers\Render;
 
-use Andersundsehr\Editara\Service\EditaraService;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
+use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 
@@ -16,7 +16,7 @@ final class DropAreaViewHelper extends AbstractViewHelper
 {
     protected $escapeOutput = false;
 
-    public function __construct(private readonly EditaraService $editaraService)
+    public function __construct(private readonly EditModeService $editModeService)
     {
     }
 
@@ -31,11 +31,11 @@ final class DropAreaViewHelper extends AbstractViewHelper
 
     public function render(): mixed
     {
-        if (!$this->editaraService->isEditMode()) {
+        if (!$this->editModeService->isEditMode()) {
             return $this->renderChildren();
         }
 
-        $tag = GeneralUtility::makeInstance(TagBuilder::class, 'editara-column', $this->renderChildren());
+        $tag = GeneralUtility::makeInstance(TagBuilder::class, 've-column', $this->renderChildren());
         $pid = $this->arguments['pid'] ?? $this->getPageInformation()->getId();
         $tag->addAttribute('target', $pid);
         $tag->addAttribute('colPos', (string)$this->arguments['colPos']);

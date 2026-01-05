@@ -2,16 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\Service;
+namespace TYPO3\CMS\VisualEditor\Service;
 
 use RuntimeException;
-use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
-use TYPO3\CMS\Core\Domain\Record;
-use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use function assert;
 use function count;
 use function implode;
 use function in_array;

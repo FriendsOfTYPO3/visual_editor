@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\Middleware;
+namespace TYPO3\CMS\VisualEditor\Middleware;
 
-use Andersundsehr\Editara\Service\DataHandlerService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -16,11 +15,12 @@ use TYPO3\CMS\Core\Error\Http\UnauthorizedException;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Frontend\Page\PageInformation;
+use TYPO3\CMS\VisualEditor\Service\DataHandlerService;
 use function array_keys;
 use function implode;
 use function json_decode;
 
-class EditaraPersistenceMiddleware implements MiddlewareInterface
+class PersistenceMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private readonly Context $context,
@@ -57,9 +57,9 @@ class EditaraPersistenceMiddleware implements MiddlewareInterface
 
     private function shouldSaveStuff(ServerRequestInterface $request)
     {
-        // parameter editara must be set
+        // parameter editMode must be set
         $params = $request->getQueryParams();
-        if (!isset($params['editara'])) {
+        if (!isset($params['editMode'])) {
             return false;
         }
 
@@ -80,7 +80,7 @@ class EditaraPersistenceMiddleware implements MiddlewareInterface
 
         // only allow application/json content type
         if ($request->getHeaderLine('Content-Type') !== 'application/json') {
-            throw new UnauthorizedException('Content-Type must be application/json to save stuff with editara');
+            throw new UnauthorizedException('Content-Type must be application/json to save stuff with visual_editor');
         }
 
         if ($user->isAdmin()) {

@@ -1,10 +1,10 @@
 import {css, LitElement} from 'lit';
-import {dragInProgressStore} from "@andersundsehr/editara/Frontend/stores/drag-store.mjs";
+import {dragInProgressStore} from "@typo3/visual-editor/Frontend/stores/drag-store.mjs";
 
 /**
  * @extends {HTMLElement}
  */
-export class EditaraDragHandle extends LitElement {
+export class VeDragHandle extends LitElement {
   static properties = {
     table: {type: String},
     uid: {type: Number},
@@ -32,7 +32,7 @@ export class EditaraDragHandle extends LitElement {
       table: this.table,
       uid: this.uid,
     };
-    event.dataTransfer.setData('text/editara-drag', JSON.stringify(info));
+    event.dataTransfer.setData('text/ve-drag', JSON.stringify(info));
 
     dragInProgressStore.value = info;
   }
@@ -56,4 +56,4 @@ export class EditaraDragHandle extends LitElement {
   `;
 }
 
-customElements.define('editara-drag-handle', EditaraDragHandle);
+customElements.define('ve-drag-handle', VeDragHandle);

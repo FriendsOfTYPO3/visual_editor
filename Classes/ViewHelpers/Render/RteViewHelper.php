@@ -2,15 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Andersundsehr\Editara\ViewHelpers\Editable;
+namespace TYPO3\CMS\VisualEditor\ViewHelpers\Render;
 
-use Andersundsehr\Editara\Core\RichtText\RichTextConfigurationService;
-use Andersundsehr\Editara\Core\RichtText\RichTextConfigurationServiceDto;
-use Andersundsehr\Editara\EditableResult\Rte;
-use Andersundsehr\Editara\Service\EditaraService;
-use Andersundsehr\Editara\Service\RecordService;
 use InvalidArgumentException;
-use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Core\Configuration\Richtext;
 use TYPO3\CMS\Core\Domain\Record;
@@ -21,7 +15,13 @@ use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Fluid\ViewHelpers\Format\HtmlViewHelper;
 use TYPO3\CMS\Frontend\Page\PageInformation;
+use TYPO3\CMS\VisualEditor\Core\RichtText\RichTextConfigurationService;
+use TYPO3\CMS\VisualEditor\Core\RichtText\RichTextConfigurationServiceDto;
+use TYPO3\CMS\VisualEditor\EditableResult\Rte;
+use TYPO3\CMS\VisualEditor\Service\EditModeService;
+use TYPO3\CMS\VisualEditor\Service\RecordService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
+
 use function json_encode;
 use function sprintf;
 
@@ -31,7 +31,7 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
     protected $tagName = 'editable-rte';
 
     public function __construct(
-        private readonly EditaraService $editaraService,
+        private readonly EditModeService $editModeService,
         private readonly RecordService $recordService,
         private readonly AssetCollector $assetCollector,
         private readonly RichTextConfigurationService $richTextConfigurationService,
@@ -55,7 +55,7 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
 
     public function render(): Rte
     {
-        $this->editaraService->init();
+        $this->editModeService->init();
 
         $record = $this->arguments['record'];
         $field = $this->arguments['field'];
@@ -80,7 +80,7 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
 
         $value = $record->get($field) ?? '';
 
-        if (!$this->editaraService->isEditMode()) {
+        if (!$this->editModeService->isEditMode()) {
             $escapedValue = $this->text2html($value ?: $default);
             return new Rte($name, $escapedValue, ($value ?: $default) === '', $value ?: $default);
         }

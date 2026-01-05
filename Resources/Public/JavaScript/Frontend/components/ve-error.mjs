@@ -3,7 +3,7 @@ import {css, html, LitElement} from 'lit';
 /**
  * @extends {HTMLElement}
  */
-export class EditaraError extends LitElement {
+export class VeError extends LitElement {
   static properties = {
     text: {type: String},
   };
@@ -25,4 +25,4 @@ export class EditaraError extends LitElement {
   `;
 }
 
-customElements.define('editara-error', EditaraError);
+customElements.define('ve-error', VeError);

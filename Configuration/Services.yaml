@@ -3,6 +3,5 @@ services:
     autowire: true
     autoconfigure: true
     public: false
-  Andersundsehr\Editara\:
+  TYPO3\CMS\VisualEditor\:
     resource: '../Classes/*'
-    exclude: '../Classes/Domain/Model/*'

@@ -1,10 +1,10 @@
 import {css, html, LitElement} from 'lit';
-import {onMessage, sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
+import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
 
 /**
  * @extends {HTMLElement}
  */
-export class EditaraBackendSaveButton extends LitElement {
+export class VeBackendSaveButton extends LitElement {
   static properties = {
     count: {type: Number, reflect: true},
     disabled: {type: Boolean, reflect: true},
@@ -63,4 +63,4 @@ export class EditaraBackendSaveButton extends LitElement {
   `;
 }
 
-customElements.define('editara-backend-save-button', EditaraBackendSaveButton);
+customElements.define('ve-backend-save-button', VeBackendSaveButton);

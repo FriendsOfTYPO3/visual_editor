@@ -1,6 +1,6 @@
 <?php
 
-use Andersundsehr\Editara\Backend\Controller\PageEditController;
+use TYPO3\CMS\VisualEditor\Backend\Controller\PageEditController;
 
 return [
     'web_edit' => [
@@ -9,7 +9,7 @@ return [
         'access' => 'user',
         'path' => '/module/web/edit',
         'iconIdentifier' => 'module-page-edit',
-        'labels' => 'LLL:EXT:editara/Resources/Private/Language/locallang_mod.xlf',
+        'labels' => 'LLL:EXT:visual_editor/Resources/Private/Language/locallang_mod.xlf',
         'routes' => [
             '_default' => [
                 'target' => PageEditController::class . '::__invoke',

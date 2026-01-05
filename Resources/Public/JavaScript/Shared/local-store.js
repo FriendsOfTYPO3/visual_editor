@@ -1,4 +1,4 @@
-import {onMessage, sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
+import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
 
 class LocalStore extends EventTarget {
   /**
@@ -45,6 +45,6 @@ function localStore(key, defaultValue) {
   return new LocalStore(key, defaultValue);
 }
 
-export const spotlightActive = localStore('editara-spotlight-active', true);
-export const autoSaveActive = localStore('editara-autosave-active', true);
-export const showEmptyActive = localStore('editara-show-empty-active', true);
+export const spotlightActive = localStore('ve-spotlight-active', true);
+export const autoSaveActive = localStore('ve-autosave-active', true);
+export const showEmptyActive = localStore('ve-show-empty-active', true);

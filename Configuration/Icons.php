@@ -10,6 +10,6 @@ return [
         // Icon provider class
         'provider' => SvgIconProvider::class,
         // The source SVG for the SvgIconProvider
-        'source' => 'EXT:editara/Resources/Public/Icons/module-page-edit.svg',
+        'source' => 'EXT:visual_editor/Resources/Public/Icons/module-page-edit.svg',
     ],
 ];

@@ -14,9 +14,9 @@ TODO put gifs here
 
 ## Installation
 
-1. `composer require andersundsehr/visual_editor` (or install via Extension Manager)
+1. `composer require friendsoftypo3/visual-editor` (or install via Extension Manager)
 2. add the SiteSet to your site configuration
-3. Add `f:editable.input`, `f:editable.rte`, `f:render.dropArea` to your templates (see below)
+3. Add `f:render.input`, `f:render.rte`, `f:render.dropArea` to your templates (see below)
 4. Clear caches
 5. Start editing!
 
@@ -40,7 +40,7 @@ before:
 <h1>{data.header}</h1>
 
 after:
-<h1><f:render.input record="{e:record.fromArray(data: data, table: 'tt_content')}" field="header" /></h1>
+<h1><f:render.input record="{f:record.fromArray(data: data, table: 'tt_content')}" field="header" /></h1>
 ````
 - you only have the uid and the string you want to output:
 ````html
@@ -48,11 +48,11 @@ before:
 <h1>{header}</h1>
 
 after:
-<h1><f:render.input record="{e:record.fromUid(uid: uid, table: 'tt_content')}" field="header" /></h1>
+<h1><f:render.input record="{f:record.fromUid(uid: uid, table: 'tt_content')}" field="header" /></h1>
 ````  
 
 ### Drop Area
-Add the `e:dropArea` ViewHelper to the container element that holds your content elements.
+Add the `f:render.dropArea` ViewHelper to the container element that holds your content elements.
 
 search for:
 - `v:content.render`:

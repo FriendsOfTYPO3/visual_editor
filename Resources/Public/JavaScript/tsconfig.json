@@ -8,7 +8,7 @@
     "skipLibCheck" : true,
     "allowJs" : true,
     "paths" : {
-      "@andersundsehr/editara/*" : [
+      "@typo3/visual-editor/*" : [
         "./*"
       ]
     }

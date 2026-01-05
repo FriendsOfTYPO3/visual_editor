@@ -2,14 +2,14 @@ import {LitElement} from 'lit';
 import {ClassicEditor as Editor} from '@ckeditor/ckeditor5-editor-classic';
 // import {InlineEditor as Editor} from '@ckeditor/ckeditor5-editor-inline'; // TODO fix issues with inline editor
 import {initCKEditorInstance} from '@typo3/rte-ckeditor/init-ckeditor-instance.js';
-import {removeRuleBySelector} from '@andersundsehr/editara/Shared/remove-rule-by-selector.mjs';
-import {dataHandlerStore} from "@andersundsehr/editara/Frontend/stores/data-handler-store.mjs";
-import {showEmptyActive} from "@andersundsehr/editara/Shared/local-store.js";
+import {removeRuleBySelector} from '@typo3/visual-editor/Shared/remove-rule-by-selector.mjs';
+import {dataHandlerStore} from "@typo3/visual-editor/Frontend/stores/data-handler-store.mjs";
+import {showEmptyActive} from "@typo3/visual-editor/Shared/local-store.js";
 
 /**
  * @extends {HTMLElement}
  */
-export class EditableRte extends LitElement {
+export class VeEditableRte extends LitElement {
   static properties = {
     changed: {type: Boolean, reflect: true},
     value: {type: String, reflect: true},
@@ -82,4 +82,4 @@ export class EditableRte extends LitElement {
    */
 }
 
-customElements.define('editable-rte', EditableRte);
+customElements.define('ve-editable-rte', VeEditableRte);
