@@ -7,8 +7,11 @@ namespace TYPO3\CMS\VisualEditor\Service;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\PageRenderer;
+use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
+use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use function assert;
 
@@ -18,6 +21,7 @@ final readonly class EditModeService
         private AssetCollector $assetCollector,
         private UriBuilder $uriBuilder,
         private PageRenderer $pageRenderer,
+        private TcaSchemaFactory $tcaSchema,
     )
     {
     }
@@ -76,6 +80,40 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
                 ],
             );
         }
+    }
+
+    public function canEditField(Record $record, string $field): bool
+    {
+        $tcaSchema = $this->tcaSchema->get($record->getFullType());
+        $fieldType = $tcaSchema->getField($field);
+        $canEdit = $this->isEditMode();
+        if ($tcaSchema->hasCapability(TcaSchemaCapability::AccessReadOnly)) {
+            $canEdit = false; // table readonly
+        }
+        if ($fieldType->getConfiguration()['readOnly'] ?? false) {
+            $canEdit = false; // field readonly
+        }
+        // user access check
+        /** @var BackendUserAuthentication $beUser */
+        $beUser = $GLOBALS['BE_USER'];
+        if (!$beUser->checkLanguageAccess($record->getLanguageId())) {
+            $canEdit = false; // no access to this language
+        }
+        if (!$beUser->check('tables_modify', $record->getMainType())) {
+            $canEdit = false; // no access to this table
+        }
+        if (!$beUser->isInWebMount($record->getPid())) {
+            $canEdit = false; // no access to this page // TODO move this to the middleware
+        }
+        if ($record->getMainType() === 'tt_content') {
+            if (!$beUser->check('explicit_allowdeny', 'tt_content:CType:' . $record->get('CType'))) {
+                $canEdit = false; // content element type not allowed
+            }
+        }
+        if ($fieldType->supportsAccessControl() && !$beUser->check('non_exclude_fields', $record->getMainType() . ':' . $field)) {
+            $canEdit = false; // no access to this field
+        }
+        return $canEdit;
     }
 
     private function getRequest(): ServerRequestInterface

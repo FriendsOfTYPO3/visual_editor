@@ -10,7 +10,6 @@ use TYPO3\CMS\Core\Configuration\Richtext;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Html\RteHtmlParser;
-use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
@@ -40,7 +39,6 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
         private readonly Richtext $richtext,
         private readonly TcaSchemaFactory $tcaSchema,
         private readonly RteHtmlParser $rteHtmlParser,
-        private readonly LanguageServiceFactory $languageServiceFactory,
     )
     {
         parent::__construct();
@@ -83,7 +81,8 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
 
         $value = $record->get($field) ?? '';
 
-        if (!$this->editModeService->isEditMode()) {
+        $canEdit = $this->editModeService->canEditField($record, $field);
+        if (!$canEdit) {
             $escapedValue = $this->text2html($value ?: $default);
             return new Rte($name, $escapedValue, ($value ?: $default) === '', $value ?: $default);
         }

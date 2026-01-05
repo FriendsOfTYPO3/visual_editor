@@ -6,7 +6,10 @@ namespace TYPO3\CMS\VisualEditor\ViewHelpers\Render;
 
 use InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\DataHandling\TableColumnType;
 use TYPO3\CMS\Core\Domain\RecordInterface;
+use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
@@ -14,7 +17,6 @@ use TYPO3\CMS\VisualEditor\EditableResult\Input;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3\CMS\VisualEditor\Service\RecordService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
-
 use function get_debug_type;
 use function htmlspecialchars;
 use function str_replace;
@@ -29,7 +31,8 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
         private readonly EditModeService $editModeService,
         private readonly RecordService $recordService,
         private readonly TcaSchemaFactory $tcaSchema,
-    ) {
+    )
+    {
         parent::__construct();
     }
 
@@ -44,7 +47,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
         $this->registerArgument('default', 'string', 'will be in .value but will not be saved in the DB (children used first)', false, '');
     }
 
-    public function render(): Input
+    public function render(): Input|string
     {
         $this->editModeService->init();
 
@@ -78,7 +81,9 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
         }
 
         $escapedValue = htmlspecialchars($value);
-        if (!$this->editModeService->isEditMode()) {
+
+        $canEdit = $this->editModeService->canEditField($record, $field);
+        if (!$canEdit) {
             $escapedValue = htmlspecialchars($value ?: $default ?: '');
         }
 
@@ -88,7 +93,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
             $escapedValue = str_replace("\n", '<br>', $escapedValue);
         }
 
-        if (!$this->editModeService->isEditMode()) {
+        if (!$canEdit) {
             return new Input($name, $escapedValue, ($value ?: $default) === '', $value ?: $default);
         }
 
