@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\EditableResult;
 
-final readonly class Rte implements EditableResult
+final readonly class RichText implements EditableResult
 {
     public function __construct(
         public string $name,

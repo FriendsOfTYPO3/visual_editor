@@ -6,7 +6,7 @@ namespace TYPO3\CMS\VisualEditor\ViewHelpers\Render;
 
 use InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
-use TYPO3\CMS\Core\Configuration\Richtext;
+use TYPO3\CMS\Core\Configuration\Richtext as RichtextConfiguration;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Html\RteHtmlParser;
@@ -17,7 +17,7 @@ use TYPO3\CMS\Fluid\ViewHelpers\Format\HtmlViewHelper;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Core\RichtText\RichTextConfigurationService;
 use TYPO3\CMS\VisualEditor\Core\RichtText\RichTextConfigurationServiceDto;
-use TYPO3\CMS\VisualEditor\EditableResult\Rte;
+use TYPO3\CMS\VisualEditor\EditableResult\RichText;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3\CMS\VisualEditor\Service\RecordService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
@@ -27,16 +27,16 @@ use function json_encode;
 use function sprintf;
 
 #[Autoconfigure(public: true)]
-final class RteViewHelper extends AbstractTagBasedViewHelper
+final class RichTextViewHelper extends AbstractTagBasedViewHelper
 {
-    protected $tagName = 've-editable-rte';
+    protected $tagName = 've-editable-rich-text';
 
     public function __construct(
         private readonly EditModeService $editModeService,
         private readonly RecordService $recordService,
         private readonly AssetCollector $assetCollector,
         private readonly RichTextConfigurationService $richTextConfigurationService,
-        private readonly Richtext $richtext,
+        private readonly RichtextConfiguration $richtext,
         private readonly TcaSchemaFactory $tcaSchema,
         private readonly RteHtmlParser $rteHtmlParser,
     )
@@ -54,7 +54,7 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
         $this->registerArgument('default', 'string', 'will be in .value but will not be saved in the DB (children used first)', false, '');
     }
 
-    public function render(): Rte
+    public function render(): RichText
     {
         $this->editModeService->init();
 
@@ -84,7 +84,7 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
         $canEdit = $this->editModeService->canEditField($record, $field);
         if (!$canEdit) {
             $escapedValue = $this->text2html($value ?: $default);
-            return new Rte($name, $escapedValue, ($value ?: $default) === '', $value ?: $default);
+            return new RichText($name, $escapedValue, ($value ?: $default) === '', $value ?: $default);
         }
 
         [$options, $processingConfiguration] = $this->getOptions($record, $field, $default);
@@ -104,7 +104,7 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
         $this->tag->setContent($escapedValue);
 
         $this->tag->forceClosingTag(true);
-        return new Rte($name, $this->tag->render(), ($value ?: $default) === '', $value ?: $default);
+        return new RichText($name, $this->tag->render(), ($value ?: $default) === '', $value ?: $default);
     }
 
     private function text2html(string $value): string

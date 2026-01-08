@@ -16,15 +16,14 @@ TODO put gifs here
 
 1. `composer require friendsoftypo3/visual-editor` (or install via Extension Manager)
 2. add the SiteSet to your site configuration
-3. Add `f:render.input`, `f:render.rte`, `f:render.dropArea` to your templates (see below)
+3. Add `f:render.input`, `f:render.richText`, `f:render.dropArea` to your templates (see below)
 4. Clear caches
 5. Start editing!
 
 ## Where to add the ViewHelpers
 
-### Input/Rte Fields
+### Input/RichText Fields
 Replace the output of your texts with the `f:render.input`/`f:render.richText` ViewHelper.
-Replace the output of your texts with the `f:render.text`/`f:render.richText` ViewHelper.
 
 - record is already a [Record](https://docs.typo3.org/permalink/t3coreapi:record-objects) object:
 ````html

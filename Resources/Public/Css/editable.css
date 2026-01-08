@@ -1,6 +1,6 @@
 /**
  * Custom styles for CKEditor to make it blend with the surrounding content.
- * TODO move this into the <ve-editable-rte> !!!
+ * TODO move this into the <ve-editable-rich-text> !!!
  */
 .ck-content {
   background: none !important;
@@ -20,7 +20,7 @@
   outline: 0.25rem solid #5432fe !important;
 }
 
-ve-editable-rte[changed] .ck-content {
+ve-editable-rich-text[changed] .ck-content {
   backdrop-filter: blur(10px) hue-rotate(120deg) invert(30%) !important;
 }
 

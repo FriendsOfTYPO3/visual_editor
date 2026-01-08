@@ -9,7 +9,7 @@ import {showEmptyActive} from "@typo3/visual-editor/Shared/stores.js";
 /**
  * @extends {HTMLElement}
  */
-export class VeEditableRte extends LitElement {
+export class VeEditableRichText extends LitElement {
   static properties = {
     changed: {type: Boolean, reflect: true},
     value: {type: String, reflect: true},
@@ -82,4 +82,4 @@ export class VeEditableRte extends LitElement {
    */
 }
 
-customElements.define('ve-editable-rte', VeEditableRte);
+customElements.define('ve-editable-rich-text', VeEditableRichText);
