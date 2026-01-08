@@ -63,7 +63,10 @@ export class VeContentElement extends LitElement {
     super();
 
     dragInProgressStore.addEventListener('change', () => {
-      this.dragInProgress = !!dragInProgressStore.value;
+      setTimeout(() => {
+        // delay the dragInProgress so the drag handle can be "screenshot". (to create the drag ghost image) (otherwise the drag will immediately end in chromium based browsers)
+        this.dragInProgress = !!dragInProgressStore.value;
+      });
     });
 
     if (this.parentElement.tagName.toLowerCase() !== 've-column') {

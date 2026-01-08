@@ -24,9 +24,9 @@ final class ContentAreaViewHelper extends AbstractViewHelper
     {
         parent::initializeArguments();
         $this->registerArgument('colPos', 'int', 'The colPos number', true);
-        $this->registerArgument('table', 'string', 'The table of the dropArea', false, 'tt_content');
-        $this->registerArgument('pid', 'int', 'The pid of the dropArea', false, null);
-        // TODO add parent element for EXT:container
+        $this->registerArgument('table', 'string', 'The table of the contentArea', false, 'tt_content');
+        $this->registerArgument('pid', 'int', 'The pid of the contentArea', false, null);
+        // TODO add tx_container_parent element for EXT:container
     }
 
     public function render(): mixed
