@@ -50,8 +50,6 @@ final class RichTextViewHelper extends AbstractTagBasedViewHelper
 
         $this->registerArgument('record', 'object', 'A Record API Object (field is also needed)');
         $this->registerArgument('field', 'string', 'record', false, '');
-
-        $this->registerArgument('default', 'string', 'will be in .value but will not be saved in the DB (children used first)', false, '');
     }
 
     public function render(): RichText
@@ -60,8 +58,6 @@ final class RichTextViewHelper extends AbstractTagBasedViewHelper
 
         $record = $this->arguments['record'];
         $field = $this->arguments['field'];
-
-        $default = trim($this->renderChildren() ?: '') ?: $this->arguments['default'];
 
         if ($record instanceof PageInformation) {
             $record = $this->recordService->getPageRecordAsRecordInterface($record);
@@ -83,11 +79,11 @@ final class RichTextViewHelper extends AbstractTagBasedViewHelper
 
         $canEdit = $this->editModeService->canEditField($record, $field);
         if (!$canEdit) {
-            $escapedValue = $this->text2html($value ?: $default);
-            return new RichText($name, $escapedValue, ($value ?: $default) === '', $value ?: $default);
+            $escapedValue = $this->text2html($value);
+            return new RichText($name, $escapedValue, $value === '', $value);
         }
 
-        [$options, $processingConfiguration] = $this->getOptions($record, $field, $default);
+        [$options, $processingConfiguration] = $this->getOptions($record, $field);
         $escapedValue = $this->rteHtmlParser->transformTextForRichTextEditor($value, $processingConfiguration);
 
         $this->tag->addAttribute('table', $record->getMainType());
@@ -98,13 +94,12 @@ final class RichTextViewHelper extends AbstractTagBasedViewHelper
 
         $title = LocalizationUtility::translate('LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:editable.title', arguments: [$name]);
         $this->tag->addAttribute('title', $title);
-        $this->tag->addAttribute('placeholder', $default);
         $this->tag->addAttribute('options', $options);
 
         $this->tag->setContent($escapedValue);
 
         $this->tag->forceClosingTag(true);
-        return new RichText($name, $this->tag->render(), ($value ?: $default) === '', $value ?: $default);
+        return new RichText($name, $this->tag->render(), $value === '', $value);
     }
 
     private function text2html(string $value): string
@@ -120,7 +115,7 @@ final class RichTextViewHelper extends AbstractTagBasedViewHelper
     /**
      * @return array{0:string, 1:array<mixed>}
      */
-    private function getOptions(Record $record, string $field, string $placeholder): array
+    private function getOptions(Record $record, string $field): array
     {
         $schema = $this->tcaSchema->get($record->getFullType());
         $richtextConfiguration = $this->richtext->getConfiguration(
@@ -139,7 +134,7 @@ final class RichTextViewHelper extends AbstractTagBasedViewHelper
             effectivePid: $record->getPid(),
             richtextConfigurationName: $richtextConfiguration['preset'],
             label: 'Text',
-            placeholder: $placeholder,
+            placeholder: '',
             readOnly: false,
             data: $record->getRawRecord()->toArray(),
             additionalConfiguration: $richtextConfiguration['editor']['config'],

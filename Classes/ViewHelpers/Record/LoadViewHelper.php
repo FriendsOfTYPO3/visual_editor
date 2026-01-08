@@ -24,8 +24,8 @@ use function sprintf;
  * {f:record.load(table: 'my_table', uid: 12)}
  *
  * <!-- or in an editable.input: -->
- * <f:render.input record="{f:record.load(table: 'my_table', uid: 12)}" field="my_field" />
- * {f:render.input(record: '{f:record.load(table: \'my_table\', uid: 12)}', field: 'my_field')}
+ * <f:render.text record="{f:record.load(table: 'my_table', uid: 12)}" field="my_field" />
+ * {f:render.text(record: '{f:record.load(table: \'my_table\', uid: 12)}', field: 'my_field')}
  * ````
  */
 final class LoadViewHelper extends AbstractViewHelper

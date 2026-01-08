@@ -20,6 +20,7 @@ export class VeDropZone extends LitElement {
 
     show: {type: Boolean, state: true, attribute: false},
     isDragHovering: {type: Number, state: true, attribute: false},
+    error: {type: String, state: true, attribute: false},
   };
 
   get uid() {
@@ -47,8 +48,7 @@ export class VeDropZone extends LitElement {
 
     const firstParent = findFirstParent(['ve-content-element', 've-column'], this.parentElement);
     if (!firstParent) {
-      const message = 'ERROR: Cannot find parent <ve-content-element> or <ve-column> for drop zone';
-      this.innerHTML = `<ve-error text="${message}"/>`;
+      this.error = 'ERROR: Cannot find parent <ve-content-element> or <ve-column> for drop zone';
       throw new Error(message);
     }
 
@@ -190,6 +190,9 @@ export class VeDropZone extends LitElement {
   }
 
   render() {
+    if(this.error) {
+      return html`<ve-error text="${this.error}"/>`;
+    }
     const classes = {
       dropArea: true,
       visible: this.show,

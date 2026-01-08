@@ -16,8 +16,8 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
  * {f:record.fromArray(table: 'my_table', data: data)}
  *
  * <!-- or in an editable.input: -->
- * <f:render.input record="{f:record.fromArray(table: 'my_table', data: data)}" field="my_field" />
- * {f:render.input(record: '{f:record.fromArray(table: \'my_table\', data: data)}', field: 'my_field')}
+ * <f:render.text record="{f:record.fromArray(table: 'my_table', data: data)}" field="my_field" />
+ * {f:render.text(record: '{f:record.fromArray(table: \'my_table\', data: data)}', field: 'my_field')}
  * ````
  */
 final class FromArrayViewHelper extends AbstractViewHelper

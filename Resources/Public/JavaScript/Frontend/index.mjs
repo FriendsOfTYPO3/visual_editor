@@ -7,6 +7,7 @@ import '@typo3/visual-editor/Frontend/components/ve-save-button.mjs';
 import '@typo3/visual-editor/Frontend/components/ve-drag-handle.mjs';
 import '@typo3/visual-editor/Frontend/components/ve-drop-zone.mjs';
 import '@typo3/visual-editor/Frontend/components/ve-icon.mjs';
+import '@typo3/visual-editor/Frontend/components/ve-error.mjs';
 import '@typo3/visual-editor/Frontend/components/ve-iframe-popup.mjs';
 import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
 import {highlight, reset} from "@typo3/visual-editor/Frontend/spotlight-overlay.mjs";

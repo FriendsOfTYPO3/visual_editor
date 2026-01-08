@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace TYPO3\CMS\VisualEditor\ViewHelpers\Render;
+namespace TYPO3\CMS\VisualEditor\ViewHelpers;
 
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Context\Context;
@@ -12,7 +12,7 @@ use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 
-final class DropAreaViewHelper extends AbstractViewHelper
+final class ContentAreaViewHelper extends AbstractViewHelper
 {
     protected $escapeOutput = false;
 
@@ -26,7 +26,7 @@ final class DropAreaViewHelper extends AbstractViewHelper
         $this->registerArgument('colPos', 'int', 'The colPos number', true);
         $this->registerArgument('table', 'string', 'The table of the dropArea', false, 'tt_content');
         $this->registerArgument('pid', 'int', 'The pid of the dropArea', false, null);
-        $this->registerArgument('sys_language_uid', 'int', 'The sys_language_uid of the dropArea', false, null);
+        // TODO add parent element for EXT:container
     }
 
     public function render(): mixed

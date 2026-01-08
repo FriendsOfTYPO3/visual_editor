@@ -23,7 +23,7 @@ use function str_replace;
 use function trim;
 
 #[Autoconfigure(public: true)]
-final class InputViewHelper extends AbstractTagBasedViewHelper
+final class TextViewHelper extends AbstractTagBasedViewHelper
 {
     protected $tagName = 've-editable-input';
 
@@ -44,7 +44,6 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
         $this->registerArgument('field', 'string', 'record', true);
 
         $this->registerArgument('allowNewLines', 'bool', 'allows newLines and converts them to <br>', false, false);
-        $this->registerArgument('default', 'string', 'will be in .value but will not be saved in the DB (children used first)', false, '');
     }
 
     public function render(): Input|string
@@ -55,7 +54,6 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
         $field = $this->arguments['field'];
 
         $allowNewLines = $this->arguments['allowNewLines'];
-        $default = trim($this->renderChildren() ?: '') ?: $this->arguments['default'];
 
         if ($record instanceof PageInformation) {
             $record = $this->recordService->getPageRecordAsRecordInterface($record);
@@ -84,7 +82,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
 
         $canEdit = $this->editModeService->canEditField($record, $field);
         if (!$canEdit) {
-            $escapedValue = htmlspecialchars($value ?: $default ?: '');
+            $escapedValue = htmlspecialchars($value ?: '');
         }
 
         if ($allowNewLines) {
@@ -94,7 +92,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
         }
 
         if (!$canEdit) {
-            return new Input($name, $escapedValue, ($value ?: $default) === '', $value ?: $default);
+            return new Input($name, $escapedValue, !$value, $value);
         }
 
         $this->tag->addAttribute('table', $record->getMainType());
@@ -104,11 +102,10 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
         $this->tag->addAttribute('name', $name);
         $this->tag->addAttribute('title', 'Edit field ' . $name);
         $this->tag->addAttribute('allowNewLines', $allowNewLines);
-        $this->tag->addAttribute('placeholder', $default);
 
         $this->tag->setContent($escapedValue);
 
         $this->tag->forceClosingTag(true);
-        return new Input($name, $this->tag->render(), ($value ?: $default ?: '') === '', $value ?: $default ?: '');
+        return new Input($name, $this->tag->render(), !$value, $value ?: '');
     }
 }

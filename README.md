@@ -16,14 +16,14 @@ TODO put gifs here
 
 1. `composer require friendsoftypo3/visual-editor` (or install via Extension Manager)
 2. add the SiteSet to your site configuration
-3. Add `f:render.input`, `f:render.richText`, `f:render.dropArea` to your templates (see below)
+3. Add `f:render.text`, `f:render.richText`, `f:contentArea` to your templates (see below)
 4. Clear caches
 5. Start editing!
 
 ## Where to add the ViewHelpers
 
 ### Input/RichText Fields
-Replace the output of your texts with the `f:render.input`/`f:render.richText` ViewHelper.
+Replace the output of your texts with the `f:render.text`/`f:render.richText` ViewHelper.
 
 - record is already a [Record](https://docs.typo3.org/permalink/t3coreapi:record-objects) object:
 ````html
@@ -31,7 +31,7 @@ before:
 <h1>{record.header}</h1>
 
 after:
-<h1><f:render.input record="{record}" field="header" /></h1>
+<h1><f:render.text record="{record}" field="header" /></h1>
 ````
 - data is an array of the complete database row:
 ````html
@@ -39,7 +39,7 @@ before:
 <h1>{data.header}</h1>
 
 after:
-<h1><f:render.input record="{f:record.fromArray(data: data, table: 'tt_content')}" field="header" /></h1>
+<h1><f:render.text record="{f:record.fromArray(data: data, table: 'tt_content')}" field="header" /></h1>
 ````
 - you only have the uid and the string you want to output:
 ````html
@@ -47,11 +47,11 @@ before:
 <h1>{header}</h1>
 
 after:
-<h1><f:render.input record="{f:record.fromUid(uid: uid, table: 'tt_content')}" field="header" /></h1>
+<h1><f:render.text record="{f:record.fromUid(uid: uid, table: 'tt_content')}" field="header" /></h1>
 ````  
 
 ### Drop Area
-Add the `f:render.dropArea` ViewHelper to the container element that holds your content elements.
+Add the `f:contentArea` ViewHelper to the container element that holds your content elements.
 
 search for:
 - `v:content.render`:
@@ -60,9 +60,9 @@ search for:
   <v:content.render column="0"/>
   
   after:
-  <f:render.dropArea colPos="0">
+  <f:contentArea colPos="0">
     <v:content.render column="0"/>
-  </f:render.dropArea>
+  </f:contentArea>
   ````
 - `flux:content.render`:
   ````html
@@ -70,9 +70,9 @@ search for:
   <flux:content.render area="column0"/>
   
   after:
-  <f:render.dropArea colPos="{data.uid}00">
+  <f:contentArea colPos="{data.uid}00">
     <flux:content.render area="column0"/>
-  </f:render.dropArea>
+  </f:contentArea>
   ````
 - `f:cObject`:
   ````html
@@ -80,9 +80,9 @@ search for:
   <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{pageUid: '{data.uid}', colPos: '3'}"/>
   
   after:
-  <f:render.dropArea colPos="3">
+  <f:contentArea colPos="3">
     <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{pageUid: '{data.uid}', colPos: '3'}"/>
-  </f:render.dropArea>
+  </f:contentArea>
   ````
 - TODO example for EXT:container
 - TODO example for EXT:gridelements

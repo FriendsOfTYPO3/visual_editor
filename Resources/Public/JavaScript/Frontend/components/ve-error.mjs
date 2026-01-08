@@ -1,4 +1,4 @@
-import {css, html, LitElement} from 'lit';
+import {css, LitElement} from 'lit';
 
 /**
  * @extends {HTMLElement}
@@ -9,13 +9,12 @@ export class VeError extends LitElement {
   };
 
   render() {
-    return html`
-      ${this.text}
-    `;
+    return this.text;
   }
 
   static styles = css`
     :host {
+      display: inline-block;
       color: white;
       font-weight: bold;
       padding: 20px;
