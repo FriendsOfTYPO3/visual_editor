@@ -22,7 +22,7 @@ TODO put gifs here
 
 ## Where to add the ViewHelpers
 
-### Input/RichText Fields
+### Text/RichText Fields
 Replace the output of your texts with the `f:render.text`/`f:render.richText` ViewHelper.
 
 - record is already a [Record](https://docs.typo3.org/permalink/t3coreapi:record-objects) object:
@@ -50,31 +50,11 @@ after:
 <h1><f:render.text record="{f:record.fromUid(uid: uid, table: 'tt_content')}" field="header" /></h1>
 ````  
 
-### Drop Area
+### ContentArea
 Add the `f:contentArea` ViewHelper to the container element that holds your content elements.
 
 search for:
-- `v:content.render`:
-  ````html
-  before:
-  <v:content.render column="0"/>
-  
-  after:
-  <f:contentArea colPos="0">
-    <v:content.render column="0"/>
-  </f:contentArea>
-  ````
-- `flux:content.render`:
-  ````html
-  before:
-  <flux:content.render area="column0"/>
-  
-  after:
-  <f:contentArea colPos="{data.uid}00">
-    <flux:content.render area="column0"/>
-  </f:contentArea>
-  ````
-- `f:cObject`:
+- `f:cObject` (typoscript rendering):
   ````html
   before:
   <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{pageUid: '{data.uid}', colPos: '3'}"/>
@@ -84,10 +64,42 @@ search for:
     <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{pageUid: '{data.uid}', colPos: '3'}"/>
   </f:contentArea>
   ````
-- TODO example for EXT:container
+- `each="{children_` (EXT:container):
+  ````html
+  before:
+  <f:for each="{children_201}" as="element">
+    {element.renderedContent -> f:format.raw()}
+  </f:for>
+
+  after:
+  <f:contentArea colPos="201" updateFields="{'tx_container_parent': data.uid}">
+    <f:for each="{children_201}" as="element">
+      {element.renderedContent -> f:format.raw()}
+    </f:for>
+  </f:contentArea>
+  ````
+- `v:content.render` (EXT:vhs):
+  ````html
+  before:
+  <v:content.render column="0"/>
+  
+  after:
+  <f:contentArea colPos="0">
+    <v:content.render column="0"/>
+  </f:contentArea>
+  ````
+- `flux:content.render` (EXT:flux):
+  ````html
+  before:
+  <flux:content.render area="column0"/>
+  
+  after:
+  <f:contentArea colPos="{data.uid}00">
+    <flux:content.render area="column0"/>
+  </f:contentArea>
+  ````
 - TODO example for EXT:gridelements
 - TODO example for EXT:mask
-- TODO example for CONTENT TypoScript object?
 
 ## License and Authors: License type, contributors, contact information
 

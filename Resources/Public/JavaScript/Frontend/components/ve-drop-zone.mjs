@@ -16,7 +16,7 @@ export class VeDropZone extends LitElement {
 
     target: {type: Number},
     colPos: {type: Number},
-    sys_language_uid: {type: Number},
+    updateFields: {type: Number},
 
     show: {type: Boolean, state: true, attribute: false},
     isDragHovering: {type: Number, state: true, attribute: false},
@@ -46,9 +46,9 @@ export class VeDropZone extends LitElement {
     }
 
 
-    const firstParent = findFirstParent(['ve-content-element', 've-column'], this.parentElement);
+    const firstParent = findFirstParent(['ve-content-element', 've-content-area'], this.parentElement);
     if (!firstParent) {
-      this.error = 'ERROR: Cannot find parent <ve-content-element> or <ve-column> for drop zone';
+      this.error = 'ERROR: Cannot find parent <ve-content-element> or <ve-content-area> for drop zone';
       throw new Error(message);
     }
 
@@ -64,8 +64,8 @@ export class VeDropZone extends LitElement {
           }
         }
         break;
-      case 've-column':
-        // my parent is a ve-column and the firstSibling is the dragged element => do not show drop zone (return false)
+      case 've-content-area':
+        // my parent is a ve-content-area and the firstSibling is the dragged element => do not show drop zone (return false)
         if (firstParent.firstChild) {
           const firstChild = firstParent.firstElementChild;
           if (firstChild && firstChild.tagName.toLowerCase() === 've-content-element') {
@@ -134,7 +134,7 @@ export class VeDropZone extends LitElement {
       target: this.target,
       update: {
         colPos: this.colPos,
-        sys_language_uid: this.sys_language_uid,
+        ...this.updateFields,
       },
     };
 
@@ -165,24 +165,24 @@ export class VeDropZone extends LitElement {
 
     this.isDragHovering = 0; // reset
 
-    const firstParent = findFirstParent(['ve-content-element', 've-column'], this.parentElement);
+    const firstParent = findFirstParent(['ve-content-element', 've-content-area'], this.parentElement);
 
     if (!firstParent) {
-      throw new Error('Cannot find parent ve-content-element or ve-column for drop zone');
+      throw new Error('Cannot find parent ve-content-element or ve-content-area for drop zone');
     }
     const sourceElement = document.getElementById(data.table + ':' + data.uid);
     if (!sourceElement) {
       throw new Error('Cannot find source element for drop operation: ' + data.table + ':' + data.uid);
     }
     sourceElement.setAttribute('colPos', this.colPos);
-    sourceElement.setAttribute('sys_language_uid', this.sys_language_uid);
+    sourceElement.setAttribute('updateFields', this.updateFields);
 
     switch (firstParent.tagName.toLowerCase()) {
       case 've-content-element':
         // append after the area brick
         flipInsertBefore(firstParent.parentNode, sourceElement, firstParent.nextSibling);
         return;
-      case 've-column':
+      case 've-content-area':
         // append as first child of the column
         flipInsertBefore(firstParent, sourceElement, firstParent.firstChild);
         return;

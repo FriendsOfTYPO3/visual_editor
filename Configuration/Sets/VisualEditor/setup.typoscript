@@ -1,6 +1,6 @@
-# TODO replace this with Event in Core. (to remove the site set, and make it more flexible)
+# TODO(nicetohave) replace this with dedicated Event in Core? (to remove the site set)
 # add <ve-content-element> wrapper:
-tt_content.stdWrap.postUserFunc = TYPO3\CMS\VisualEditor\UserFunction\TtContentStdWrapPostUserFunc->__invoke
+tt_content.stdWrap.wrapContentElementsWithVeWrapper = 1
 
 # TODO replace this with something in the core. (to remove the site set)
 # add parameter editMode to every link in edit mode.

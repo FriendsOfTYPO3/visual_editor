@@ -82,6 +82,7 @@ class DataHandlerStore extends EventTarget {
     this.#data = {};
     this.#cmd = {};
     this.updateAndNotify();
+    // send change event as updateAndNotify skips it when there are "no changes"
     this.dispatchEvent(new CustomEvent('change', {detail: {data: this.data, cmd: this.cmd}}));
   }
 
@@ -96,6 +97,7 @@ class DataHandlerStore extends EventTarget {
     if (JSON.stringify(oldDetail) === JSON.stringify(this.#oldDetail)) {
       return;
     }
+    console.log('DataHandlerStore updated:', detail);
     this.dispatchEvent(new CustomEvent('change', {detail}));
   }
 

@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace TYPO3\CMS\VisualEditor\UserFunction;
+namespace TYPO3\CMS\VisualEditor\Service;
 
-use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
@@ -14,13 +13,13 @@ use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
-use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
-use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use function assert;
+use function json_encode;
+use const JSON_THROW_ON_ERROR;
 
 #[Autoconfigure(public: true)]
-final readonly class TtContentStdWrapPostUserFunc
+final readonly class ContentElementWrapperService
 {
     public function __construct(
         private RecordFactory $recordFactory,
@@ -31,18 +30,16 @@ final readonly class TtContentStdWrapPostUserFunc
     {
     }
 
-    public function __invoke(string $content, array $conf, ServerRequestInterface $request): string
+    /**
+     * @param array<string, mixed> $data the raw database row
+     */
+    public function wrapContentElementHtml(string $table, array $data, string $content): string
     {
         if (!$this->editModeService->isEditMode()) {
             return $content;
         }
 
-        $currentContentObject = $request->getAttribute('currentContentObject');
-        assert($currentContentObject instanceof ContentObjectRenderer);
-
-        $table = $currentContentObject->getCurrentTable();
-        $data = $currentContentObject->data;
-
+        $this->editModeService->init();
 
         $canModifyRecord = true;
         /** @var BackendUserAuthentication $beUser */
@@ -62,7 +59,10 @@ final readonly class TtContentStdWrapPostUserFunc
 
         $hiddenFieldType = $schema->getCapability(TcaSchemaCapability::RestrictionDisabledField);
         $hiddenFieldName = $hiddenFieldType->getFieldName();
-        if ($schema->getField($hiddenFieldName)->supportsAccessControl() && !$beUser->check('non_exclude_fields', $record->getMainType() . ':' . $hiddenFieldName)) {
+        if ($schema->getField($hiddenFieldName)->supportsAccessControl() && !$beUser->check(
+                'non_exclude_fields',
+                $record->getMainType() . ':' . $hiddenFieldName,
+            )) {
             $hiddenFieldName = ''; // user has no access to hidden field
         }
 
@@ -82,7 +82,14 @@ final readonly class TtContentStdWrapPostUserFunc
         if ($record->getSystemProperties()->isDisabled()) {
             $div->addAttribute('isHidden', 'true');
         }
-        $div->addAttribute('sys_language_uid', $record->getLanguageId());
+        $updateFields = [
+            'sys_language_uid' => $record->getLanguageId(),
+        ];
+        if ($record->has('tx_container_parent')) {
+            // EXT:container compatibility
+            $updateFields['tx_container_parent'] = $record->get('tx_container_parent');
+        }
+        $div->addAttribute('updateFields', json_encode($updateFields, JSON_THROW_ON_ERROR));
         $div->setContent($content);
 
         return $div->render();
@@ -105,7 +112,6 @@ final readonly class TtContentStdWrapPostUserFunc
             'id' => $record->getPid(),
         ]);
         $params = [
-            // Beispiel: tt_content Datensatz bearbeiten
             'edit' => [
                 $record->getMainType() => [
                     $record->getUid() => 'edit',

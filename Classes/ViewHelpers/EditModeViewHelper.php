@@ -16,11 +16,9 @@ final class EditModeViewHelper extends AbstractConditionViewHelper
 
     /**
      * Renders <f:then> child if $condition is true, otherwise renders <f:else> child.
-     *
-     * @return mixed
      * @api
      */
-    public function render()
+    public function render(): mixed
     {
         if ($this->editModeService->isEditMode()) {
             return $this->renderThenChild();

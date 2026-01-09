@@ -16,7 +16,7 @@ export class VeContentElement extends LitElement {
     uid: {type: Number},
     pid: {type: Number},
     colPos: {type: Number},
-    sys_language_uid: {type: Number},
+    updateFields: {type: Object},
     isHidden: {type: Boolean},
     hiddenFieldName: {type: String},
     canModifyRecord: {type: Boolean},
@@ -53,7 +53,7 @@ export class VeContentElement extends LitElement {
 
     const newContentUrl = window.veInfo.newContentUrl
       .replace('__COL_POS__', this.colPos)
-      .replace('__SYS_LANGUAGE_UID__', this.sys_language_uid)
+      .replace('__SYS_LANGUAGE_UID__', this.updateFields.sys_language_uid)
       .replace('__UID_PID__', -this.uid);
 
     openModal(newContentUrl, lll('frontend.addContentElement'), 'large', 'ajax');
@@ -69,8 +69,8 @@ export class VeContentElement extends LitElement {
       });
     });
 
-    if (this.parentElement.tagName.toLowerCase() !== 've-column') {
-      const message = 'Error: <ve-content-element> must be inside an <ve-column> element.';
+    if (this.parentElement.tagName.toLowerCase() !== 've-content-area') {
+      const message = 'Error: <ve-content-element> must be inside an <ve-content-area> element.';
       this.innerHTML = `<ve-error text="${message}"/>`;
       throw new Error(message);
     }
@@ -124,7 +124,7 @@ export class VeContentElement extends LitElement {
           uid="${this.uid}"
           target="${-this.uid}"
           colPos="${this.colPos}"
-          sys_language_uid="${this.sys_language_uid}"
+          updateFields="${this.updateFields}"
         ></ve-drop-zone>
       </div>
     `;

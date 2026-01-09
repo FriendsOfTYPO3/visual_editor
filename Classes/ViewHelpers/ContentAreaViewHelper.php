@@ -11,6 +11,7 @@ use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
+use function json_encode;
 
 final class ContentAreaViewHelper extends AbstractViewHelper
 {
@@ -25,24 +26,25 @@ final class ContentAreaViewHelper extends AbstractViewHelper
         parent::initializeArguments();
         $this->registerArgument('colPos', 'int', 'The colPos number', true);
         $this->registerArgument('table', 'string', 'The table of the contentArea', false, 'tt_content');
-        $this->registerArgument('pid', 'int', 'The pid of the contentArea', false, null);
-        // TODO add tx_container_parent element for EXT:container
+        $this->registerArgument('pageUid', 'int', 'The pid of the contentArea', false, null);
+        $this->registerArgument('updateFields', 'array', 'what should be updated additionally to the colPos (used for eg. sys_language_uid or tx_container_parent)', false, []);
     }
 
     public function render(): mixed
     {
-        $this->editModeService->init();
-
         if (!$this->editModeService->isEditMode()) {
             return $this->renderChildren();
         }
 
-        $tag = GeneralUtility::makeInstance(TagBuilder::class, 've-column', $this->renderChildren());
-        $pid = $this->arguments['pid'] ?? $this->getPageInformation()->getId();
-        $tag->addAttribute('target', $pid);
+        $this->editModeService->init();
+
+        $tag = GeneralUtility::makeInstance(TagBuilder::class, 've-content-area', $this->renderChildren());
+        $pageUid = $this->arguments['pageUid'] ?? $this->getPageInformation()->getId();
+        $tag->addAttribute('target', $pageUid);
         $tag->addAttribute('colPos', (string)$this->arguments['colPos']);
-        $sysLanguageUid = $this->arguments['sys_language_uid'] ?? GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('language', 'id');
-        $tag->addAttribute('sys_language_uid', (string)$sysLanguageUid);
+        $updateFields = $this->arguments['updateFields'];
+        $updateFields['sys_language_uid'] ??= GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('language', 'id');
+        $tag->addAttribute('updateFields', json_encode($updateFields, JSON_THROW_ON_ERROR));
         return $tag->render();
     }
 

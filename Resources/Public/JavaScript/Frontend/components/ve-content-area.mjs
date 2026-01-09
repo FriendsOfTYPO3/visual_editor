@@ -4,11 +4,11 @@ import {lll} from "@typo3/core/lit-helper.js";
 /**
  * @extends {HTMLElement}
  */
-export class VeColumn extends LitElement {
+export class VeContentArea extends LitElement {
   static properties = {
     target: {type: Number},
     colPos: {type: Number},
-    sys_language_uid: {type: Number},
+    updateFields: {type: Object},
   };
 
   constructor() {
@@ -23,7 +23,7 @@ export class VeColumn extends LitElement {
   render() {
     const newContentUrl = window.veInfo.newContentUrl
       .replace('__COL_POS__', this.colPos)
-      .replace('__SYS_LANGUAGE_UID__', this.sys_language_uid)
+      .replace('__SYS_LANGUAGE_UID__', this.updateFields.sys_language_uid)
       .replace('__UID_PID__', this.target);
 
     const columnHasChild = this.children.length > 0;
@@ -34,13 +34,13 @@ export class VeColumn extends LitElement {
       </ve-iframe-popup>
     </div>`;
     return html`
-      <div class="ve-column">
+      <div class="ve-content-area">
         ${(columnHasChild ? '' : addButton)}
         <ve-drop-zone
           table="tt_content"
           target="${this.target}"
           colPos="${this.colPos}"
-          sys_language_uid="${this.sys_language_uid}"
+          updateFields="${this.updateFields}"
         ></ve-drop-zone>
         <slot></slot>
       </div>
@@ -51,7 +51,7 @@ export class VeColumn extends LitElement {
     :host {
     }
     
-    .ve-column {
+    .ve-content-area {
       position: relative;
     }
     
@@ -63,4 +63,4 @@ export class VeColumn extends LitElement {
   `;
 }
 
-customElements.define('ve-column', VeColumn);
+customElements.define('ve-content-area', VeContentArea);

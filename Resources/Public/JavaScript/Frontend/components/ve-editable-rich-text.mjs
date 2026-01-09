@@ -5,6 +5,7 @@ import {initCKEditorInstance} from '@typo3/rte-ckeditor/init-ckeditor-instance.j
 import {removeRuleBySelector} from '@typo3/visual-editor/Shared/remove-rule-by-selector.mjs';
 import {dataHandlerStore} from "@typo3/visual-editor/Frontend/stores/data-handler-store.mjs";
 import {showEmptyActive} from "@typo3/visual-editor/Shared/stores.js";
+import {dragInProgressStore} from "@typo3/visual-editor/Frontend/stores/drag-store.mjs";
 
 /**
  * @extends {HTMLElement}
@@ -38,6 +39,10 @@ export class VeEditableRichText extends LitElement {
     this.showEmpty = showEmptyActive.get();
     showEmptyActive.addEventListener('currentWindowChange', () => {
       this.showEmpty = showEmptyActive.get();
+    });
+    // disable drop while dragging content elements
+    dragInProgressStore.addEventListener('change', () => {
+      this.style.pointerEvents = dragInProgressStore.value ? 'none' : '';
     });
   }
 
