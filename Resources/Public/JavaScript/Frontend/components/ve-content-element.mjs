@@ -22,6 +22,7 @@ export class VeContentElement extends LitElement {
     canModifyRecord: {type: Boolean},
 
     dragInProgress: {type: Boolean, state: true, attribute: false},
+    showElementOverlay: {type: Boolean, attribute: false},
   };
 
   /**
@@ -63,10 +64,14 @@ export class VeContentElement extends LitElement {
     super();
 
     dragInProgressStore.addEventListener('change', () => {
+      if (!dragInProgressStore.value) {
+        this.dragInProgress = false;
+      }
       setTimeout(() => {
-        // delay the dragInProgress so the drag handle can be "screenshot". (to create the drag ghost image) (otherwise the drag will immediately end in chromium based browsers)
+        // delay the dragInProgress set to true, so the drag handle can be "screenshot". (to create the drag ghost image) (otherwise the drag will immediately end in chromium based browsers)
         this.dragInProgress = !!dragInProgressStore.value;
       });
+
     });
 
     if (this.parentElement.tagName.toLowerCase() !== 've-content-area') {
@@ -88,7 +93,7 @@ export class VeContentElement extends LitElement {
   render() {
     const toggleIcon = this.isHidden ? 'actions-toggle-off' : 'actions-toggle-on';
     return html`
-      <div class="border ${this.isHidden ? 'hidden' : ''}">
+      <div class="border ${this.isHidden ? 'hidden' : ''} ${this.showElementOverlay ? 'showElementOverlay' : ''}">
         ${
 
           this.canModifyRecord ?
@@ -149,6 +154,10 @@ export class VeContentElement extends LitElement {
       pointer-events: none;
     }
 
+    .border.showElementOverlay:after {
+      background-image: linear-gradient(to top, rgba(59, 158, 59, 0.90) 0%, transparent min(500px, max(100px, 50%)));
+    }
+
     .border:hover:after {
       outline: 1px solid #d1d1d1;
       outline-offset: 0px;
@@ -187,9 +196,7 @@ export class VeContentElement extends LitElement {
       z-index: 10100;
     }
 
-    /* TODO do not hide if the current element is the dragged one */
-
-    .border:hover .button-bar:not(.dragAndDropActive) {
+    .border:hover .button-bar {
       opacity: 1;
     }
 

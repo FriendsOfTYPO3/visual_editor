@@ -1,5 +1,6 @@
 import {css, LitElement} from 'lit';
 import {dragInProgressStore} from "@typo3/visual-editor/Frontend/stores/drag-store.mjs";
+import {autoNoOverlap} from "@typo3/visual-editor/Frontend/auto-no-overlap.mjs";
 
 /**
  * @extends {HTMLElement}
@@ -18,8 +19,13 @@ export class VeDragHandle extends LitElement {
     element.setAttribute('draggable', 'true');
     element.addEventListener('dragstart', this._dragStart.bind(this));
     element.addEventListener('dragend', this._dragEnd.bind(this));
+
+    element.style.paddingBottom = 'calc(var(--auto-no-overlap-padding, 0px) + 4px)';
   }
 
+  firstUpdated(changedProperties) {
+    autoNoOverlap(this, 've-drag-handle');
+  }
 
   /**
    * @param {DragEvent} event
@@ -45,7 +51,7 @@ export class VeDragHandle extends LitElement {
   }
 
   createRenderRoot() {
-    // disable shadow DOM, otherwise CKEditor cannot init properly
+    // disable shadow DOM
     return this;
   }
 

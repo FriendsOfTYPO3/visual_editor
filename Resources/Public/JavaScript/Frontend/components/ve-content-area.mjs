@@ -9,6 +9,8 @@ export class VeContentArea extends LitElement {
     target: {type: Number},
     colPos: {type: Number},
     updateFields: {type: Object},
+
+    showElementOverlay: {type: Boolean, attribute: false},
   };
 
   constructor() {
@@ -34,7 +36,7 @@ export class VeContentArea extends LitElement {
       </ve-iframe-popup>
     </div>`;
     return html`
-      <div class="ve-content-area">
+      <div class="ve-content-area ${this.showElementOverlay ? 'showElementOverlay':''}">
         ${(columnHasChild ? '' : addButton)}
         <ve-drop-zone
           table="tt_content"
@@ -54,7 +56,19 @@ export class VeContentArea extends LitElement {
     .ve-content-area {
       position: relative;
     }
-    
+
+    .ve-content-area.showElementOverlay:after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      pointer-events: none;
+
+      background-image: linear-gradient(to bottom, rgba(59, 158, 59, 0.90) 0%, transparent min(500px, max(100px, 50%)));
+    }
+
     .center {
       display: flex;
       justify-content: center;

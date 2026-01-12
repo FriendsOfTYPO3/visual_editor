@@ -6,6 +6,7 @@ import {useDataHandler} from "@typo3/visual-editor/Frontend/api.mjs";
 import {dragInProgressStore} from "@typo3/visual-editor/Frontend/stores/drag-store.mjs";
 import {flipInsertBefore} from "@typo3/visual-editor/Frontend/flip-insert-before.mjs";
 import {dataHandlerStore} from "@typo3/visual-editor/Frontend/stores/data-handler-store.mjs";
+import {autoNoOverlap, calculateAllDebounced} from "@typo3/visual-editor/Frontend/auto-no-overlap.mjs";
 
 /**
  * @extends {HTMLElement}
@@ -19,7 +20,7 @@ export class VeDropZone extends LitElement {
     updateFields: {type: Number},
 
     show: {type: Boolean, state: true, attribute: false},
-    isDragHovering: {type: Number, state: true, attribute: false},
+    isDragHovering: {type: Boolean, state: true, attribute: false},
     error: {type: String, state: true, attribute: false},
   };
 
@@ -82,11 +83,19 @@ export class VeDropZone extends LitElement {
 
   constructor() {
     super();
-    this.isDragHovering = 0;
+    this.isDragHovering = false;
 
     dragInProgressStore.addEventListener('change', () => {
-      this.show = this.shouldShow();
+      const newValue = this.shouldShow();
+      if (this.show !== newValue) {
+        setTimeout(calculateAllDebounced);
+      }
+      this.show = newValue;
     });
+  }
+
+  firstUpdated(changedProperties) {
+    autoNoOverlap(this.shadowRoot.querySelector('.dropArea'), 've-drop-zone');
   }
 
   /**
@@ -97,24 +106,26 @@ export class VeDropZone extends LitElement {
     if (isVEDrag) {
       event.preventDefault();
     }
+    this.isDragHovering = true;
+    // fallback timeout to reset the hovering state
+    this.dragOverTimeout && clearTimeout(this.dragOverTimeout);
+    this.dragOverTimeout = setTimeout(() => {
+      this.isDragHovering = false;
+    }, 200);
   }
 
   /**
    * @param {DragEvent} event
    */
   _dragEnter(event) {
-    this.isDragHovering++;
+    this.isDragHovering = true;
   }
 
   /**
    * @param {DragEvent} event
    */
   _dragLeave(event) {
-    // Sometimes dragleave is triggered when entering child elements, so we count the enters and leaves
-    this.isDragHovering--;
-    if (this.isDragHovering < 0) {
-      this.isDragHovering = 0;
-    }
+    this.isDragHovering = false;
   }
 
   /**
@@ -163,7 +174,7 @@ export class VeDropZone extends LitElement {
     dataHandlerStore.setCmd(data.table, data.uid, event.dataTransfer.dropEffect, actionData);
 
 
-    this.isDragHovering = 0; // reset
+    this.isDragHovering = false; // reset
 
     const firstParent = findFirstParent(['ve-content-element', 've-content-area'], this.parentElement);
 
@@ -196,9 +207,28 @@ export class VeDropZone extends LitElement {
     const classes = {
       dropArea: true,
       visible: this.show,
-      isOver: this.isDragHovering > 0,
+      isOver: this.isDragHovering,
       above: this.target >= 0,
     };
+
+    const firstParent = findFirstParent(['ve-content-element', 've-content-area'], this.parentElement);
+    if (firstParent) {
+      firstParent.showElementOverlay = this.isDragHovering;
+    }
+
+    // Text for debugging purposes only
+    // let text = '';
+    // if (this.target >= 0) {
+    //   text = 'insert first in column "' + this.colPos % 100 + '"';
+    // } else {
+    //   const name = this.getComponentName(this.target * -1);
+    //   text = 'insert after "' + name + '" ' + this.target * -1;
+    // }
+    // if (this.updateFields.tx_container_parent || this.colPos > 99) {
+    //   const uidOfParent = this.updateFields.tx_container_parent || parseInt(this.colPos / 100);
+    //   const nameOfParent = this.getComponentName(uidOfParent);
+    //   text += ' (in "' + nameOfParent + '" ' + uidOfParent + ')';
+    // }
 
     return html`
       <div class=${classMap(classes)}
@@ -249,7 +279,7 @@ export class VeDropZone extends LitElement {
 
       z-index: 10000;
 
-      bottom: calc((var(--height) + 4px) * -1);
+      bottom: calc(var(--height) * -1 + var(--auto-no-overlap-padding, 0px));
 
       &.visible {
         display: flex;
@@ -261,8 +291,7 @@ export class VeDropZone extends LitElement {
       }
 
       &.above {
-        bottom: initial;
-        top: calc((var(--height) + 4px) * -1);
+        bottom: calc(100% + var(--auto-no-overlap-padding, 0px));
       }
     }
   `;
@@ -286,6 +315,17 @@ export class VeDropZone extends LitElement {
     return this.isAnyOfMyParents(table, uid, parentElement);
   }
 
+  /**
+   * @param uid {number}
+   * @return {string}
+   */
+  getComponentName(uid) {
+    const element = document.querySelector('ve-content-element[id="' + this.table + ':' + uid + '"]');
+    if (!element) {
+      return 'element not found';
+    }
+    return element.getAttribute('elementName');
+  }
 }
 
 /**
