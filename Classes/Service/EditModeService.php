@@ -84,36 +84,39 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
 
     public function canEditField(Record $record, string $field): bool
     {
+        if (!$this->isEditMode()) {
+            return false; // not in edit mode
+        }
         $tcaSchema = $this->tcaSchema->get($record->getFullType());
         $fieldType = $tcaSchema->getField($field);
-        $canEdit = $this->isEditMode();
+
         if ($tcaSchema->hasCapability(TcaSchemaCapability::AccessReadOnly)) {
-            $canEdit = false; // table readonly
+            return false; // table readonly
         }
         if ($fieldType->getConfiguration()['readOnly'] ?? false) {
-            $canEdit = false; // field readonly
+            return false; // field readonly
         }
         // user access check
         /** @var BackendUserAuthentication $beUser */
         $beUser = $GLOBALS['BE_USER'];
         if (!$beUser->checkLanguageAccess($record->getLanguageId())) {
-            $canEdit = false; // no access to this language
+            return false; // no access to this language
         }
         if (!$beUser->check('tables_modify', $record->getMainType())) {
-            $canEdit = false; // no access to this table
+            return false; // no access to this table
         }
         if (!$beUser->isInWebMount($record->getPid())) {
-            $canEdit = false; // no access to this page // TODO move this to the middleware
+            return false; // no access to this page // TODO move this to the middleware
         }
         if ($record->getMainType() === 'tt_content') {
             if (!$beUser->check('explicit_allowdeny', 'tt_content:CType:' . $record->get('CType'))) {
-                $canEdit = false; // content element type not allowed
+                return false; // content element type not allowed
             }
         }
         if ($fieldType->supportsAccessControl() && !$beUser->check('non_exclude_fields', $record->getMainType() . ':' . $field)) {
-            $canEdit = false; // no access to this field
+            return false; // no access to this field
         }
-        return $canEdit;
+        return true;
     }
 
     private function getRequest(): ServerRequestInterface
