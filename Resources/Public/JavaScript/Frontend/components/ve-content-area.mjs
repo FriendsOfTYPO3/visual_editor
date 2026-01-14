@@ -73,6 +73,7 @@ export class VeContentArea extends LitElement {
 
   static styles = css`
     :host {
+      display: block;
       position: relative;
     }
 

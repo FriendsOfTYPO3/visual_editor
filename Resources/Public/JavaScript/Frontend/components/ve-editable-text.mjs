@@ -170,10 +170,6 @@ export class VeEditableText extends LitElement {
       outline: 0.25rem solid #5432fe;
     }
 
-    .slot.block {
-      display: block;
-    }
-
     .slot.synced {
       /* blur the text: */
       user-select: none;
