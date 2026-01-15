@@ -1,6 +1,6 @@
 {
   "name": "friendsoftypo3/visual-editor",
-  "description": "visual_editor brings a modern WYSIWYG editing experience to TYPO3 CMS.",
+  "description": "TYPO3 CMS Visual Editor - brings a modern WYSIWYG editing experience to TYPO3 CMS.",
   "keywords": [
     "typo3 cms", "typo3", "cms",
     "core", "extension",
@@ -14,7 +14,7 @@
     "GPL-2.0-or-later"
   ],
   "require": {
-    "typo3/cms-core": "^12.4.40 || ^13.4.22",
+    "typo3/cms-core": "^13.4.22 || ^14.0.0",
     "php": "~8.4.0 || ~8.5.0"
   },
   "autoload": {

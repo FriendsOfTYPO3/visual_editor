@@ -12,6 +12,7 @@ use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Html\RteHtmlParser;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Fluid\ViewHelpers\Format\HtmlViewHelper;
 use TYPO3\CMS\Frontend\Page\PageInformation;
@@ -20,16 +21,16 @@ use TYPO3\CMS\VisualEditor\Core\RichtText\RichTextConfigurationServiceDto;
 use TYPO3\CMS\VisualEditor\EditableResult\RichText;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3\CMS\VisualEditor\Service\RecordService;
-use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
+use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
+use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 
-use function array_all;
 use function json_encode;
 use function sprintf;
 
 #[Autoconfigure(public: true)]
-final class RichTextViewHelper extends AbstractTagBasedViewHelper
+final class RichTextViewHelper extends AbstractViewHelper
 {
-    protected $tagName = 've-editable-rich-text';
+    protected $escapeOutput = false;
 
     public function __construct(
         private readonly EditModeService $editModeService,
@@ -41,10 +42,9 @@ final class RichTextViewHelper extends AbstractTagBasedViewHelper
         private readonly RteHtmlParser $rteHtmlParser,
     )
     {
-        parent::__construct();
     }
 
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
 
@@ -86,20 +86,22 @@ final class RichTextViewHelper extends AbstractTagBasedViewHelper
         [$options, $processingConfiguration] = $this->getOptions($record, $field);
         $escapedValue = $this->rteHtmlParser->transformTextForRichTextEditor($value, $processingConfiguration);
 
-        $this->tag->addAttribute('table', $record->getMainType());
-        $this->tag->addAttribute('uid', $record->getUid());
-        $this->tag->addAttribute('field', $field);
+        $tag = GeneralUtility::makeInstance(TagBuilder::class);
+        $tag->setTagName('ve-editable-rich-text');
+        $tag->addAttribute('table', $record->getMainType());
+        $tag->addAttribute('uid', $record->getUid());
+        $tag->addAttribute('field', $field);
 
-        $this->tag->addAttribute('name', $name);
+        $tag->addAttribute('name', $name);
 
         $title = LocalizationUtility::translate('LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:editable.title', arguments: [$name]);
-        $this->tag->addAttribute('title', $title);
-        $this->tag->addAttribute('options', $options);
+        $tag->addAttribute('title', $title);
+        $tag->addAttribute('options', $options);
 
-        $this->tag->setContent($escapedValue);
+        $tag->setContent($escapedValue);
 
-        $this->tag->forceClosingTag(true);
-        return new RichText($name, $this->tag->render(), $value === '', $value);
+        $tag->forceClosingTag(true);
+        return new RichText($name, $tag->render(), $value === '', $value);
     }
 
     private function text2html(string $value): string

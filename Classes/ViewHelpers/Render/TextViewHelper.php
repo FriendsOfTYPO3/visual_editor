@@ -6,26 +6,24 @@ namespace TYPO3\CMS\VisualEditor\ViewHelpers\Render;
 
 use InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
-use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
-use TYPO3\CMS\Core\DataHandling\TableColumnType;
 use TYPO3\CMS\Core\Domain\RecordInterface;
-use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\EditableResult\Input;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3\CMS\VisualEditor\Service\RecordService;
-use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
+use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
+use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use function get_debug_type;
 use function htmlspecialchars;
 use function str_replace;
-use function trim;
 
 #[Autoconfigure(public: true)]
-final class TextViewHelper extends AbstractTagBasedViewHelper
+final class TextViewHelper extends AbstractViewHelper
 {
-    protected $tagName = 've-editable-text';
+    protected $escapeOutput = false;
 
     public function __construct(
         private readonly EditModeService $editModeService,
@@ -33,10 +31,9 @@ final class TextViewHelper extends AbstractTagBasedViewHelper
         private readonly TcaSchemaFactory $tcaSchema,
     )
     {
-        parent::__construct();
     }
 
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
 
@@ -95,17 +92,19 @@ final class TextViewHelper extends AbstractTagBasedViewHelper
             return new Input($name, $escapedValue, !$value, $value);
         }
 
-        $this->tag->addAttribute('table', $record->getMainType());
-        $this->tag->addAttribute('uid', $record->getUid());
-        $this->tag->addAttribute('field', $field);
+        $tag = GeneralUtility::makeInstance(TagBuilder::class);
+        $tag->setTagName('ve-editable-text');
+        $tag->addAttribute('table', $record->getMainType());
+        $tag->addAttribute('uid', $record->getUid());
+        $tag->addAttribute('field', $field);
 
-        $this->tag->addAttribute('name', $name);
-        $this->tag->addAttribute('title', 'Edit field ' . $name);
-        $this->tag->addAttribute('allowNewLines', $allowNewLines);
+        $tag->addAttribute('name', $name);
+        $tag->addAttribute('title', 'Edit field ' . $name);
+        $tag->addAttribute('allowNewLines', $allowNewLines);
 
-        $this->tag->setContent($escapedValue);
+        $tag->setContent($escapedValue);
 
-        $this->tag->forceClosingTag(true);
-        return new Input($name, $this->tag->render(), !$value, $value ?: '');
+        $tag->forceClosingTag(true);
+        return new Input($name, $tag->render(), !$value, $value ?: '');
     }
 }
