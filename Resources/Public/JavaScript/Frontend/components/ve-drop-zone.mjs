@@ -249,6 +249,7 @@ export class VeDropZone extends LitElement {
       /* do not interfere with the grid of the parent */
       grid-column: 1 / -1;
       grid-row: 1 / -1;
+      order: 100000;
     }
 
     .add-button {
@@ -262,14 +263,13 @@ export class VeDropZone extends LitElement {
     }
 
     .dropArea {
-
       --height: 30px;
       display: none;
       position: absolute;
       height: var(--height);
 
-      left: 0;
-      right: 0;
+      left: 1px;
+      right: 1px;
       /*backdrop-filter: invert(100%);*/
       background-color: rgba(34, 34, 34, 0.8);
       outline: 1px dashed #666;

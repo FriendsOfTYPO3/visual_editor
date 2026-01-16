@@ -98,12 +98,12 @@ export class VeContentElement extends LitElement {
     }
 
     if (element.childElementCount !== 1) {
-      console.warn('ve-content-element: Expected exactly one child element, found ' + element.childElementCount);
+      console.warn(element, 've-content-element: Expected exactly one child element, found ' + element.childElementCount);
       return;
     }
     const notAllowedChildTags = ['style', 'script', 'iframe', 've-content-element', 've-content-area', 've-drag-handle', 've-drop-zone'];
     if (notAllowedChildTags.includes(element.firstElementChild.tagName.toLowerCase())) {
-      console.warn('ve-content-element: Child element cannot be <' + element.firstElementChild.tagName.toLowerCase() + '> please wrap it in a div or similar.');
+      console.warn(element,'ve-content-element: Child element cannot be <' + element.firstElementChild.tagName.toLowerCase() + '> please wrap it in a div or similar.');
       // set this.style.display = 'none'; if first child is also not visible
       const isChildVisible = !!(element.firstElementChild.offsetWidth || element.firstElementChild.offsetHeight || element.firstElementChild.getClientRects().length);
       if (!isChildVisible) {
