@@ -17,6 +17,9 @@
     "typo3/cms-core": "^13.4.22 || ^14.0.0",
     "php": "~8.4.0 || ~8.5.0"
   },
+  "suggest" : {
+    "wapplersystems/multisite-belogin": "You should install this extension, if you have multiple domains in your TYPO3 installation."
+  },
   "autoload": {
     "psr-4": {
       "TYPO3\\CMS\\VisualEditor\\": "Classes/"

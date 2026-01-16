@@ -109,6 +109,12 @@ search for:
   </f:contentArea>
   ````
 
+## Multi Site/Domain Setup
+
+You need to be Logged in to every Domain separately to use the Visual Editor.
+
+OR you can use [EXT:multisite_belogin](https://extensions.typo3.org/extension/multisite_belogin) it automatically logs you in to all sites/domains.
+
 ## License and Authors: License type, contributors, contact information
 
 This extension is licensed under the [GPL-2.0-or-later](https://spdx.org/licenses/GPL-2.0-or-later.html) license.
