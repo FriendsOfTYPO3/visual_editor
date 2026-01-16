@@ -36,7 +36,7 @@ after:
 If you do not have a Record object yet, there are two options:  
 Add it via [DataProcessors](https://docs.typo3.org/permalink/t3tsref:recordtransformationprocessor):
 
-````typo3_typoscript
+````ts
 // add record dataProcessor for all content elements
 lib.contentElement.dataProcessing.1768551979 = record-transformation
 ````
