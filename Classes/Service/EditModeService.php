@@ -67,9 +67,20 @@ final readonly class EditModeService
                     'id' => $pageId,
                 ]),
             ]);
+            $editContentUrl = (string)$this->uriBuilder->buildUriFromRoute('record_edit', [
+                'edit' => [
+                    '__TABLE__' => [
+                        '__UID__' => 'edit',
+                    ],
+                ],
+                'returnUrl' => (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
+                    'id' => '__PAGE_ID__',
+                ]),
+            ]);;
             $data = [
                 'pageId' => $pageId,
                 'newContentUrl' => $newContentUrl,
+                'editContentUrl' => $editContentUrl,
             ];
             $this->assetCollector->addInlineJavaScript(
                 'veLangInfo',

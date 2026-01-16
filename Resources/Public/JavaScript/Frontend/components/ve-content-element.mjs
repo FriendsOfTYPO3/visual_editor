@@ -12,7 +12,6 @@ export class VeContentElement extends LitElement {
   static properties = {
     id: {type: String},
     elementName: {type: String},
-    editUrl: {type: String},
     table: {type: String},
     uid: {type: Number},
     pid: {type: Number},
@@ -25,6 +24,13 @@ export class VeContentElement extends LitElement {
     dragInProgress: {type: Boolean, state: true, attribute: false},
     showElementOverlay: {type: Boolean, attribute: false},
   };
+
+  get editUrl() {
+    return window.veInfo.editContentUrl
+      .replace('__TABLE__', this.table)
+      .replace('__UID__', this.uid)
+      .replace('__PAGE_ID__', this.pid);
+  }
 
   /**
    * @param {MouseEvent} event
@@ -92,7 +98,7 @@ export class VeContentElement extends LitElement {
 
     /** @type {HTMLElement} */
     const element = this;
-    if(element.getAttribute('was')) {
+    if (element.getAttribute('was')) {
       // already processed
       return;
     }
@@ -103,7 +109,7 @@ export class VeContentElement extends LitElement {
     }
     const notAllowedChildTags = ['style', 'script', 'iframe', 've-content-element', 've-content-area', 've-drag-handle', 've-drop-zone'];
     if (notAllowedChildTags.includes(element.firstElementChild.tagName.toLowerCase())) {
-      console.warn(element,'ve-content-element: Child element cannot be <' + element.firstElementChild.tagName.toLowerCase() + '> please wrap it in a div or similar.');
+      console.warn(element, 've-content-element: Child element cannot be <' + element.firstElementChild.tagName.toLowerCase() + '> please wrap it in a div or similar.');
       // set this.style.display = 'none'; if first child is also not visible
       const isChildVisible = !!(element.firstElementChild.offsetWidth || element.firstElementChild.offsetHeight || element.firstElementChild.getClientRects().length);
       if (!isChildVisible) {
@@ -190,6 +196,8 @@ export class VeContentElement extends LitElement {
       bottom: 0;
       right: 0;
       pointer-events: none;
+
+      transition: 0.2s, box-shadow 0.2s, background-image 0.2s;
     }
 
     .border.showElementOverlay {
@@ -219,19 +227,22 @@ export class VeContentElement extends LitElement {
       position: absolute;
       bottom: 100%;
       left: -1px;
-      background: #000;
+      background: #171717;
       opacity: 0.001;
       /*opacity: 0.5;*/
-      color: white;
-      border: 1px solid #d1d1d1;
+      color: #d9d9d9;
+      border: 1px solid #d9d9d9;
       padding: 4px;
       min-width: 200px;
       border-top-left-radius: 6px;
       border-top-right-radius: 6px;
       z-index: 10100;
+      font-size: 0.8em;
+
+      transition: opacity 0.2s;
     }
 
-    *:hover ~ .button-bar, 
+    *:hover ~ .button-bar,
     .button-bar:hover,
     .button-bar:has(~ *:hover) {
       opacity: 1;
@@ -247,19 +258,20 @@ export class VeContentElement extends LitElement {
 
     .button {
       display: inline-flex;
-      color: white;
-      border: 1px solid #666;
+      color: #d9d9d9;
+      border: 1px solid transparent;
       border-radius: 0.2em;
-      background-color: #444;
       padding: 0.2em 0.5em;
       text-decoration: none;
       cursor: pointer;
-      height: 1.3rem;
+      height: max-content;
+
+      transition: border 0.2s;
     }
 
     .button:hover {
-      border: 1px solid #888;
-      background-color: #666;
+      border-color: #d9d9d9;
+      background-color: #212121;
     }
   `;
 }

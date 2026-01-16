@@ -157,6 +157,8 @@ export class VeEditableText extends LitElement {
       padding: 4px var(--padding-right) 4px 4px;
       margin: -4px;
 
+      transition: box-shadow 0.2s, backdrop-filter 0.2s, outline 0.2s;
+
       &:before {
         content: attr(data-placeholder);
         color: #555;
@@ -165,7 +167,6 @@ export class VeEditableText extends LitElement {
 
     .slot:hover, .slot:focus {
       box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.50) inset;
-      outline: 0;
       backdrop-filter: blur(10px) invert(20%);
       outline: 0.25rem solid #5432fe;
     }

@@ -69,10 +69,8 @@ final readonly class ContentElementWrapperService
             $hiddenFieldName = ''; // user has no access to hidden field
         }
 
-        $div = GeneralUtility::makeInstance(TagBuilder::class, 've-content-element');
-        $contentTypeLabel = $this->getContentTypeLabel($record);
-        $div->addAttribute('elementName', $contentTypeLabel);
-        $div->addAttribute('editUrl', $this->getEditUrl($record));
+        $div = GeneralUtility::makeInstance(TagBuilder::class, 've-content-element', $content);
+        $div->addAttribute('elementName', $this->getContentTypeLabel($record));
         $div->addAttribute('table', $table);
         $div->addAttribute('id', $table . ':' . $record->getUid());
         $div->addAttribute('uid', (string)$record->getUid());
@@ -93,7 +91,6 @@ final readonly class ContentElementWrapperService
             $updateFields['tx_container_parent'] = $record->getRawRecord()->get('tx_container_parent');
         }
         $div->addAttribute('updateFields', json_encode($updateFields, JSON_THROW_ON_ERROR));
-        $div->setContent($content);
 
         return $div->render();
     }

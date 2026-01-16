@@ -31,13 +31,9 @@ export class VeContentArea extends LitElement {
     }
     const parent = element.parentElement;
 
-    if(parent.childElementCount !== 1) {
-      console.warn('ve-content-area should be the only child of its parent element to avoid layout issues.');
-      return;
-    }
     const notAllowedChildTags = ['style', 'script', 'iframe', 've-content-element', 've-content-area', 've-drag-handle', 've-drop-zone'];
     if (notAllowedChildTags.includes(parent.tagName.toLowerCase())) {
-      console.warn('ve-content-element: Child element cannot be <' + parent.tagName.toLowerCase() + '> please wrap it in a div or similar.');
+      console.warn(element, 've-content-area: Child element cannot be <' + parent.tagName.toLowerCase() + '> please wrap it in a div or similar.');
       return;
     }
 
@@ -48,7 +44,23 @@ export class VeContentArea extends LitElement {
         element.setAttribute(attributeName, parent.getAttribute(attributeName));
       }
     }
-    // replace parent with this element
+
+    // move every child into element (keep position before and after the element) and remove parent
+    const oldFirstChild = element.firstChild
+    let isAfterSelf = false;
+    for (const child of Array.from(parent.childNodes)) {
+      if(child === element) {
+        isAfterSelf = true;
+        continue;
+      }
+      if(isAfterSelf) {
+        // insert inside element after all children:
+        element.appendChild(child);
+      } else {
+        // insert before oldFirstChild:
+        element.insertBefore(child, oldFirstChild);
+      }
+    }
     parent.replaceWith(element);
   }
 
