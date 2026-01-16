@@ -1,6 +1,6 @@
 import {html, LitElement} from 'lit';
 import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
-import {showEmptyActive} from "@typo3/visual-editor/Shared/stores.js";
+import {showEmptyActive} from "@typo3/visual-editor/Shared/local-stores.js";
 
 /**
  * @extends {HTMLElement}
@@ -24,7 +24,7 @@ export class VeShowEmptyToggle extends LitElement {
     this.active = showEmptyActive.get();
     sendMessage('showEmpty', this.active);
 
-    showEmptyActive.addEventListener('currentWindowChange', () => {
+    showEmptyActive.addEventListener('change', () => {
       this.active = showEmptyActive.get();
     });
     this.addEventListener('click', (e) => {

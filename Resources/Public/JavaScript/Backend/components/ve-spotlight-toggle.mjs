@@ -1,5 +1,5 @@
 import {html, LitElement} from 'lit';
-import {spotlightActive} from "@typo3/visual-editor/Shared/stores.js";
+import {spotlightActive} from "@typo3/visual-editor/Shared/local-stores.js";
 
 
 /**
@@ -23,7 +23,7 @@ export class VeSpotlightToggle extends LitElement {
     this.innerHTML = '';
     this.active = spotlightActive.get();
 
-    spotlightActive.addEventListener('currentWindowChange', () => {
+    spotlightActive.addEventListener('change', () => {
       this.active = spotlightActive.get();
     });
 

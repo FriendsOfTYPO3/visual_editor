@@ -33,6 +33,16 @@ before:
 after:
 <h1><f:render.text record="{record}" field="header" /></h1>
 ````
+If you do not have a Record object yet, there are two options:  
+Add it via [DataProcessors](https://docs.typo3.org/permalink/t3tsref:recordtransformationprocessor):
+
+````typo3_typoscript
+// add record dataProcessor for all content elements
+lib.contentElement.dataProcessing.1768551979 = record-transformation
+````
+
+Or use the ViewHelpers:
+
 - data is an array of the complete database row:
 ````html
 before:

@@ -34,6 +34,12 @@ use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchema;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
+use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Directive;
+use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Mutation;
+use TYPO3\CMS\Core\Security\ContentSecurityPolicy\MutationCollection;
+use TYPO3\CMS\Core\Security\ContentSecurityPolicy\MutationMode;
+use TYPO3\CMS\Core\Security\ContentSecurityPolicy\PolicyRegistry;
+use TYPO3\CMS\Core\Security\ContentSecurityPolicy\UriValue;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
@@ -48,24 +54,25 @@ use function is_array;
 #[AsController]
 class PageEditController
 {
-    private SiteLanguage $selectedLanguage;
+    protected SiteLanguage $selectedLanguage;
 
     protected ModuleData $moduleData;
     protected ?Record $pageRecord = null;
 
     /** @var list<SiteLanguage> */
     protected array $availableLanguages = [];
-    private Site $site;
-    private TcaSchema $schema;
+    protected Site $site;
+    protected TcaSchema $schema;
 
     public function __construct(
-        private readonly ModuleTemplateFactory $moduleTemplateFactory,
+        protected readonly ModuleTemplateFactory $moduleTemplateFactory,
         protected readonly PageRenderer $pageRenderer,
-        private readonly UriBuilder $uriBuilder,
-        private readonly IconFactory $iconFactory,
-        private readonly RecordFactory $recordFactory,
-        private readonly TcaSchemaFactory $tcaSchemaFactory,
-        private readonly PackageManager $packageManager,
+        protected readonly UriBuilder $uriBuilder,
+        protected readonly IconFactory $iconFactory,
+        protected readonly RecordFactory $recordFactory,
+        protected readonly TcaSchemaFactory $tcaSchemaFactory,
+        protected readonly PackageManager $packageManager,
+        protected readonly PolicyRegistry $policyRegistry,
     ) {
     }
 
@@ -120,9 +127,10 @@ class PageEditController
 
         $view = $this->moduleTemplateFactory->create($request);
         $view->setTitle('Edit Page · ' . $this->pageRecord->get('title'));
+        $iframeUrl = $this->iframeUrl();
         $view->assignMultiple([
             'pageId' => $this->pageRecord->getUid(),
-            'iframeSrc' => $this->iframeUrl(),
+            'iframeSrc' => $iframeUrl,
         ]);
 
         $returnUrl = GeneralUtility::sanitizeLocalUrl(
@@ -134,6 +142,14 @@ class PageEditController
 
         $this->makeButtons($view, $request);
         $this->makeActionMenu($view);
+
+
+        if ($iframeUrl->getScheme() !== '' && $iframeUrl->getHost() !== '') {
+            // temporarily(!) extend the CSP `frame-src` directive with the URL to be shown in the `<iframe>`
+            $mutation = new Mutation(MutationMode::Extend, Directive::FrameSrc, UriValue::fromUri($iframeUrl));
+            $this->policyRegistry->appendMutationCollection(new MutationCollection($mutation));
+        }
+
         return $view->renderResponse('PageEdit');
     }
 

@@ -11,17 +11,19 @@ class LocalStore extends EventTarget {
     if (localStorage.getItem(this.key) === null && defaultValue !== undefined) {
       localStorage.setItem(this.key, JSON.stringify(defaultValue));
     }
-    // emit if the localStorage changes from other tabs/windows
-    window.addEventListener('storage', (event) => {
-      if (event.key === this.key) {
+    onMessage('localStoreChange', ({key, value}) => {
+      if (key === this.key) {
+        localStorage.setItem(this.key, JSON.stringify(value)); // save the updated value (as it could be from another origin)
+
         this.dispatchEvent(new Event('change'));
       }
     });
-    onMessage('localStoreChange', (changedKey) => {
-      if (changedKey === this.key) {
-        this.dispatchEvent(new Event('currentWindowChange'));
+    onMessage('localStoreRequest', (requestedKey => {
+      if (requestedKey === this.key) {
+        sendMessage('localStoreChange', {key: this.key, value: this.get()}, 'iframe');
       }
-    });
+    }));
+    sendMessage('localStoreRequest', this.key, 'parent'); // parent might have a different value (set in another origin)
   }
 
   get() {
@@ -30,9 +32,8 @@ class LocalStore extends EventTarget {
 
   set(value) {
     localStorage.setItem(this.key, JSON.stringify(value));
-    // emit change event
-    this.dispatchEvent(new Event('change'));
-    sendMessage('localStoreChange', this.key);
+    this.dispatchEvent(new Event('change')); // for current window/tab
+    sendMessage('localStoreChange', {key:this.key, value}); // for parent/iframe
   }
 }
 

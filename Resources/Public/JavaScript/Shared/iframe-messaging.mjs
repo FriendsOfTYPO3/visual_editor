@@ -3,7 +3,7 @@ export const isDirectMode = window.parent === window;
 
 /**
  * @typedef {Object} VECommandDetailMap
- * @property openModal {{ src: string, title:string, size: 'medium' | 'large' | 'full', type: 'iframe' | 'ajax' }}
+ * @property openModal {{ src: String, title: String, size: 'medium' | 'large' | 'full', type: 'iframe' | 'ajax' }}
  * @property closeModal {null}
  * @property reloadFrames {null}
  * @property updateChangesCount {number}
@@ -13,20 +13,35 @@ export const isDirectMode = window.parent === window;
  * @property pageChanged {Boolean}
  * @property openInMiddleFrame {String}
  * @property change {Number}
- * @property localStoreChange {String}
+ * @property localStoreChange {{key: String, value: any}}
+ * @property localStoreRequest {String}
  */
 
 /**
  * @template {keyof VECommandDetailMap} K
  * @param command {K}
  * @param detail {VECommandDetailMap[K]}
+ * @param sendTo {'parent' | 'iframe' | 'any'}
  */
-export function sendMessage(command, detail = null) {
+export function sendMessage(command, detail = null, sendTo = 'any') {
   const message = {
     detail,
     command: `ve_${command}`,
   };
-  top.postMessage(message, '*');
+  const editorIframe = document.querySelector('iframe#visual-editor-iframe');
+  if (editorIframe) {
+    if (sendTo === 'parent') {
+      return;
+    }
+    // we are the parent, send message to the iframe
+    editorIframe.contentWindow.postMessage(message, '*');
+  } else {
+    if (sendTo === 'iframe') {
+      return;
+    }
+    // we are the iframe, send message to the parent
+    parent.postMessage(message, '*');
+  }
 }
 
 /**
@@ -46,15 +61,17 @@ export function onMessage(command, callback) {
   if (!isMessageListenerInitialized) {
     isMessageListenerInitialized = true;
 
-    top.addEventListener('message', (event) => {
+    window.addEventListener('message', (event) => {
+      // TODO Security: validate origin
       if (messageListeners[event.data.command]) {
-        for(const callback of messageListeners[event.data.command]) {
+        for (const callback of messageListeners[event.data.command]) {
           callback(event.data.detail);
         }
       }
     });
   }
 }
+
 /**
  * @template {keyof VECommandDetailMap} K
  * @param command {K}
