@@ -135,11 +135,6 @@ export class VeContentElement extends LitElement {
 
   render() {
     const toggleIcon = this.isHidden ? 'actions-toggle-off' : 'actions-toggle-on';
-    if (this.isHidden) {
-      this.classList.add('ve-hidden');
-    } else {
-      this.classList.remove('ve-hidden');
-    }
     return html`
       ${
 
@@ -147,7 +142,7 @@ export class VeContentElement extends LitElement {
           html`
             <ve-drag-handle
               table="${this.table}" uid="${this.uid}"
-              class="button-bar ${this.dragInProgress ? 'dragAndDropActive' : ''}"
+              class="button-bar ${this.isHidden ? 'hidden' : ''} ${this.dragInProgress ? 'dragAndDropActive' : ''}"
             >
               <span class="button-bar-headline" title="uid:${this.uid}">⠿ ${this.elementName}</span>
               <!-- TODO extract button bar as separate component -->
@@ -212,10 +207,6 @@ export class VeContentElement extends LitElement {
       box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.5) inset;
     }
 
-    :host(.ve-hidden) {
-      opacity: 0.5;
-    }
-
     .border.hidden {
       background: rgba(0, 0, 0, 0.5);
     }
@@ -250,6 +241,10 @@ export class VeContentElement extends LitElement {
 
     .button-bar.dragAndDropActive {
       display: none;
+    }
+
+    .button-bar.hidden {
+      opacity: 0.5;
     }
 
     .button-bar-headline {
