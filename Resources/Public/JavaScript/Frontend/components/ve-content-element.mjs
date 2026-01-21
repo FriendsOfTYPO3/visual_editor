@@ -57,8 +57,6 @@ export class VeContentElement extends LitElement {
   }
 
   _addAbove() {
-    // TODO we need to create the content element above the current one (not below)
-
     const newContentUrl = window.veInfo.newContentUrl
       .replace('__COL_POS__', this.colPos)
       .replace('__SYS_LANGUAGE_UID__', this.updateFields.sys_language_uid)
@@ -93,6 +91,9 @@ export class VeContentElement extends LitElement {
    * @param changedProperties {Map<PropertyKey, unknown>}
    */
   firstUpdated(changedProperties) {
+    // overwrite pid attribute of parent ve-content-area to ensure it is correct even if slide=-1 is used
+    this.parentElement.setAttribute('target', this.pid);
+
     if (this.hiddenFieldName) {
       dataHandlerStore.setInitialData(this.table, this.uid, this.hiddenFieldName, this.isHidden);
     }

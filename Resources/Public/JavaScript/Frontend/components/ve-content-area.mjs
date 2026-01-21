@@ -31,7 +31,7 @@ export class VeContentArea extends LitElement {
     }
     const parent = element.parentElement;
 
-    const notAllowedParentTags = ['ve-content-element', 've-content-area', 've-drag-handle', 've-drop-zone'];
+    const notAllowedParentTags = ['ve-content-element', 've-content-area', 've-drag-handle', 've-drop-zone', 'body'];
     if (notAllowedParentTags.includes(parent.tagName.toLowerCase())) {
       console.warn(element, 've-content-area: Child element cannot be <' + parent.tagName.toLowerCase() + '> please wrap it in a div or similar.');
       return;

@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Core\Configuration\Richtext as RichtextConfiguration;
 use TYPO3\CMS\Core\Domain\Record;
+use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Html\RteHtmlParser;
 use TYPO3\CMS\Core\Page\AssetCollector;
@@ -20,7 +21,6 @@ use TYPO3\CMS\VisualEditor\Core\RichtText\RichTextConfigurationService;
 use TYPO3\CMS\VisualEditor\Core\RichtText\RichTextConfigurationServiceDto;
 use TYPO3\CMS\VisualEditor\EditableResult\RichText;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
-use TYPO3\CMS\VisualEditor\Service\RecordService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 
@@ -34,7 +34,7 @@ final class RichTextViewHelper extends AbstractViewHelper
 
     public function __construct(
         private readonly EditModeService $editModeService,
-        private readonly RecordService $recordService,
+        private readonly RecordFactory $recordFactory,
         private readonly AssetCollector $assetCollector,
         private readonly RichTextConfigurationService $richTextConfigurationService,
         private readonly RichtextConfiguration $richtext,
@@ -49,7 +49,7 @@ final class RichTextViewHelper extends AbstractViewHelper
         parent::initializeArguments();
 
         $this->registerArgument('record', 'object', 'A Record API Object (field is also needed)');
-        $this->registerArgument('field', 'string', 'record', false, '');
+        $this->registerArgument('field', 'string', 'the field that should be rendered', false, '');
     }
 
     public function render(): RichText
@@ -60,7 +60,7 @@ final class RichTextViewHelper extends AbstractViewHelper
         $field = $this->arguments['field'];
 
         if ($record instanceof PageInformation) {
-            $record = $this->recordService->getPageRecordAsRecordInterface($record);
+            $record = $this->recordFactory->createResolvedRecordFromDatabaseRow('pages', $record->getPageRecord());
         }
         if (!$record instanceof RecordInterface) {
             throw new InvalidArgumentException(

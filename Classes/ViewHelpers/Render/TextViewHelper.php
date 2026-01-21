@@ -6,6 +6,8 @@ namespace TYPO3\CMS\VisualEditor\ViewHelpers\Render;
 
 use InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use TYPO3\CMS\Core\Domain\Record;
+use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -13,7 +15,6 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\EditableResult\Input;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
-use TYPO3\CMS\VisualEditor\Service\RecordService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use function get_debug_type;
@@ -27,7 +28,7 @@ final class TextViewHelper extends AbstractViewHelper
 
     public function __construct(
         private readonly EditModeService $editModeService,
-        private readonly RecordService $recordService,
+        private readonly RecordFactory $recordFactory,
         private readonly TcaSchemaFactory $tcaSchema,
     )
     {
@@ -38,7 +39,7 @@ final class TextViewHelper extends AbstractViewHelper
         parent::initializeArguments();
 
         $this->registerArgument('record', 'object', 'A Record API Object (field is also needed)', true);
-        $this->registerArgument('field', 'string', 'record', true);
+        $this->registerArgument('field', 'string', 'the field that should be rendered', true);
 
         $this->registerArgument('allowNewLines', 'bool', 'allows newLines and converts them to <br>', false, false);
     }
@@ -53,7 +54,7 @@ final class TextViewHelper extends AbstractViewHelper
         $allowNewLines = $this->arguments['allowNewLines'];
 
         if ($record instanceof PageInformation) {
-            $record = $this->recordService->getPageRecordAsRecordInterface($record);
+            $record = $this->recordFactory->createResolvedRecordFromDatabaseRow('pages', $record->getPageRecord());
         }
         if (!$record instanceof RecordInterface) {
             throw new InvalidArgumentException(
@@ -77,17 +78,13 @@ final class TextViewHelper extends AbstractViewHelper
 
         $escapedValue = htmlspecialchars($value);
 
-        $canEdit = $this->editModeService->canEditField($record, $field);
-        if (!$canEdit) {
-            $escapedValue = htmlspecialchars($value ?: '');
-        }
-
         if ($allowNewLines) {
             $escapedValue = str_replace("\r\n", "\n", $escapedValue);
             $escapedValue = str_replace("\r", "\n", $escapedValue);
             $escapedValue = str_replace("\n", '<br>', $escapedValue);
         }
 
+        $canEdit = $this->editModeService->canEditField($record, $field);
         if (!$canEdit) {
             return new Input($name, $escapedValue, !$value, $value);
         }

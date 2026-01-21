@@ -12,7 +12,6 @@ use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
-use TYPO3\CMS\Frontend\Page\PageInformation;
 use function assert;
 
 final readonly class EditModeService
@@ -53,9 +52,13 @@ final readonly class EditModeService
             $request = $GLOBALS['TYPO3_REQUEST'];
             assert($request instanceof ServerRequestInterface);
 
-            $attribute = $request->getAttribute('frontend.page.information');
-            assert($attribute instanceof PageInformation);
-            $pageId = $attribute->getId();
+            // backend and Frontend Context: determine current page id
+            $pageId = $request->getAttribute('frontend.page.information')?->getId()
+                ?? $request->getAttribute('pageContext')?->pageId;
+
+            if (!$pageId) {
+                throw new \RuntimeException('Could not determine current page id', 1768983081);
+            }
 
 
             $newContentUrl = (string)$this->uriBuilder->buildUriFromRoute('new_content_element_wizard', [
