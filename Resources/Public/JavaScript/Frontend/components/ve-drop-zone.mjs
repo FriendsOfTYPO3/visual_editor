@@ -17,7 +17,7 @@ export class VeDropZone extends LitElement {
 
     target: {type: Number},
     colPos: {type: Number},
-    updateFields: {type: Object},
+    tx_container_parent: {type: Number},
 
     show: {type: Boolean, state: true, attribute: false},
     isDragHovering: {type: Boolean, state: true, attribute: false},
@@ -139,13 +139,16 @@ export class VeDropZone extends LitElement {
     event.preventDefault();
     const data = JSON.parse(dataString);
 
-
     const actionData = {
       action: 'paste',
       target: this.target,
       update: {
         colPos: this.colPos,
-        ...this.updateFields,
+        ...(
+          Number.isInteger(this.tx_container_parent)
+            ? {tx_container_parent: this.tx_container_parent}
+            : {}
+        )
       },
     };
 
@@ -186,7 +189,7 @@ export class VeDropZone extends LitElement {
       throw new Error('Cannot find source element for drop operation: ' + data.table + ':' + data.uid);
     }
     sourceElement.setAttribute('colPos', this.colPos);
-    sourceElement.setAttribute('updateFields', this.updateFields);
+    sourceElement.setAttribute('tx_container_parent', this.tx_container_parent);
 
     switch (firstParent.tagName.toLowerCase()) {
       case 've-content-element':
@@ -201,8 +204,9 @@ export class VeDropZone extends LitElement {
   }
 
   render() {
-    if(this.error) {
-      return html`<ve-error text="${this.error}"/>`;
+    if (this.error) {
+      return html`
+        <ve-error text="${this.error}"/>`;
     }
     const classes = {
       dropArea: true,
@@ -222,9 +226,9 @@ export class VeDropZone extends LitElement {
       const name = this.getComponentName(this.target * -1);
       text = html`${text} <small>after</small> <b>${name}</b>`; // TODO label
     }
-    if (this.updateFields?.tx_container_parent || this.colPos > 99) {
+    if (this.tx_container_parent || this.colPos > 99) {
       // EXT:container + EXT:flux support
-      const uidOfParent = this.updateFields?.tx_container_parent || parseInt(this.colPos / 100);
+      const uidOfParent = this.tx_container_parent || parseInt(this.colPos / 100);
       const nameOfParent = this.getComponentName(uidOfParent);
       text = html`${text} <small>in</small> <b>${nameOfParent}</b>`; // TODO label
     }

@@ -8,7 +8,7 @@ export class VeContentArea extends LitElement {
   static properties = {
     target: {type: Number},
     colPos: {type: Number},
-    updateFields: {type: Object},
+    tx_container_parent: {type: Number},
 
     showElementOverlay: {type: Boolean, attribute: false},
   };
@@ -67,9 +67,8 @@ export class VeContentArea extends LitElement {
   render() {
     const newContentUrl = window.veInfo.newContentUrl
       .replace('__COL_POS__', this.colPos)
-      .replace('__SYS_LANGUAGE_UID__', this.updateFields.sys_language_uid)
       .replace('__UID_PID__', this.target)
-      .replace('__TX_CONTAINER_PARENT__', this.updateFields.tx_container_parent || 0);
+      .replace('__TX_CONTAINER_PARENT__', this.tx_container_parent || 0);
 
     const columnHasChild = this.children.length > 0;
     const addButton = html`
@@ -85,7 +84,7 @@ export class VeContentArea extends LitElement {
         table="tt_content"
         target="${this.target}"
         colPos="${this.colPos}"
-        updateFields="${JSON.stringify(this.updateFields)}"
+        tx_container_parent="${this.tx_container_parent}"
       ></ve-drop-zone>
       <slot></slot><!-- slot must be top level to mitigate all CSS problems -->
       <div class="ve-content-area ${this.showElementOverlay ? 'showElementOverlay' : ''}">

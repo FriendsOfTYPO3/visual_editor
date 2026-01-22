@@ -23,7 +23,6 @@ use TYPO3\CMS\VisualEditor\EditableResult\RichText;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
-
 use function json_encode;
 use function sprintf;
 
@@ -50,6 +49,7 @@ final class RichTextViewHelper extends AbstractViewHelper
 
         $this->registerArgument('record', 'object', 'A Record API Object (field is also needed)');
         $this->registerArgument('field', 'string', 'the field that should be rendered', false, '');
+        $this->registerArgument('htmlArguments', 'array', '@see f:format.html arguments', false, []);
     }
 
     public function render(): RichText
@@ -108,7 +108,7 @@ final class RichTextViewHelper extends AbstractViewHelper
     {
         return $this->renderingContext->getViewHelperInvoker()->invoke(
             HtmlViewHelper::class,
-            [], // TODO allow passing arguments?
+            $this->arguments['htmlArguments'],
             $this->renderingContext,
             fn() => $value,
         );

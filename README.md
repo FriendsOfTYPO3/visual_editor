@@ -67,11 +67,11 @@ search for:
 - `f:cObject` (typoscript rendering):
   ````html
   before:
-  <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{pageUid: '{data.uid}', colPos: '3'}"/>
+  <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{colPos: '3'}"/>
   
   after:
   <f:contentArea colPos="3">
-    <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{pageUid: '{data.uid}', colPos: '3'}"/>
+    <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{colPos: '3'}"/>
   </f:contentArea>
   ````
 - `each="{children_` (EXT:container):
@@ -82,7 +82,7 @@ search for:
   </f:for>
 
   after:
-  <f:contentArea colPos="201" updateFields="{'tx_container_parent': data.uid}">
+  <f:contentArea colPos="201" tx_container_parent="{record.uid}">
     <f:for each="{children_201}" as="element">
       {element.renderedContent -> f:format.raw()}
     </f:for>

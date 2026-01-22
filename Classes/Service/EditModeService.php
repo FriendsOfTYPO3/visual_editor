@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TYPO3\CMS\VisualEditor\Service;
 
 use Psr\Http\Message\ServerRequestInterface;
+use RuntimeException;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Domain\Record;
@@ -12,6 +13,7 @@ use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use function assert;
 
 final readonly class EditModeService
@@ -57,16 +59,15 @@ final readonly class EditModeService
                 ?? $request->getAttribute('pageContext')?->pageId;
 
             if (!$pageId) {
-                throw new \RuntimeException('Could not determine current page id', 1768983081);
+                throw new RuntimeException('Could not determine current page id', 1768983081);
             }
 
-
+            $isExtContainerInstalled = ExtensionManagementUtility::isLoaded('container');
             $newContentUrl = (string)$this->uriBuilder->buildUriFromRoute('new_content_element_wizard', [
                 'id' => $pageId,
-                'sys_language_uid' => '__SYS_LANGUAGE_UID__',
                 'colPos' => '__COL_POS__',
                 'uid_pid' => '__UID_PID__',
-                'tx_container_parent' => '__TX_CONTAINER_PARENT__',
+                ...($isExtContainerInstalled ? ['tx_container_parent' => '__TX_CONTAINER_PARENT__'] : []),
                 'returnUrl' => (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
                     'id' => $pageId,
                 ]),
@@ -80,7 +81,7 @@ final readonly class EditModeService
                 'returnUrl' => (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
                     'id' => '__PAGE_ID__',
                 ]),
-            ]);;
+            ]);
             $data = [
                 'pageId' => $pageId,
                 'newContentUrl' => $newContentUrl,

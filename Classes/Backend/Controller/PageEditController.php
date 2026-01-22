@@ -27,6 +27,7 @@ use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
@@ -208,11 +209,14 @@ class PageEditController
          */
 
         // Reload
-        $reloadButton = $buttonBar->makeLinkButton()
-            ->setHref($request->getAttribute('normalizedParams')->getRequestUri())
-            ->setTitle($this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.reload'))
-            ->setIcon($this->iconFactory->getIcon('actions-refresh', IconSize::SMALL));
-        $buttonBar->addButton($reloadButton, ButtonBar::BUTTON_POSITION_RIGHT);
+        $is13orLower = (new Typo3Version())->getMajorVersion() <= 13;
+        if ($is13orLower) {
+            $reloadButton = $buttonBar->makeLinkButton()
+                ->setHref($request->getAttribute('normalizedParams')->getRequestUri())
+                ->setTitle($this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.reload'))
+                ->setIcon($this->iconFactory->getIcon('actions-refresh', IconSize::SMALL));
+            $buttonBar->addButton($reloadButton, ButtonBar::BUTTON_POSITION_RIGHT);
+        }
     }
 
     /**

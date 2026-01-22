@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\EditableResult;
 
-use TYPO3Fluid\Fluid\Core\ViewHelper\UnsafeHTML;
+use TYPO3Fluid\Fluid\Core\Parser\UnsafeHTML;
 
 interface EditableResult extends UnsafeHTML
 {

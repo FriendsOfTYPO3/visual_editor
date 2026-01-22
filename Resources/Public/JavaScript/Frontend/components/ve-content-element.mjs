@@ -16,7 +16,7 @@ export class VeContentElement extends LitElement {
     uid: {type: Number},
     pid: {type: Number},
     colPos: {type: Number},
-    updateFields: {type: Object},
+    tx_container_parent: {type: Number},
     isHidden: {type: Boolean},
     hiddenFieldName: {type: String},
     canModifyRecord: {type: Boolean},
@@ -59,9 +59,8 @@ export class VeContentElement extends LitElement {
   _addAbove() {
     const newContentUrl = window.veInfo.newContentUrl
       .replace('__COL_POS__', this.colPos)
-      .replace('__SYS_LANGUAGE_UID__', this.updateFields.sys_language_uid)
       .replace('__UID_PID__', -this.uid)
-      .replace('__TX_CONTAINER_PARENT__', this.updateFields.tx_container_parent || 0);
+      .replace('__TX_CONTAINER_PARENT__', this.tx_container_parent);
 
     openModal(newContentUrl, lll('frontend.addContentElement'), 'large', 'ajax');
   }
@@ -173,7 +172,7 @@ export class VeContentElement extends LitElement {
         uid="${this.uid}"
         target="${-this.uid}"
         colPos="${this.colPos}"
-        updateFields="${JSON.stringify(this.updateFields)}"
+        tx_container_parent="${this.tx_container_parent}"
       ></ve-drop-zone>
       <div class="border ${this.isHidden ? 'hidden' : ''} ${this.showElementOverlay ? 'showElementOverlay' : ''}"></div>
     `;

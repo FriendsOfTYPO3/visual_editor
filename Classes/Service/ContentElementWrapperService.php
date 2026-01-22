@@ -68,31 +68,27 @@ final readonly class ContentElementWrapperService
             $hiddenFieldName = ''; // user has no access to hidden field
         }
 
-        $div = GeneralUtility::makeInstance(TagBuilder::class, 've-content-element', $content);
-        $div->addAttribute('elementName', $this->getContentTypeLabel($record));
-        $div->addAttribute('editUrl', $this->getEditUrl($record));
-        $div->addAttribute('table', $table);
-        $div->addAttribute('id', $table . ':' . $record->getUid());
-        $div->addAttribute('uid', (string)$record->getUid());
-        $div->addAttribute('pid', (string)$record->getPid());
-        $div->addAttribute('colPos', $record->get('colPos'));
-        $div->addAttribute('hiddenFieldName', $hiddenFieldName);
+        $tag = GeneralUtility::makeInstance(TagBuilder::class, 've-content-element', $content);
+        $tag->addAttribute('elementName', $this->getContentTypeLabel($record));
+        $tag->addAttribute('editUrl', $this->getEditUrl($record));
+        $tag->addAttribute('table', $table);
+        $tag->addAttribute('id', $table . ':' . $record->getUid());
+        $tag->addAttribute('uid', (string)$record->getUid());
+        $tag->addAttribute('pid', (string)$record->getPid());
+        $tag->addAttribute('colPos', $record->get('colPos'));
+        $tag->addAttribute('hiddenFieldName', $hiddenFieldName);
         if ($canModifyRecord) {
-            $div->addAttribute('canModifyRecord', 'true');
+            $tag->addAttribute('canModifyRecord', 'true');
         }
         if ($record->getSystemProperties()->isDisabled()) {
-            $div->addAttribute('isHidden', 'true');
+            $tag->addAttribute('isHidden', 'true');
         }
-        $updateFields = [
-            'sys_language_uid' => $record->getLanguageId(),
-        ];
         if ($record->has('tx_container_parent')) {
             // EXT:container compatibility
-            $updateFields['tx_container_parent'] = $record->getRawRecord()->get('tx_container_parent');
+            $tag->addAttribute('tx_container_parent', $record->getRawRecord()->get('tx_container_parent'));
         }
-        $div->addAttribute('updateFields', json_encode($updateFields, JSON_THROW_ON_ERROR));
 
-        return $div->render();
+        return $tag->render();
     }
 
     private function getContentTypeLabel(Record $record): string
