@@ -30,10 +30,11 @@ final class RenderContentAreaEventListener
 
         $tag = GeneralUtility::makeInstance(TagBuilder::class, 've-content-area', $event->getRenderedContentArea());
         $tag->forceClosingTag(true);
-        $tag->addAttribute('target', $event->getPageUid());
-        $tag->addAttribute('colPos', $event->getColPos());
-        if (isset($event->getAdditionalArguments()['tx_container_parent'])) {
-            $tag->addAttribute('tx_container_parent', (string)$event->getAdditionalArguments()['tx_container_parent']);
+        $pageUid = $event->getRequest()->getAttribute('frontend.page.information')->getId();
+        $tag->addAttribute('target', $pageUid);
+        $tag->addAttribute('colPos', $event->getContentAreaConfiguration()['colPos']);
+        if (isset($event->getContentAreaConfiguration()['tx_container_parent'])) {
+            $tag->addAttribute('tx_container_parent', (string)$event->getContentAreaConfiguration()['tx_container_parent']);
         }
         $event->setRenderedContentArea($tag->render());
     }

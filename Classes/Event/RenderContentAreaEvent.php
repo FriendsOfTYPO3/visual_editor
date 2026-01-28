@@ -19,7 +19,7 @@ namespace TYPO3\CMS\VisualEditor\Event;
 
 
 use Psr\Http\Message\ServerRequestInterface;
-use function class_exists;
+use TYPO3\CMS\Core\Domain\RecordInterface;
 
 /**
  * Event to modify the rendered content area output.
@@ -29,12 +29,12 @@ use function class_exists;
 final class RenderContentAreaEvent
 {
     /**
+     * @param array{name: string, colPos: string, identifier: string, disallowedContentTypes: string, records: list<RecordInterface>} $contentAreaConfiguration
      * @param array<string, mixed> $additionalArguments
      */
     public function __construct(
         private string $renderedContentArea,
-        private readonly int $colPos,
-        private readonly int $pageUid,
+        private readonly array $contentAreaConfiguration,
         private readonly array $additionalArguments,
         private readonly ?ServerRequestInterface $request,
     )
@@ -46,14 +46,21 @@ final class RenderContentAreaEvent
         return $this->renderedContentArea;
     }
 
-    public function getColPos(): int
+    /**
+     * Set the rendered content areas HTML
+     * make sure to return escaped content if necessary
+     */
+    public function setRenderedContentArea(string $renderedContentArea): void
     {
-        return $this->colPos;
+        $this->renderedContentArea = $renderedContentArea;
     }
 
-    public function getPageUid(): int
+    /**
+     * @return array{name: string, colPos: string, identifier: string, disallowedContentTypes: string, records: list<RecordInterface>}
+     */
+    public function getContentAreaConfiguration(): array
     {
-        return $this->pageUid;
+        return $this->contentAreaConfiguration;
     }
 
     /**
@@ -67,14 +74,5 @@ final class RenderContentAreaEvent
     public function getRequest(): ?ServerRequestInterface
     {
         return $this->request;
-    }
-
-    /**
-     * Set the rendered content areas HTML
-     * make sure to return escaped content if necessary
-     */
-    public function setRenderedContentArea(string $renderedContentArea): void
-    {
-        $this->renderedContentArea = $renderedContentArea;
     }
 }

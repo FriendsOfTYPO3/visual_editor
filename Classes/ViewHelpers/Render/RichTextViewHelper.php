@@ -47,7 +47,7 @@ final class RichTextViewHelper extends AbstractViewHelper
     {
         parent::initializeArguments();
 
-        $this->registerArgument('record', 'object', 'A Record API Object (field is also needed)');
+        $this->registerArgument('record', RecordInterface::class . '|' . PageInformation::class, 'A Record API Object (field is also needed)');
         $this->registerArgument('field', 'string', 'the field that should be rendered', false, '');
         $this->registerArgument('htmlArguments', 'array', '@see f:format.html arguments', false, []);
     }
@@ -61,16 +61,6 @@ final class RichTextViewHelper extends AbstractViewHelper
 
         if ($record instanceof PageInformation) {
             $record = $this->recordFactory->createResolvedRecordFromDatabaseRow('pages', $record->getPageRecord());
-        }
-        if (!$record instanceof RecordInterface) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    'The "record" argument must be an instance of %s or %s. %s given',
-                    RecordInterface::class,
-                    PageInformation::class,
-                    get_debug_type($record),
-                ),
-            );
         }
 
         $name = LocalizationUtility::translate($this->tcaSchema->get($record->getMainType())->getField($field)->getLabel());

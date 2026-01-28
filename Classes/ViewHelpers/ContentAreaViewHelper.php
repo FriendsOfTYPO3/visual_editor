@@ -51,7 +51,7 @@ final class ContentAreaViewHelper extends AbstractViewHelper
         $event = $this->eventDispatcher->dispatch(
             new RenderContentAreaEvent(
                 renderedContentArea: $this->renderChildren(),
-                colPos: $this->arguments['colPos'],
+                contentAreaConfiguration: $this->arguments['colPos'],
                 pageUid: $this->arguments['pageUid'] ?? $this->getCurrentPageUid($request),
                 additionalArguments: $additionalArguments,
                 request: $request,
