@@ -7,7 +7,7 @@ namespace TYPO3\CMS\VisualEditor\EventListener;
 use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
-use TYPO3\CMS\Fluid\Event\RenderContentAreaEvent;
+use TYPO3\CMS\Fluid\Event\ModifyRenderedContentAreaEvent;
 use TYPO3\CMS\VisualEditor\Event\RenderContentAreaEvent as V13RenderContentAreaEvent;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
@@ -21,7 +21,7 @@ final class RenderContentAreaEventListener
     }
 
     #[AsEventListener]
-    public function __invoke(RenderContentAreaEvent|V13RenderContentAreaEvent $event): void
+    public function __invoke(ModifyRenderedContentAreaEvent|V13RenderContentAreaEvent $event): void
     {
         if (!$this->editModeService->isEditMode()) {
             return;

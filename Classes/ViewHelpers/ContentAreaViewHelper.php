@@ -6,7 +6,7 @@ namespace TYPO3\CMS\VisualEditor\ViewHelpers;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Fluid\Event\RenderContentAreaEvent;
+use TYPO3\CMS\Fluid\Event\ModifyRenderedContentAreaEvent;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
@@ -49,7 +49,7 @@ final class ContentAreaViewHelper extends AbstractViewHelper
         unset($additionalArguments['colPos'], $additionalArguments['pageUid']);
 
         $event = $this->eventDispatcher->dispatch(
-            new RenderContentAreaEvent(
+            new ModifyRenderedContentAreaEvent(
                 renderedContentArea: $this->renderChildren(),
                 contentAreaConfiguration: $this->arguments['colPos'],
                 pageUid: $this->arguments['pageUid'] ?? $this->getCurrentPageUid($request),

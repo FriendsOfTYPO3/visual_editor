@@ -48,7 +48,7 @@ final class RichTextViewHelper extends AbstractViewHelper
         parent::initializeArguments();
 
         $this->registerArgument('record', RecordInterface::class . '|' . PageInformation::class, 'A Record API Object (field is also needed)');
-        $this->registerArgument('field', 'string', 'the field that should be rendered', false, '');
+        $this->registerArgument('field', 'string', 'the field that should be rendered', true);
         $this->registerArgument('htmlArguments', 'array', '@see f:format.html arguments', false, []);
     }
 

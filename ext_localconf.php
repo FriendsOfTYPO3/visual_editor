@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use TYPO3\CMS\Fluid\Event\RenderContentAreaEvent;
+use TYPO3\CMS\Fluid\Event\ModifyRenderedContentAreaEvent;
 use TYPO3\CMS\VisualEditor\Event\RenderContentAreaEvent as V13_RenderContentAreaEvent;
 
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['fluid']['namespaces']['f'][] = 'TYPO3\\CMS\\VisualEditor\\ViewHelpers';
 
 ExtensionManagementUtility::addTypoScriptSetup("@import 'EXT:visual_editor/Configuration/TypoScript/setup.typoscript'");
 
-if (!class_exists(RenderContentAreaEvent::class)) {
-    class_alias(V13_RenderContentAreaEvent::class, RenderContentAreaEvent::class);
+if (!class_exists(ModifyRenderedContentAreaEvent::class)) {
+    class_alias(V13_RenderContentAreaEvent::class, ModifyRenderedContentAreaEvent::class);
 }
