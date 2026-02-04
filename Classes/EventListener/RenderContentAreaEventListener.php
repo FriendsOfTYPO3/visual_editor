@@ -6,8 +6,8 @@ namespace TYPO3\CMS\VisualEditor\EventListener;
 
 use B13\Container\Domain\Model\Container;
 use TYPO3\CMS\Core\Attribute\AsEventListener;
-use TYPO3\CMS\Core\Domain\Event\ModifyRenderedContentAreaEvent;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Fluid\Event\ModifyRenderedContentAreaEvent;
 use TYPO3\CMS\VisualEditor\Event\RenderContentAreaEvent as V13RenderContentAreaEvent;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
