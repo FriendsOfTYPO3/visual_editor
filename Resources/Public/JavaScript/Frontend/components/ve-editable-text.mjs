@@ -178,6 +178,7 @@ export class VeEditableText extends LitElement {
       &:before {
         content: attr(data-placeholder);
         color: #555;
+        font-style: italic;
       }
     }
 
