@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+use TYPO3\CMS\Fluid\Event\ModifyRenderedContentAreaEvent;
 use TYPO3\CMS\VisualEditor\Event\RenderContentAreaEvent as V13_RenderContentAreaEvent;
 
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['fluid']['namespaces']['f'][] = 'TYPO3\\CMS\\VisualEditor\\ViewHelpers';

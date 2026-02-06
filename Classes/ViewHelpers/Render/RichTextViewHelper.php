@@ -21,6 +21,7 @@ use TYPO3\CMS\VisualEditor\EditableResult\RichText;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
+
 use function json_encode;
 
 final class RichTextViewHelper extends AbstractViewHelper
@@ -35,8 +36,7 @@ final class RichTextViewHelper extends AbstractViewHelper
         private readonly RichtextConfiguration $richtext,
         private readonly TcaSchemaFactory $tcaSchema,
         private readonly RteHtmlParser $rteHtmlParser,
-    )
-    {
+    ) {
     }
 
     public function initializeArguments(): void
@@ -96,7 +96,7 @@ final class RichTextViewHelper extends AbstractViewHelper
             HtmlViewHelper::class,
             $this->arguments['htmlArguments'],
             $this->renderingContext,
-            fn() => $value,
+            fn(): string => $value,
         );
     }
 

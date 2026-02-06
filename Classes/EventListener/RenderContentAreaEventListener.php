@@ -12,12 +12,11 @@ use TYPO3\CMS\VisualEditor\Event\RenderContentAreaEvent as V13RenderContentAreaE
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 
-final class RenderContentAreaEventListener
+final readonly class RenderContentAreaEventListener
 {
     public function __construct(
-        private readonly EditModeService $editModeService,
-    )
-    {
+        private EditModeService $editModeService,
+    ) {
     }
 
     #[AsEventListener]
@@ -26,17 +25,21 @@ final class RenderContentAreaEventListener
         if (!$this->editModeService->isEditMode()) {
             return;
         }
+
         $this->editModeService->init();
 
         $tag = GeneralUtility::makeInstance(TagBuilder::class, 've-content-area', $event->getRenderedContentArea());
         $tag->forceClosingTag(true);
+
         $pageUid = $event->getRequest()->getAttribute('frontend.page.information')->getId();
         $tag->addAttribute('target', $pageUid);
         $tag->addAttribute('colPos', $event->getContentArea()->getColPos());
+
         $extContainer = $event->getContentArea()->getConfiguration()['container'] ?? null;
         if ($extContainer instanceof Container) {
             $tag->addAttribute('tx_container_parent', (string)$extContainer->getUid());// TODO test this
         }
+
         $event->setRenderedContentArea($tag->render());
     }
 }

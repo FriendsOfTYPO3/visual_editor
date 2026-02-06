@@ -23,7 +23,7 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 final class FromArrayViewHelper extends AbstractViewHelper
 {
     public function __construct(
-        private RecordFactory $recordFactory,
+        private readonly RecordFactory $recordFactory,
     ) {
     }
 

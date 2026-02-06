@@ -16,6 +16,7 @@ use TYPO3\CMS\RteCKEditor\Form\Element\Event\AfterGetExternalPluginsEvent;
 use TYPO3\CMS\RteCKEditor\Form\Element\Event\AfterPrepareConfigurationForEditorEvent;
 use TYPO3\CMS\RteCKEditor\Form\Element\Event\BeforeGetExternalPluginsEvent;
 use TYPO3\CMS\RteCKEditor\Form\Element\Event\BeforePrepareConfigurationForEditorEvent;
+
 use function array_replace_recursive;
 use function explode;
 use function is_array;
@@ -47,11 +48,13 @@ readonly class RichTextConfigurationService
                 }
             }
         }
+
         if ($richTextConfigurationServiceDto->placeholder) {
             // Note that HTML tags are stripped here, because CKEditor does not parse placeholder text.
             // Without it, the HTML code would be displayed as-is.
             $configuration['placeholder'] = $richTextConfigurationServiceDto->placeholder;
         }
+
         return $configuration;
     }
 
@@ -88,6 +91,7 @@ readonly class RichTextConfigurationService
                 'ui' => $configuration['language'],
             ];
         }
+
         $configuration['language']['content'] = $this->getLanguageIsoCodeOfContent($richTextConfigurationServiceDto);
 
         // Replace all label references
@@ -100,10 +104,8 @@ readonly class RichTextConfigurationService
             $configuration['debug'] = ($GLOBALS['TYPO3_CONF_VARS']['BE']['debug'] ?? false) && Environment::getContext()->isDevelopment();
         }
 
-        $configuration = $this->eventDispatcher
+        return $this->eventDispatcher
             ->dispatch(new AfterPrepareConfigurationForEditorEvent($configuration, $richTextConfigurationServiceDto->getData()))->getConfiguration();
-
-        return $configuration;
     }
 
     /**
@@ -143,9 +145,8 @@ readonly class RichTextConfigurationService
             $pluginConfiguration[$pluginName]['config'] = $configuration;
         }
 
-        $pluginConfiguration = $this->eventDispatcher
+        return $this->eventDispatcher
             ->dispatch(new AfterGetExternalPluginsEvent($pluginConfiguration, $data))->getConfiguration();
-        return $pluginConfiguration;
     }
 
     /**
@@ -158,6 +159,7 @@ readonly class RichTextConfigurationService
         if (is_array($currentLanguageUid)) {
             $currentLanguageUid = $currentLanguageUid[0];
         }
+
         $contentLanguageUid = (int)max($currentLanguageUid, 0);
         if ($contentLanguageUid) {
             // the language rows might not be fully initialized, so we fall back to en-US in this case
@@ -165,12 +167,14 @@ readonly class RichTextConfigurationService
         } else {
             $contentLanguage = $richTextConfigurationServiceDto->getAdditionalConfiguration()['defaultContentLanguage'] ?? 'en-US';
         }
+
         $languageCodeParts = explode('_', $contentLanguage);
-        $contentLanguage = strtolower($languageCodeParts[0]) . (!empty($languageCodeParts[1]) ? '_' . strtoupper($languageCodeParts[1]) : '');
+        $contentLanguage = strtolower($languageCodeParts[0]) . (empty($languageCodeParts[1]) ? '' : '_' . strtoupper($languageCodeParts[1]));
         // Find the configured language in the list of localization locales, if not found, default to 'en'.
         if ($contentLanguage === 'default' || !$this->locales->isValidLanguageKey($contentLanguage)) {
-            $contentLanguage = 'en';
+            return 'en';
         }
+
         return $contentLanguage;
     }
 
@@ -186,6 +190,7 @@ readonly class RichTextConfigurationService
                 $configuration[$key] = $this->getLanguageService()->sL($value);
             }
         }
+
         return $configuration;
     }
 
@@ -201,6 +206,7 @@ readonly class RichTextConfigurationService
                 $configuration[$key] = $this->resolveUrlPath($value);
             }
         }
+
         return $configuration;
     }
 
@@ -212,6 +218,7 @@ readonly class RichTextConfigurationService
         if (str_contains($value, '?')) {
             return PathUtility::getPublicResourceWebPath($value);
         }
+
         $value = GeneralUtility::getFileAbsFileName($value);
         $value = GeneralUtility::createVersionNumberedFilename($value);
         return PathUtility::getAbsoluteWebPath($value);

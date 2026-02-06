@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\Service;
 
+use InvalidArgumentException;
 use Exception;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
@@ -15,9 +16,11 @@ use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
+
 use function assert;
 use function json_encode;
 use function str_contains;
+
 use const JSON_THROW_ON_ERROR;
 
 #[Autoconfigure(public: true)]
@@ -28,8 +31,7 @@ final readonly class ContentElementWrapperService
         private EditModeService $editModeService,
         private TcaSchemaFactory $tcaSchema,
         private UriBuilder $backendUriBuilder,
-    )
-    {
+    ) {
     }
 
     /**
@@ -49,10 +51,10 @@ final readonly class ContentElementWrapperService
         if (!$beUser->check('tables_modify', $table)) {
             $canModifyRecord = false; // no edit rights
         }
-        if ($table === 'tt_content') {
-            if (!$beUser->check('explicit_allowdeny', 'tt_content:CType:' . $data['CType'])) {
-                $canModifyRecord = false; // no access to this content element type
-            }
+
+        if ($table === 'tt_content' && !$beUser->check('explicit_allowdeny', 'tt_content:CType:' . $data['CType'])) {
+            $canModifyRecord = false;
+            // no access to this content element type
         }
 
         $record = $this->recordFactory->createResolvedRecordFromDatabaseRow($table, $data);
@@ -61,10 +63,12 @@ final readonly class ContentElementWrapperService
 
         $hiddenFieldType = $schema->getCapability(TcaSchemaCapability::RestrictionDisabledField);
         $hiddenFieldName = $hiddenFieldType->getFieldName();
-        if ($schema->getField($hiddenFieldName)->supportsAccessControl() && !$beUser->check(
+        if (
+            $schema->getField($hiddenFieldName)->supportsAccessControl() && !$beUser->check(
                 'non_exclude_fields',
                 $record->getMainType() . ':' . $hiddenFieldName,
-            )) {
+            )
+        ) {
             $hiddenFieldName = ''; // user has no access to hidden field
         }
 
@@ -80,9 +84,11 @@ final readonly class ContentElementWrapperService
         if ($canModifyRecord) {
             $tag->addAttribute('canModifyRecord', 'true');
         }
+
         if ($record->getSystemProperties()->isDisabled()) {
             $tag->addAttribute('isHidden', 'true');
         }
+
         if ($record->has('tx_container_parent')) {
             // EXT:container compatibility
             $tag->addAttribute('tx_container_parent', $record->getRawRecord()->get('tx_container_parent'));
@@ -97,12 +103,13 @@ final readonly class ContentElementWrapperService
         foreach ($GLOBALS['TCA']['tt_content']['columns']['CType']['config']['items'] as $item) {
             if ($item['value'] === $recordType && $item['label']) {
                 try {
-                    return str_contains($item['label'], ':') ? LocalizationUtility::translate($item['label']) : $item['label'];
-                } catch (\InvalidArgumentException) {
+                    return str_contains((string) $item['label'], ':') ? LocalizationUtility::translate($item['label']) : $item['label'];
+                } catch (InvalidArgumentException) {
                     return $item['label'];
                 }
             }
         }
+
         return $recordType;
     }
 

@@ -8,12 +8,11 @@ use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Frontend\ContentObject\Event\AfterStdWrapFunctionsExecutedEvent;
 use TYPO3\CMS\VisualEditor\Service\ContentElementWrapperService;
 
-final class AfterStdWrapFunctionsExecutedEventListener
+final readonly class AfterStdWrapFunctionsExecutedEventListener
 {
     public function __construct(
-        private readonly ContentElementWrapperService $contentElementWrapperService,
-    )
-    {
+        private ContentElementWrapperService $contentElementWrapperService,
+    ) {
     }
 
     #[AsEventListener]

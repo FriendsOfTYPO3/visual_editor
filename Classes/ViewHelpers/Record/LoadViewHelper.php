@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\ViewHelpers\Record;
 
+use InvalidArgumentException;
+use RuntimeException;
 use Doctrine\DBAL\ParameterType;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -14,6 +16,7 @@ use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
+
 use function sprintf;
 
 /**
@@ -36,8 +39,7 @@ final class LoadViewHelper extends AbstractViewHelper
         private readonly ConnectionPool $connectionPool,
         private readonly RecordAccessVoter $recordAccessVoter,
         private readonly Context $context,
-    )
-    {
+    ) {
     }
 
     public function initializeArguments(): void
@@ -54,13 +56,14 @@ final class LoadViewHelper extends AbstractViewHelper
         $returnNullOnNotFound = (bool)$this->arguments['returnNullOnNotFound'];
 
         if ($uid <= 0) {
-            throw new \InvalidArgumentException('UID must be greater than 0');
+            throw new InvalidArgumentException('UID must be greater than 0', 3456369258);
         }
 
         $recordIdentityMap = GeneralUtility::makeInstance(RecordIdentityMap::class);
         if ($recordIdentityMap->hasIdentifier($table, $uid)) {
             return $recordIdentityMap->findByIdentifier($table, $uid);
         }
+
         $queryBuilder = $this->connectionPool->getQueryBuilderForTable($table);
         $expr = $queryBuilder->expr();
         $row = $queryBuilder
@@ -74,7 +77,8 @@ final class LoadViewHelper extends AbstractViewHelper
             if ($returnNullOnNotFound) {
                 return null;
             }
-            throw new \RuntimeException(sprintf('Record with uid %d in table %s not found', $uid, $table));
+
+            throw new RuntimeException(sprintf('Record with uid %d in table %s not found', $uid, $table), 1026480083);
         }
 
         $this->pageRepository->versionOL($table, $row);
@@ -82,7 +86,8 @@ final class LoadViewHelper extends AbstractViewHelper
             if ($returnNullOnNotFound) {
                 return null;
             }
-            throw new \RuntimeException(sprintf('Record with uid %d in table %s not found after version overlay', $uid, $table));
+
+            throw new RuntimeException(sprintf('Record with uid %d in table %s not found after version overlay', $uid, $table), 8598254240);
         }
 
         $row = $this->pageRepository->getLanguageOverlay($table, $row);
@@ -90,14 +95,16 @@ final class LoadViewHelper extends AbstractViewHelper
             if ($returnNullOnNotFound) {
                 return null;
             }
-            throw new \RuntimeException(sprintf('Record with uid %d in table %s not found after language overlay', $uid, $table));
+
+            throw new RuntimeException(sprintf('Record with uid %d in table %s not found after language overlay', $uid, $table), 6344685303);
         }
 
         if (!$this->recordAccessVoter->accessGranted($table, $row, $this->context)) {
             if ($returnNullOnNotFound) {
                 return null;
             }
-            throw new \RuntimeException(sprintf('Access to record with uid %d in table %s is denied', $uid, $table));
+
+            throw new RuntimeException(sprintf('Access to record with uid %d in table %s is denied', $uid, $table), 1972545653);
         }
 
         return $this->recordFactory->createResolvedRecordFromDatabaseRow($table, $row);

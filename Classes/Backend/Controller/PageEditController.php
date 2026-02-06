@@ -47,62 +47,70 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Versioning\VersionState;
+
 use function array_key_first;
 use function assert;
 use function count;
 use function is_array;
 use function sprintf;
 
-
 #[AsController]
-class PageEditController
+final class PageEditController
 {
-    protected SiteLanguage $selectedLanguage;
+    private SiteLanguage $selectedLanguage;
 
-    protected ModuleData $moduleData;
-    protected ?Record $pageRecord = null;
+    private ModuleData $moduleData;
+
+    private ?Record $pageRecord = null;
 
     /** @var list<SiteLanguage> */
-    protected array $availableLanguages = [];
-    protected Site $site;
-    protected TcaSchema $schema;
+    private array $availableLanguages = [];
+
+    private Site $site;
+
+    private TcaSchema $schema;
 
     public function __construct(
-        protected readonly ModuleTemplateFactory $moduleTemplateFactory,
-        protected readonly PageRenderer $pageRenderer,
-        protected readonly UriBuilder $uriBuilder,
-        protected readonly IconFactory $iconFactory,
-        protected readonly RecordFactory $recordFactory,
-        protected readonly TcaSchemaFactory $tcaSchemaFactory,
-        protected readonly PackageManager $packageManager,
-        protected readonly PolicyRegistry $policyRegistry,
-        protected readonly Typo3Version $typo3Version,
+        private readonly ModuleTemplateFactory $moduleTemplateFactory,
+        private readonly PageRenderer $pageRenderer,
+        private readonly UriBuilder $uriBuilder,
+        private readonly IconFactory $iconFactory,
+        private readonly RecordFactory $recordFactory,
+        private readonly TcaSchemaFactory $tcaSchemaFactory,
+        private readonly PackageManager $packageManager,
+        private readonly PolicyRegistry $policyRegistry,
+        private readonly Typo3Version $typo3Version,
+        private readonly ConnectionPool $connectionPool,
     ) {
     }
 
-    protected function initialize(ServerRequestInterface $request): void
+    private function initialize(ServerRequestInterface $request): void
     {
         $backendUser = $this->getBackendUser();
-        $pageUid = (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? throw new InvalidArgumentException('Missing "id" query parameter',));
+        $pageUid = (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? throw new InvalidArgumentException('Missing "id" query parameter', 8412770259,));
         $this->moduleData = $request->getAttribute('moduleData');
         $pageInfo = BackendUtility::readPageAccess($pageUid, $backendUser->getPagePermsClause(Permission::PAGE_SHOW));
         if (!$pageInfo || count($pageInfo) === 1) {
             // if $pageInfo is "empty" it will have the property "_thePath"
-            throw new InvalidArgumentException('Page record not found for id ' . (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? 0));
+            throw new InvalidArgumentException('Page record not found for id ' . (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? 0), 4884897021);
         }
+
         $record = $this->recordFactory->createResolvedRecordFromDatabaseRow('pages', $pageInfo);
         if (!$record instanceof Record) {
-            throw new InvalidArgumentException('RecordFactory did not return a Record for pages record, this should not happen');
+            throw new InvalidArgumentException('RecordFactory did not return a Record for pages record, this should not happen', 6115380673);
         }
+
         if ($record->getRecordType() === '254') {
-            throw new InvalidArgumentException('Page record is of type "folder" and cannot be edited with the Visual Editor');
+            throw new InvalidArgumentException('Page record is of type "folder" and cannot be edited with the Visual Editor', 5965019514);
         }
+
         $this->pageRecord = $record;
 
         $site = $request->getAttribute('site');
         if (!$site instanceof Site) {
-            throw new InvalidArgumentException('No site found for page id ' . $pageUid);
+            throw new InvalidArgumentException('No site found for page id ' . $pageUid, 1616071820);
         }
+
         $this->site = $site;
         $this->availableLanguages = $site->getAvailableLanguages($backendUser, false, $pageUid);
         $this->selectedLanguage = $site->getLanguageById((int)($this->moduleData->get('language') ?? 0));
@@ -114,7 +122,7 @@ class PageEditController
     {
         try {
             $this->initialize($request);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             $view = $this->moduleTemplateFactory->create($request);
             $languageService = $this->getLanguageService();
 
@@ -128,6 +136,7 @@ class PageEditController
             if ($this->typo3Version->getMajorVersion() >= 14) {
                 $view->getDocHeaderComponent()->disableAutomaticReloadButton();
             }
+
             return $view->renderResponse('PageLayout/PageModuleNoAccess');
         }
 
@@ -185,6 +194,7 @@ class PageEditController
         if ($button = $this->makeAutoSaveButton($buttonBar)) {
             $buttonBar->addButton($button, buttonGroup: 1);
         }
+
         // Save
         if ($button = $this->makeSaveButton($buttonBar)) {
             $buttonBar->addButton($button, buttonGroup: 1);
@@ -194,6 +204,7 @@ class PageEditController
         if ($button = $this->makeSpotlightToggleButton($buttonBar)) {
             $buttonBar->addButton($button, buttonGroup: 2);
         }
+
         // Show Empty Toggle
         if ($button = $this->makeShowEmptyToggleButton($buttonBar)) {
             $buttonBar->addButton($button, buttonGroup: 2);
@@ -203,13 +214,14 @@ class PageEditController
         if ($button = $this->makeViewButton($buttonBar)) {
             $buttonBar->addButton($button, buttonGroup: 3);
         }
+
         // Edit Page Properties
         if ($button = $this->makeEditButton($buttonBar, $request)) {
             $buttonBar->addButton($button, buttonGroup: 3);
         }
 
         // Clear Cache
-        if ($button = $this->makeClearCacheButton($buttonBar, $request)) {
+        if ($button = $this->makeClearCacheButton($buttonBar)) {
             $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_RIGHT, buttonGroup: 1);
         }
 
@@ -238,7 +250,7 @@ class PageEditController
                 ),
                 arguments: [
                     'id' => $this->pageRecord->getUid(),
-//                    'languages' => $this->pageContext->selectedLanguageIds,
+                //                    'languages' => $this->pageContext->selectedLanguageIds,
                 ]
             );
         } else {
@@ -253,7 +265,7 @@ class PageEditController
     /**
      * View Button
      */
-    protected function makeViewButton(ButtonBar $buttonBar): ?ButtonInterface
+    private function makeViewButton(ButtonBar $buttonBar): ?ButtonInterface
     {
         if (
             $this->pageRecord->getVersionInfo()->getState() === VersionState::DELETE_PLACEHOLDER
@@ -280,42 +292,13 @@ class PageEditController
             ->setIcon($this->iconFactory->getIcon('actions-view-page', IconSize::SMALL));
     }
 
-    /**
-     * Check if page can be edited by current user.
-     */
-    protected function isPageEditable(int $languageId): bool
-    {
-        if ($this->pageRecord) {
-            return false;
-        }
-        if ($this->schema->hasCapability(TcaSchemaCapability::AccessReadOnly)) {
-            return false;
-        }
-        $backendUser = $this->getBackendUser();
-        if ($backendUser->isAdmin()) {
-            return true;
-        }
-        if ($this->schema->hasCapability(TcaSchemaCapability::AccessAdminOnly)) {
-            return false;
-        }
-        $isEditLocked = false;
-        if ($this->schema->hasCapability(TcaSchemaCapability::EditLock)) {
-            $isEditLocked = $this->pageinfo[$this->schema->getCapability(TcaSchemaCapability::EditLock)->getFieldName()] ?? false;
-        }
-        if ($isEditLocked) {
-            return false;
-        }
-        return $backendUser->doesUserHaveAccess($this->pageRecord->getRawRecord()->toArray(), Permission::PAGE_EDIT)
-            && $backendUser->checkLanguageAccess($languageId)
-            && $backendUser->check('tables_modify', 'pages');
-    }
-
-    protected function getLocalizedPageRecord(int $languageId): ?array
+    private function getLocalizedPageRecord(int $languageId): ?array
     {
         if ($languageId === 0) {
             return null;
         }
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('pages');
+
+        $queryBuilder = $this->connectionPool->getQueryBuilderForTable('pages');
         $queryBuilder->getRestrictions()
             ->removeAll()
             ->add(GeneralUtility::makeInstance(DeletedRestriction::class))
@@ -341,13 +324,14 @@ class PageEditController
         if ($overlayRecord) {
             BackendUtility::workspaceOL('pages', $overlayRecord, $this->getBackendUser()->workspace);
         }
+
         return is_array($overlayRecord) ? $overlayRecord : null;
     }
 
     /**
      * Edit Button
      */
-    protected function makeEditButton(ButtonBar $buttonBar, ServerRequestInterface $request): ?ButtonInterface
+    private function makeEditButton(ButtonBar $buttonBar, ServerRequestInterface $request): ?ButtonInterface
     {
         $pageUid = $this->pageRecord->getUid();
         if ($this->selectedLanguage->getLanguageId() > 0) {
@@ -370,23 +354,21 @@ class PageEditController
             ->setIcon($this->iconFactory->getIcon('actions-page-open', IconSize::SMALL));
     }
 
-    protected function makeClearCacheButton(ButtonBar $buttonBar, ServerRequestInterface $request): ?ButtonInterface
+    private function makeClearCacheButton(ButtonBar $buttonBar): ?ButtonInterface
     {
-        $clearCacheButton = $buttonBar->makeLinkButton()
+        return $buttonBar->makeLinkButton()
             ->setHref('#')
             ->setDataAttributes(['id' => $this->pageRecord->getUid()])
             ->setClasses('t3js-clear-page-cache')
             ->setTitle($this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.clear_cache'))
             ->setIcon($this->iconFactory->getIcon('actions-system-cache-clear', IconSize::SMALL));
-
-        return $clearCacheButton;
     }
 
     /**
      * This creates the dropdown menu with the different actions this module is able to provide.
      * For now, they are Columns and Languages.
      */
-    protected function makeActionMenu(ModuleTemplate $view): void
+    private function makeActionMenu(ModuleTemplate $view): void
     {
         $actionMenu = $view->getDocHeaderComponent()->getMenuRegistry()->makeMenu();
         $actionMenu->setIdentifier('languageMenu');
@@ -402,61 +384,20 @@ class PageEditController
                 $menuItem->setActive(true);
                 $defaultKey = null;
             }
+
             $actionMenu->addMenuItem($menuItem);
         }
-        $view->getDocHeaderComponent()->getMenuRegistry()->addMenu($actionMenu);
 
-        return;
-
-
-        $languageService = $this->getLanguageService();
-        $actions = [
-            1 => $languageService->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.view.layout'),
-        ];
-
-        // Find if there are ANY languages at all (and if not, do not show the language option from function menu).
-        // The second check is for an edge case: Only two languages in the site and the default is not allowed.
-        if (count($this->availableLanguages) > 1 || (int)array_key_first($this->availableLanguages) > 0) {
-            $actions[2] = $languageService->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.view.language_comparison');
-        }
-
-        $actionMenu = $view->getDocHeaderComponent()->getMenuRegistry()->makeMenu();
-        $actionMenu->setIdentifier('actionMenu');
-        $actionMenu->setLabel(
-            $languageService->sL(
-                'LLL:EXT:backend/Resources/Private/Language/locallang.xlf:pagelayout.moduleMenu.dropdown.label',
-            ),
-        );
-        $defaultKey = null;
-        $foundDefaultKey = false;
-        foreach ($actions as $key => $action) {
-            $menuItem = $actionMenu
-                ->makeMenuItem()
-                ->setTitle($action)
-                ->setHref((string)$this->uriBuilder->buildUriFromRoute('web_edit', ['id' => $this->pageRecord->getUid(), 'function' => $key]));
-            if (!$foundDefaultKey) {
-                $defaultKey = $key;
-                $foundDefaultKey = true;
-            }
-            if ((int)$this->moduleData->get('function') === $key) {
-                $menuItem->setActive(true);
-                $defaultKey = null;
-            }
-            $actionMenu->addMenuItem($menuItem);
-        }
-        if (isset($defaultKey)) {
-            $this->moduleData->set('function', $defaultKey);
-        }
         $view->getDocHeaderComponent()->getMenuRegistry()->addMenu($actionMenu);
     }
 
-    protected function getLanguageService(): LanguageService
+    private function getLanguageService(): LanguageService
     {
         return $GLOBALS['LANG'];
     }
 
 
-    protected function getBackendUser(): BackendUserAuthentication
+    private function getBackendUser(): BackendUserAuthentication
     {
         return $GLOBALS['BE_USER'];
     }
@@ -486,9 +427,9 @@ class PageEditController
             ])
             ->setLabel(
                 $this->getLanguageService()->sL($active ?
-                'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:autosave':
-                'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:autosave.disabled'
-            ))
+                'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:autosave' :
+                'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:autosave.disabled')
+            )
             ->setIcon($this->iconFactory->getIcon('actions-toggle-off', IconSize::SMALL))
             ->setShowLabelText(true);
     }

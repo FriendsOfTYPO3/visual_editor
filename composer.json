@@ -1,28 +1,63 @@
 {
   "name": "friendsoftypo3/visual-editor",
   "description": "TYPO3 CMS Visual Editor - brings a modern WYSIWYG editing experience to TYPO3 CMS.",
+  "license": [
+    "GPL-2.0-or-later"
+  ],
+  "type": "typo3-cms-extension",
   "keywords": [
-    "typo3 cms", "typo3", "cms",
-    "core", "extension",
+    "typo3 cms",
+    "typo3",
+    "cms",
+    "core",
+    "extension",
     "visual",
     "editor",
     "visual editor",
     "wysiwyg"
   ],
-  "type": "typo3-cms-extension",
-  "license": [
-    "GPL-2.0-or-later"
-  ],
   "require": {
-    "typo3/cms-core": "^13.4.22 || ^14.0.0",
-    "php": "~8.4.0 || ~8.5.0"
+    "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+    "typo3/cms-core": "^13.4.22 || ^14.2.0"
   },
-  "suggest" : {
+  "require-dev": {
+    "pluswerk/grumphp-config": "^10.2.3",
+    "saschaegerer/phpstan-typo3": "^2.0.0 || dev-feature/typo3-14-compatibility",
+    "ssch/typo3-debug-dump-pass": "*",
+    "ssch/typo3-rector": "^3.1.0",
+    "typo3/cms-backend": "dev-main as 14.2.0",
+    "typo3/cms-core": "dev-main as 14.2.0",
+    "typo3/cms-extbase": "dev-main as 14.2.0",
+    "typo3/cms-fluid": "dev-main as 14.2.0",
+    "typo3/cms-frontend": "dev-main as 14.2.0",
+    "typo3/cms-rte-ckeditor": "dev-main as 14.2.0"
+  },
+  "suggest": {
     "wapplersystems/multisite-belogin": "You should install this extension, if you have multiple domains in your TYPO3 installation."
   },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/chrissonntag/phpstan-typo3.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/chrissonntag/typo3-debug-dump-pass.git"
+    }
+  ],
   "autoload": {
     "psr-4": {
       "TYPO3\\CMS\\VisualEditor\\": "Classes/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "ergebnis/composer-normalize": true,
+      "phpro/grumphp": true,
+      "phpstan/extension-installer": true,
+      "pluswerk/grumphp-config": true,
+      "typo3/class-alias-loader": true,
+      "typo3/cms-composer-installers": true
     }
   },
   "extra": {

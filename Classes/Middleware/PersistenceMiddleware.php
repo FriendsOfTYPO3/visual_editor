@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\Middleware;
 
+use RuntimeException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -19,6 +20,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Aspect\PreviewAspect;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Service\DataHandlerService;
+
 use function array_keys;
 use function implode;
 use function json_decode;
@@ -28,8 +30,7 @@ class PersistenceMiddleware implements MiddlewareInterface
     public function __construct(
         private readonly Context $context,
         private readonly DataHandlerService $dataHandlerService,
-    )
-    {
+    ) {
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -51,7 +52,7 @@ class PersistenceMiddleware implements MiddlewareInterface
         unset($input['cmd']);
 
         if (!empty($input)) {
-            throw new \RuntimeException('Unknown data operations: ' . implode(', ', array_keys($input)) . ' only data and cmd are allowed');
+            throw new RuntimeException('Unknown data operations: ' . implode(', ', array_keys($input)) . ' only data and cmd are allowed', 8110225095);
         }
 
         $this->dataHandlerService->run($data, $cmd);
@@ -70,11 +71,11 @@ class PersistenceMiddleware implements MiddlewareInterface
         // backend user required
         $user = $this->context->getAspect('backend.user');
         if (!$user instanceof UserAspect) {
-            throw new \RuntimeException('UserAspect not set in context');
+            throw new RuntimeException('UserAspect not set in context', 1552066121);
         }
 
         if (!$user->isLoggedIn()) {
-            throw new \RuntimeException('not logged in');
+            throw new RuntimeException('not logged in', 6454763677);
         }
 
         // only do something on POST requests
@@ -84,7 +85,7 @@ class PersistenceMiddleware implements MiddlewareInterface
 
         // only allow application/json content type
         if ($request->getHeaderLine('Content-Type') !== 'application/json') {
-            throw new UnauthorizedException('Content-Type must be application/json to save stuff with visual_editor');
+            throw new UnauthorizedException('Content-Type must be application/json to save stuff with visual_editor', 5015404100);
         }
 
         if ($user->isAdmin()) {
@@ -93,18 +94,18 @@ class PersistenceMiddleware implements MiddlewareInterface
 
         $beUser = $GLOBALS['BE_USER'] ?? null;
         if (!$beUser instanceof BackendUserAuthentication) {
-            throw new UnauthorizedException('No $GLOBALS[\'BE_USER\'] available');
+            throw new UnauthorizedException('No $GLOBALS[\'BE_USER\'] available', 8725323237);
         }
 
         // check permissions of user on page
         $pageInformation = $this->getPageInformation($request);
 
         if (!$beUser->isInWebMount($pageInformation->getId())) {
-            throw new UnauthorizedException('No permission to access this page');
+            throw new UnauthorizedException('No permission to access this page', 1610177162);
         }
 
         if (!$beUser->doesUserHaveAccess($pageInformation->getPageRecord(), Permission::CONTENT_EDIT)) {
-            throw new UnauthorizedException('No permission to edit content on this page');
+            throw new UnauthorizedException('No permission to edit content on this page', 7668402611);
         }
 
         return MiddlewareAction::Save;
@@ -114,8 +115,9 @@ class PersistenceMiddleware implements MiddlewareInterface
     {
         $frontendPageInformation = $request->getAttribute('frontend.page.information');
         if (!$frontendPageInformation instanceof PageInformation) {
-            throw new \RuntimeException('No frontend page information available');
+            throw new RuntimeException('No frontend page information available', 7005099635);
         }
+
         return $frontendPageInformation;
     }
 

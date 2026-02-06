@@ -14,6 +14,7 @@ use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+
 use function assert;
 
 final readonly class EditModeService
@@ -23,8 +24,7 @@ final readonly class EditModeService
         private UriBuilder $uriBuilder,
         private PageRenderer $pageRenderer,
         private TcaSchemaFactory $tcaSchema,
-    )
-    {
+    ) {
     }
 
     public function isEditMode(): bool
@@ -44,6 +44,7 @@ final readonly class EditModeService
         if (!$this->isEditMode()) {
             return;
         }
+
         $this->assetCollector->addStyleSheet('editable', 'EXT:visual_editor/Resources/Public/Css/editable.css');
         $this->assetCollector->addJavaScriptModule('@typo3/visual-editor/Frontend/index.mjs');
         $this->assetCollector->addJavaScriptModule('@typo3/visual-editor/Frontend/index.mjs');
@@ -103,35 +104,42 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
         if (!$this->isEditMode()) {
             return false; // not in edit mode
         }
+
         $tcaSchema = $this->tcaSchema->get($record->getFullType());
         $fieldType = $tcaSchema->getField($field);
 
         if ($tcaSchema->hasCapability(TcaSchemaCapability::AccessReadOnly)) {
             return false; // table readonly
         }
+
         if ($fieldType->getConfiguration()['readOnly'] ?? false) {
             return false; // field readonly
         }
+
         // user access check
         /** @var BackendUserAuthentication $beUser */
         $beUser = $GLOBALS['BE_USER'];
         if (!$beUser->checkLanguageAccess($record->getLanguageId())) {
             return false; // no access to this language
         }
+
         if (!$beUser->check('tables_modify', $record->getMainType())) {
             return false; // no access to this table
         }
+
         if (!$beUser->isInWebMount($record->getPid())) {
             return false; // no access to this page // TODO move this to the middleware
         }
-        if ($record->getMainType() === 'tt_content') {
-            if (!$beUser->check('explicit_allowdeny', 'tt_content:CType:' . $record->get('CType'))) {
-                return false; // content element type not allowed
-            }
+
+        if ($record->getMainType() === 'tt_content' && !$beUser->check('explicit_allowdeny', 'tt_content:CType:' . $record->get('CType'))) {
+            return false;
+            // content element type not allowed
         }
+
         if ($fieldType->supportsAccessControl() && !$beUser->check('non_exclude_fields', $record->getMainType() . ':' . $field)) {
             return false; // no access to this field
         }
+
         return true;
     }
 

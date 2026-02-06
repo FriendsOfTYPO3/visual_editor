@@ -1,0 +1,25 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to function assert\(\) with true will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 6
+			path: packages/grumphp-xliff-task/src/XliffLinter.php
+
+		-
+			message: '#^Instanceof between DOMNamedNodeMap<DOMAttr> and DOMNamedNodeMap will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 3
+			path: packages/grumphp-xliff-task/src/XliffLinter.php
+
+		-
+			message: '#^Instanceof between DOMElement and DOMElement will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 3
+			path: packages/grumphp-xliff-task/src/XliffLinter.php
+
+		-
+			message: '#^Method Andersundsehr\\RectorP\\PartialCommand\:\:getAllFiles\(\) should return list\<string\> but returns array\<string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: packages/rector-p/src/PartialCommand.php

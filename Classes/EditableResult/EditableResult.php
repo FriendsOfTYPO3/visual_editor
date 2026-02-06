@@ -8,15 +8,9 @@ use TYPO3Fluid\Fluid\Core\Parser\UnsafeHTML;
 
 interface EditableResult extends UnsafeHTML
 {
-    public string $name {
-        get;
-    }
-    public string $html {
-        get;
-    }
-    public bool $isEmpty {
-        get;
-    }
+    public function getName(): string;
 
-    public function __toString(): string;
+    public function getHtml(): string;
+
+    public function isEmpty(): bool;
 }

@@ -17,7 +17,6 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\Event;
 
-
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 
@@ -39,8 +38,7 @@ final class RenderContentAreaEvent
         private readonly array $contentAreaConfiguration,
         private readonly array $additionalArguments,
         private readonly ?ServerRequestInterface $request,
-    )
-    {
+    ) {
     }
 
     public function getRenderedContentArea(): string

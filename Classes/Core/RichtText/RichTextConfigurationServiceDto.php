@@ -6,8 +6,6 @@ namespace TYPO3\CMS\VisualEditor\Core\RichtText;
 
 final readonly class RichTextConfigurationServiceDto
 {
-
-
     public function __construct(
         public string $tableName,
         public int $uid,
@@ -21,9 +19,7 @@ final readonly class RichTextConfigurationServiceDto
         private array $data = [],
         private array $additionalConfiguration = [],
         private array $externalPlugins = [],
-    )
-    {
-
+    ) {
     }
 
     public function getData(): array

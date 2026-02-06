@@ -27,8 +27,7 @@ final class TextViewHelper extends AbstractViewHelper
         private readonly EditModeService $editModeService,
         private readonly RecordFactory $recordFactory,
         private readonly TcaSchemaFactory $tcaSchema,
-    )
-    {
+    ) {
     }
 
     public function initializeArguments(): void
@@ -41,7 +40,7 @@ final class TextViewHelper extends AbstractViewHelper
         $this->registerArgument('allowNewlines', 'bool', 'allows newLines and converts them to <br>', false, false);
     }
 
-    public function render(): Input|string
+    public function render(): Input
     {
         $this->editModeService->init();
 

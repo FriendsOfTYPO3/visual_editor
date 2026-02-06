@@ -11,7 +11,8 @@ final class EditModeViewHelper extends AbstractConditionViewHelper
 {
     public function __construct(
         private readonly EditModeService $editModeService,
-    ) {}
+    ) {
+    }
 
 
     /**
@@ -23,6 +24,7 @@ final class EditModeViewHelper extends AbstractConditionViewHelper
         if ($this->editModeService->isEditMode()) {
             return $this->renderThenChild();
         }
+
         return $this->renderElseChild();
     }
 }
