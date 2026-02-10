@@ -27,7 +27,7 @@ document.body.appendChild(element);
 (function spotlight() {
   const setSpotlight = () => {
     if (spotlightActive.get()) {
-      highlight('ve-editable-text, ve-editable-rich-text');
+      highlight('ve-editable-text, ve-editable-rich-text, .ck-editor__top');
     } else {
       reset();
     }

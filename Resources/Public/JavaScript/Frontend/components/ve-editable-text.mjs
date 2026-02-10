@@ -53,7 +53,7 @@ export class VeEditableText extends LitElement {
    * @param changedProperties {Map<PropertyKey, unknown>}
    */
   firstUpdated(changedProperties) {
-    this.placeholder = this.placeholder || this.title;
+    this.placeholder = '~' + (this.placeholder || this.title) + '~';
     const aTag = this.closest('a');
     if (aTag) {
       // disable links above editable inputs to prevent navigation when clicking
@@ -177,7 +177,6 @@ export class VeEditableText extends LitElement {
 
       &:before {
         content: attr(data-placeholder);
-        color: #555;
         font-style: italic;
       }
     }

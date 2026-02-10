@@ -253,6 +253,7 @@ function computeHolesFromTargets() {
 function updateOverlayPath() {
   if (!overlayPathEl) return;
 
+  currentTargets = selectElements(currentSelectorToHighlight);
   updateViewport();
 
   if (!isActive || !currentTargets.length) {
@@ -358,7 +359,7 @@ export function highlight(selectorToHighlight) {
   ensureInfrastructure();
 
   removeListeners();
-  currentTargets = selectElements(selectorToHighlight);
+  currentTargets = selectElements(currentSelectorToHighlight);
 
   if (!currentTargets.length) {
     reset();

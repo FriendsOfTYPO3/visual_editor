@@ -122,7 +122,7 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
         /** @var BackendUserAuthentication $beUser */
         $beUser = $GLOBALS['BE_USER'];
         if ($record instanceof Record || method_exists($record, 'getLanguageId')) {
-            if (!$beUser->checkLanguageAccess((int)$record->getLanguageId())) {
+            if (!$beUser->checkLanguageAccess($record->getLanguageId())) {
                 return false; // no access to this language
             }
         } else {

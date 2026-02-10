@@ -344,8 +344,8 @@ final class PageEditController
     {
         $pageUid = $this->pageRecord->getUid();
         if ($this->selectedLanguage->getLanguageId() > 0) {
-            $overlayRecord = $this->getLocalizedPageRecord($this->selectedLanguage->getLanguageId());
-            $pageUid = $overlayRecord['uid'];
+            $localizedPageRecord = $this->getLocalizedPageRecord($this->selectedLanguage->getLanguageId());
+            $pageUid = $localizedPageRecord['uid'] ?? $pageUid;
         }
 
         $params = [
