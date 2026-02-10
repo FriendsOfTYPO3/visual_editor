@@ -70,7 +70,7 @@ export class VeContentArea extends LitElement {
       .replace('__UID_PID__', this.target)
       .replace('__TX_CONTAINER_PARENT__', this.tx_container_parent || 0);
 
-    const columnHasChild = this.children.length > 0;
+    const columnHasChild = this.children.length > 0; // TODO only count ve-content-element!
     const addButton = html`
       <div class="center">
         <ve-iframe-popup title="new Content" src="${newContentUrl}" type="ajax">

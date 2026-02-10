@@ -152,6 +152,7 @@ export class VeDropZone extends LitElement {
       },
     };
 
+    // event.dataTransfer.dropEffect is sometimes 'none' in Chromium
     if (event.dataTransfer.dropEffect === 'copy') {
       // For copy we ask the user and if confirmed we do an immediate call useDataHandler
       // if not, we do nothing
@@ -162,7 +163,7 @@ export class VeDropZone extends LitElement {
         return;
       }
 
-      dataHandlerStore.setCmd(data.table, data.uid, event.dataTransfer.dropEffect, actionData);
+      dataHandlerStore.setCmd(data.table, data.uid, 'copy', actionData);
       await useDataHandler(dataHandlerStore.data, dataHandlerStore.cmd);
       dataHandlerStore.markSaved();
 
@@ -174,7 +175,7 @@ export class VeDropZone extends LitElement {
       return;
     }
 
-    dataHandlerStore.setCmd(data.table, data.uid, event.dataTransfer.dropEffect, actionData);
+    dataHandlerStore.setCmd(data.table, data.uid, 'move', actionData);
 
 
     this.isDragHovering = false; // reset

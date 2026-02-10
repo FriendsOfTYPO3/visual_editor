@@ -60,7 +60,7 @@ final class ContentAreaViewHelper extends AbstractViewHelper
                 renderedContentArea: $this->renderChildren(),
                 contentArea: new ContentArea(
                     colPos: (int)$this->arguments['colPos'],
-                    tx_container_parent: (int)$this->arguments['tx_container_parent'],
+                    tx_container_parent: (int)$this->arguments['txContainerParent'],
                 ),
                 request: $request,
             ),
