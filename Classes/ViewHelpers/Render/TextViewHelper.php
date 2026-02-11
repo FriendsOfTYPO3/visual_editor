@@ -146,7 +146,7 @@ final class TextViewHelper extends AbstractViewHelper
         $tag = GeneralUtility::makeInstance(TagBuilder::class);
         $tag->setTagName('ve-editable-text');
         $tag->addAttribute('table', $record->getMainType());
-        $tag->addAttribute('uid', $record->getUid());
+        $tag->addAttribute('uid', $record->getComputedProperties()->getLocalizedUid() ?: $record->getUid());
         $tag->addAttribute('field', $field->getName());
 
         $tag->addAttribute('name', $label);
@@ -184,7 +184,7 @@ final class TextViewHelper extends AbstractViewHelper
         $tag = GeneralUtility::makeInstance(TagBuilder::class);
         $tag->setTagName('ve-editable-rich-text');
         $tag->addAttribute('table', $record->getMainType());
-        $tag->addAttribute('uid', $record->getUid());
+        $tag->addAttribute('uid', $record->getComputedProperties()->getLocalizedUid() ?: $record->getUid());
         $tag->addAttribute('field', $field->getName());
         $tag->addAttribute('name', $label);
 
@@ -218,7 +218,7 @@ final class TextViewHelper extends AbstractViewHelper
 
         $richTextConfigurationServiceDto = new RichTextConfigurationServiceDto(
             tableName: $record->getMainType(),
-            uid: $record->getUid(),
+            uid: $record->getComputedProperties()->getLocalizedUid() ?: $record->getUid(),
             fieldName: $field,
             recordTypeValue: $record->getRecordType(),
             effectivePid: $record->getPid(),

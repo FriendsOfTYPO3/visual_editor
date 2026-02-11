@@ -125,11 +125,10 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
         /** @var BackendUserAuthentication $beUser */
         $beUser = $GLOBALS['BE_USER'];
         if ($record instanceof Record || method_exists($record, 'getLanguageId')) {
+            // it is not that bad if we can not check the language access, on save there might be an error message. (better than always throwing an error.
             if (!$beUser->checkLanguageAccess($record->getLanguageId())) {
                 return false; // no access to this language
             }
-        } else {
-            throw new RuntimeException('RecordInterface implementation does not have getLanguageId method. This is required for access check. Please implement getLanguageId method in ' . get_class($record) . ' OR report this error', 1770639877);
         }
 
         if (!$beUser->check('tables_modify', $record->getMainType())) {

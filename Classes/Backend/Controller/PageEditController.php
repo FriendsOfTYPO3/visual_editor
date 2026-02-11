@@ -369,7 +369,7 @@ final class PageEditController
         return $buttonBar
             ->makeLinkButton()
             ->setHref('#')
-            ->setDataAttributes(['id' => $this->pageRecord->getUid()])
+            ->setDataAttributes(['id' => $this->pageRecord->getUid()]) // TODO check if this needs to take localized page uid into account
             ->setClasses('t3js-clear-page-cache')
             ->setTitle($this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.clear_cache'))
             ->setIcon($this->iconFactory->getIcon('actions-system-cache-clear', IconSize::SMALL));

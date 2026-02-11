@@ -38,13 +38,13 @@ final readonly class RenderContentAreaEventListener
 
         $extContainer = $event->getContentArea()->getConfiguration()['container'] ?? null;
         if ($extContainer instanceof Container) {
-            $tag->addAttribute('tx_container_parent', (string)$extContainer->getUid());// TODO test this
+            $tag->addAttribute('tx_container_parent', (string)$extContainer->getUid());// TODO test this (test with sys_language_uid > 1)
         }
 
         // Backwards compatibility for TYPO3 13: (TODO remove this in TYPO3 15)
         $txContainerParent = $event->getContentArea()->getConfiguration()['tx_container_parent'] ?? null;
         if (is_int($txContainerParent)) {
-            $tag->addAttribute('tx_container_parent', (string)$txContainerParent); // TODO test this
+            $tag->addAttribute('tx_container_parent', (string)$txContainerParent);
         }
 
         $event->setRenderedContentArea($tag->render());

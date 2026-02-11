@@ -10,6 +10,16 @@ class DataHandlerStore extends EventTarget {
   #cmd = {};
   #oldDetail = {};
 
+  constructor() {
+    super();
+
+    window.addEventListener('beforeunload', (event) => {
+      if (this.changesCount) {
+        event.preventDefault();
+      }
+    });
+  }
+
   get data() {
     return structuredClone(this.#data);
   }

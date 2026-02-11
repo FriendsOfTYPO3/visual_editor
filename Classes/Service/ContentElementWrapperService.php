@@ -15,7 +15,6 @@ use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
-use TYPO3\CMS\VisualEditor\ViewHelpers\Render\TextViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 
 use function assert;
@@ -76,8 +75,9 @@ final readonly class ContentElementWrapperService
         $tag = GeneralUtility::makeInstance(TagBuilder::class, 've-content-element', $content);
         $tag->addAttribute('elementName', $this->getContentTypeLabel($record));
         $tag->addAttribute('table', $table);
-        $tag->addAttribute('id', $table . ':' . $record->getUid());
-        $tag->addAttribute('uid', (string)$record->getUid());
+        $uid = $record->getComputedProperties()->getLocalizedUid() ?: $record->getUid();
+        $tag->addAttribute('id', $table . ':' . $uid);
+        $tag->addAttribute('uid', (string)($uid));
         $tag->addAttribute('pid', (string)$record->getPid());
         $tag->addAttribute('colPos', $record->get('colPos'));
         $tag->addAttribute('hiddenFieldName', $hiddenFieldName);
@@ -111,22 +111,5 @@ final readonly class ContentElementWrapperService
         }
 
         return $recordType;
-    }
-
-    private function getEditUrl(Record $record): string
-    {
-        $returnUrl = (string)$this->backendUriBuilder->buildUriFromRoute('web_edit', [
-            'id' => $record->getPid(),
-        ]);
-        $params = [
-            'edit' => [
-                $record->getMainType() => [
-                    $record->getUid() => 'edit',
-                ],
-            ],
-            'returnUrl' => $returnUrl,
-        ];
-
-        return (string)$this->backendUriBuilder->buildUriFromRoute('record_edit', $params);
     }
 }
