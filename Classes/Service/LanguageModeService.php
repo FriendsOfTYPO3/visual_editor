@@ -5,21 +5,14 @@ declare(strict_types=1);
 namespace TYPO3\CMS\VisualEditor\Service;
 
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Backend\View\BackendLayout\ContentFetcher;
 use TYPO3\CMS\Core\Domain\Record;
-use TYPO3\CMS\Core\Domain\RecordInterface;
-use TYPO3\CMS\Core\Page\ContentArea;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Enum\LanguageMode;
+use function method_exists;
 
 final readonly class LanguageModeService
 {
-
-    public function __construct(private ContentFetcher $contentFetcher)
-    {
-    }
-
     public function getBackendLanguageMode(PageInformation $pageInformation): LanguageMode
     {
         if ($pageInformation->getPageRecord()['sys_language_uid'] == 0) {
@@ -29,12 +22,19 @@ final readonly class LanguageModeService
         $isConnectedMode = false;
         $isFreeMode = false;
 
-        foreach ($pageInformation->getPageLayout()->getContentAreas()->getGroupedRecords() as $contentArea) {
+        $contentAreas = $pageInformation->getPageLayout()->getContentAreas();
+        if (method_exists($contentAreas, 'getGroupedRecords')) {
+            $groupedRecords = $contentAreas->getGroupedRecords();
+        } else {
+            $groupedRecords = $contentAreas;
+        }
+
+        foreach ($groupedRecords as $contentArea) {
             foreach ($contentArea['records'] as $record) {
                 if (!$record instanceof Record) {
                     throw new \InvalidArgumentException('Record array must implement ' . Record::class);
                 }
-                if($record->getPid() !== $pageInformation->getId()){
+                if ($record->getPid() !== $pageInformation->getId()) {
                     // skip records that are from slideMode
                     continue;
                 }
@@ -62,7 +62,7 @@ final readonly class LanguageModeService
      */
     public function getAllowNewContent(PageInformation $pageInformation, SiteLanguage $language): bool
     {
-        if($language->getLanguageId() === 0){
+        if ($language->getLanguageId() === 0) {
             return true;
         }
         $pageTsConfig = BackendUtility::getPagesTSconfig($pageInformation->getId());
