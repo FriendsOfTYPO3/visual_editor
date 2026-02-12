@@ -11,6 +11,7 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Fluid\Event\ModifyRenderedContentAreaEvent;
 use TYPO3\CMS\VisualEditor\BackwardsCompatibility\Event\RenderContentAreaEvent as V13RenderContentAreaEvent;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
+use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use function str_contains;
 
@@ -18,6 +19,7 @@ final readonly class RenderContentAreaEventListener
 {
     public function __construct(
         private EditModeService $editModeService,
+        private LocalizationService $localizationService,
     ) {
     }
 
@@ -37,7 +39,7 @@ final readonly class RenderContentAreaEventListener
         $tag->addAttribute('target', $pageUid);
         $tag->addAttribute('colPos', $event->getContentArea()->getColPos());
         $columnName = $event->getContentArea()->getName();
-        $tag->addAttribute('columnName', str_contains($columnName, ':') ? LocalizationUtility::translate($columnName) : $columnName);
+        $tag->addAttribute('columnName', $this->localizationService->tryTranslation($columnName));
 
         $extContainer = $event->getContentArea()->getConfiguration()['container'] ?? null;
         if ($extContainer instanceof Container) {

@@ -23,6 +23,7 @@ use TYPO3\CMS\VisualEditor\Core\RichtText\RichTextConfigurationServiceDto;
 use TYPO3\CMS\VisualEditor\EditableResult\Input;
 use TYPO3\CMS\VisualEditor\EditableResult\RichText;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
+use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use function get_debug_type;
@@ -57,6 +58,7 @@ final class TextViewHelper extends AbstractViewHelper
         private readonly RichTextConfigurationService $richTextConfigurationService,
         private readonly RichtextConfiguration $richtext,
         private readonly Typo3Version $typo3Version,
+        private readonly LocalizationService $localizationService,
     )
     {
     }
@@ -110,7 +112,7 @@ final class TextViewHelper extends AbstractViewHelper
         $canEdit = $this->editModeService->canEditField($record, $field);
 
         $fieldSchema = $this->tcaSchema->get($record->getFullType())->getField($field);
-        $label = LocalizationUtility::translate($fieldSchema->getLabel(), languageKey: $this->editModeService->getBackendUserLanguage());
+        $label = $this->localizationService->tryTranslation($fieldSchema->getLabel());
         if ($fieldSchema instanceof InputFieldType) {
             return $this->renderInput($value, $record, $fieldSchema, $label, $canEdit);
         }
@@ -151,10 +153,9 @@ final class TextViewHelper extends AbstractViewHelper
 
         $tag->addAttribute('name', $label);
 
-        $title = LocalizationUtility::translate(
+        $title = $this->localizationService->tryTranslation(
             'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:editable.title',
             arguments: [$label],
-            languageKey: $this->editModeService->getBackendUserLanguage(),
         );
         $tag->addAttribute('title', $title);
         $tag->addAttribute('allowNewlines', $allowNewlines);
@@ -188,10 +189,9 @@ final class TextViewHelper extends AbstractViewHelper
         $tag->addAttribute('field', $field->getName());
         $tag->addAttribute('name', $label);
 
-        $title = LocalizationUtility::translate(
+        $title = $this->localizationService->tryTranslation(
             'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:editable.title',
             arguments: [$label],
-            languageKey: $this->editModeService->getBackendUserLanguage(),
         );
         $tag->addAttribute('title', $title);
         $tag->addAttribute('options', $options);

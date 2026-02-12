@@ -11,6 +11,7 @@ use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\BackwardsCompatibility\ContentArea;
 use TYPO3\CMS\VisualEditor\BackwardsCompatibility\Event\RenderContentAreaEvent;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
+use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 use TYPO3\CMS\VisualEditor\ViewHelpers\Render\TextViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use function is_array;
@@ -40,7 +41,8 @@ final class ContentAreaViewHelper extends AbstractViewHelper
 {
     protected $escapeOutput = false;
 
-    public function __construct(private readonly EventDispatcherInterface $eventDispatcher, private readonly EditModeService $editModeService)
+    public function __construct(private readonly EventDispatcherInterface $eventDispatcher, private readonly EditModeService $editModeService,
+        private readonly LocalizationService $localizationService)
     {
     }
 
@@ -89,11 +91,11 @@ final class ContentAreaViewHelper extends AbstractViewHelper
         $pageInformation = $request->getAttribute('frontend.page.information');
         foreach ($pageInformation->getPageLayout()->getContentAreas() as $contentArea) {
             if (is_array($contentArea) && (int)$contentArea['colPos'] === $colPos) {
-                return LocalizationUtility::translate($contentArea['name'], languageKey: $this->editModeService->getBackendUserLanguage());
+                return $this->localizationService->tryTranslation($contentArea['name']);
             }
             if (method_exists($contentArea, 'getName') && method_exists($contentArea, 'getColPos')) {
                 if ($contentArea->getColPos() === $colPos) {
-                    return LocalizationUtility::translate($contentArea->getName(), languageKey: $this->editModeService->getBackendUserLanguage());
+                    return $this->localizationService->tryTranslation($contentArea->getName());
                 }
             }
         }

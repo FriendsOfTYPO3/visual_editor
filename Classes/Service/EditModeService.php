@@ -21,6 +21,7 @@ use TYPO3\CMS\Core\Security\RequestToken;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
+use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 use function assert;
 use function method_exists;
 
@@ -34,6 +35,7 @@ final readonly class EditModeService
         private LanguageServiceFactory $languageServiceFactory,
         private LanguageModeService $languageModeService,
         private Context $context,
+        private LocalizationService $localizationService,
     )
     {
     }
@@ -182,18 +184,10 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
     private function loadLangaugeLabelsInline(): void
     {
         $file = 'EXT:visual_editor/Resources/Private/Language/locallang.xlf';
-        $languageService = $this->languageServiceFactory->create($this->getBackendUserLanguage());
+        $languageService = $this->languageServiceFactory->create($this->localizationService->getBackendUserLanguage());
         foreach ($languageService->getLabelsFromResource($file) as $key => $value) {
             $this->pageRenderer->addInlineLanguageLabel($key, $value);
         }
     }
 
-    public function getBackendUserLanguage(): ?string
-    {
-        $backendUserAuthentication = $GLOBALS['BE_USER'];
-        if ($backendUserAuthentication?->user['lang'] !== null) {
-            return $backendUserAuthentication->user['lang'];
-        }
-        return null;
-    }
 }

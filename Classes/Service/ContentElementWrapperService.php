@@ -15,6 +15,7 @@ use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
+use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 
 use function assert;
@@ -31,6 +32,7 @@ final readonly class ContentElementWrapperService
         private EditModeService $editModeService,
         private TcaSchemaFactory $tcaSchema,
         private UriBuilder $backendUriBuilder,
+        private LocalizationService $localizationService,
     ) {
     }
 
@@ -105,11 +107,7 @@ final readonly class ContentElementWrapperService
         $recordType = $record->getRecordType();
         foreach ($GLOBALS['TCA']['tt_content']['columns']['CType']['config']['items'] as $item) {
             if ($item['value'] === $recordType && $item['label']) {
-                try {
-                    return str_contains((string) $item['label'], ':') ? LocalizationUtility::translate($item['label'], languageKey: $this->editModeService->getBackendUserLanguage()) : $item['label'];
-                } catch (InvalidArgumentException) {
-                    return $item['label'];
-                }
+                return $this->localizationService->tryTranslation($item['label']);
             }
         }
 
