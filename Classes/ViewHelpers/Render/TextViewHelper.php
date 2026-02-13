@@ -49,7 +49,7 @@ use const JSON_THROW_ON_ERROR;
  */
 final class TextViewHelper extends AbstractViewHelper
 {
-    const string RECORD_TYPE = RecordInterface::class . '|' . PageInformation::class . '|' . DomainObjectInterface::class;
+    private const RECORD_TYPE = RecordInterface::class . '|' . PageInformation::class . '|' . DomainObjectInterface::class;
 
     /**
      * Extbase models have a __toString() method and Fluid calls that if we escape the Children (arguments)
