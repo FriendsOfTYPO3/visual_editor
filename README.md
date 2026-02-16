@@ -15,10 +15,9 @@ TODO put gifs here
 ## Installation
 
 1. 📦 `composer require friendsoftypo3/visual-editor` (or install via 🧩 Extension Manager)
-2. ⚙️ add the SiteSet to your site configuration
-3. 🧱 Add `f:render.text`, `f:mark.contentArea` to your templates (see below)
-4. 🧹 Clear caches
-5. 🚀 Start editing!
+2. 🧱 Add `f:render.text`, `f:mark.contentArea` to your templates (see below)
+3. 🧹 Clear caches
+4. 🚀 Start editing!
 
 ## Where to add the ViewHelpers
 
