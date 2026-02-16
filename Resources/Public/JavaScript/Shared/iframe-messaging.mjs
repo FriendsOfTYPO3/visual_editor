@@ -9,7 +9,7 @@ export const isDirectMode = window.parent === window;
  * @property updateChangesCount {number}
  * @property doSave {null}
  * @property onSave {null}
- * @property saveEnded {null}
+ * @property saveEnded {{updatePageTree: boolean}}
  * @property pageChanged {{pageId: number, languageId: number}}
  * @property openInMiddleFrame {String}
  * @property change {Number}

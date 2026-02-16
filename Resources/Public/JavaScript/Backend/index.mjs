@@ -47,7 +47,6 @@ onMessage('openInMiddleFrame', (href) => {
 });
 
 onMessage('pageChanged', ({pageId, languageId}) => {
-
   const newUrl = new URL(window.location.href);
   newUrl.searchParams.set('id', pageId);
   if (languageId) {

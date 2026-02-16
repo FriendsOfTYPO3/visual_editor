@@ -60,12 +60,13 @@ export class VeSaveButton extends LitElement {
     this.saving = true;
     sendMessage('onSave');
 
+    const updatePageTree = dataHandlerStore.data['pages'] || dataHandlerStore.cmd['pages'];
     await useDataHandler(dataHandlerStore.data, dataHandlerStore.cmd);
 
     // worked, so we mark changes as saved
     dataHandlerStore.markSaved();
     this.saving = false;
-    sendMessage('saveEnded');
+    sendMessage('saveEnded', {updatePageTree});
 
     // sendMessage('reloadFrames'); // TODO if langauge compare is added we need this again.
   }

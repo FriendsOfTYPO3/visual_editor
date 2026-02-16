@@ -33,8 +33,13 @@ export class VeBackendSaveButton extends LitElement {
       this.saving = true;
     });
 
-    onMessage('saveEnded', () => {
+    onMessage('saveEnded', ({updatePageTree}) => {
       this.saving = false;
+
+      if (updatePageTree) {
+        console.log('Updating page tree after save', {updatePageTree});
+        top.document.dispatchEvent(new CustomEvent('typo3:pagetree:refresh'));
+      }
     });
     this.addEventListener('click', (e) => {
       e.preventDefault();
