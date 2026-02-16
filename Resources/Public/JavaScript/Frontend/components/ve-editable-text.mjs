@@ -46,6 +46,11 @@ export class VeEditableText extends LitElement {
     dataHandlerStore.addEventListener('change', () => {
       this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
       this.valueInitial = dataHandlerStore.initialData[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
+      const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
+      if (storedValue !== this.shadowRoot.querySelector('.slot').innerText) {
+        this.value = storedValue ?? this.value;
+        this.shadowRoot.querySelector('.slot').innerText = this.value;
+      }
     })
   }
 
@@ -66,7 +71,9 @@ export class VeEditableText extends LitElement {
 
   updated(changedProperties) {
     this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
-    dataHandlerStore.setData(this.table, this.uid, this.field, this.value);
+    if (changedProperties.has('value')) {
+      dataHandlerStore.setData(this.table, this.uid, this.field, this.value);
+    }
 
     const hideEmpty = !this.showEmpty && this.value === '' && !this.matches(':focus-within') && !this.changed;
     if (hideEmpty) {

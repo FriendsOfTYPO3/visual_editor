@@ -35,6 +35,11 @@ export class VeEditableRichText extends LitElement {
     this.value = this.innerHTML;
     dataHandlerStore.addEventListener('change', () => {
       this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
+      const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
+      if (storedValue !== this.editor.getData()) {
+        this.value = storedValue ?? this.value;
+        this.editor.setData(this.value);
+      }
     })
     this.showEmpty = showEmptyActive.get();
     showEmptyActive.addEventListener('change', () => {
@@ -51,14 +56,14 @@ export class VeEditableRichText extends LitElement {
     /** @type {HTMLElement} */
     const element = this;
     element.innerHTML = `<div>${element.innerHTML}</div>`;
-    const editor = await initCKEditorInstance(this.options || {}, element.firstElementChild, element.firstElementChild, Editor);
-    editor.editing.view.document.getRoot( 'main' ).placeholder = this.placeholder;
-    editor.model.document.on('change:data', () => {
-      this.value = editor.getData();
+    this.editor = await initCKEditorInstance(this.options || {}, element.firstElementChild, element.firstElementChild, Editor);
+    this.editor.editing.view.document.getRoot('main').placeholder = this.placeholder;
+    this.editor.model.document.on('change:data', () => {
+      this.value = this.editor.getData();
       dataHandlerStore.setData(this.table, this.uid, this.field, this.value);
       this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
     });
-    this.value = editor.getData();
+    this.value = this.editor.getData();
     dataHandlerStore.setInitialData(this.table, this.uid, this.field, this.value);
 
     // reset CSS

@@ -104,7 +104,7 @@ class DataHandlerStore extends EventTarget {
 
     const oldDetail = this.#oldDetail;
     this.#oldDetail = detail;
-    if (JSON.stringify(oldDetail) === JSON.stringify(this.#oldDetail)) {
+    if (JSON.stringify(oldDetail) === JSON.stringify(detail)) {
       return;
     }
     this.dispatchEvent(new CustomEvent('change', {detail}));
