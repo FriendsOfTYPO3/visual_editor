@@ -8,6 +8,7 @@ import {autoNoOverlap} from "@typo3/visual-editor/Frontend/auto-no-overlap.mjs";
 export class VeDragHandle extends LitElement {
   static properties = {
     table: {type: String},
+    CType: {type: String},
     uid: {type: Number},
     isActive: {type: String},
   };
@@ -40,6 +41,7 @@ export class VeDragHandle extends LitElement {
     const info = {
       table: this.table,
       uid: this.uid,
+      CType: this.CType,
     };
     event.dataTransfer.setData('text/ve-drag', JSON.stringify(info));
 

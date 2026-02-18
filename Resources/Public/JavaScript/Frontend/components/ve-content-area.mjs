@@ -8,6 +8,8 @@ export class VeContentArea extends LitElement {
   static properties = {
     target: {type: Number},
     colPos: {type: Number},
+    allowedContentTypes: {type: String},
+    disallowedContentTypes: {type: String},
     columnName: {type: String},
     tx_container_parent: {type: Number},
 
@@ -88,6 +90,8 @@ export class VeContentArea extends LitElement {
         table="tt_content"
         target="${this.target}"
         colPos="${this.colPos}"
+        allowedContentTypes="${(this.parentElement.parentElement.allowedContentTypes)}"
+        disallowedContentTypes="${this.disallowedContentTypes}"
         columnName="${this.columnName}"
         tx_container_parent="${this.tx_container_parent}"
       ></ve-drop-zone>

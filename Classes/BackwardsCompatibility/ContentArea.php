@@ -33,4 +33,16 @@ final readonly class ContentArea
             'tx_container_parent' => $this->tx_container_parent,
         ];
     }
+
+    public function getAllowedContentTypes(): array
+    {
+        // TODO use content EXT:content_defender here?
+        return [];
+    }
+
+    public function getDisallowedContentTypes(): array
+    {
+        // TODO use content EXT:content_defender here?
+        return [];
+    }
 }

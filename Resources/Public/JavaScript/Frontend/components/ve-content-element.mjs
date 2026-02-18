@@ -12,6 +12,7 @@ export class VeContentElement extends LitElement {
   static properties = {
     id: {type: String},
     elementName: {type: String},
+    CType: {type: String},
     table: {type: String},
     uid: {type: Number},
     pid: {type: Number},
@@ -135,7 +136,7 @@ export class VeContentElement extends LitElement {
     const toggleIcon = this.isHidden ? 'actions-toggle-off' : 'actions-toggle-on';
     const statusBar = html`
       <ve-drag-handle
-        table="${this.table}" uid="${this.uid}"
+        table="${this.table}" uid="${this.uid}" CType="${this.CType}"
         class="button-bar ${this.isHidden ? 'hidden' : ''} ${this.dragInProgress ? 'dragAndDropActive' : ''}"
         isActive="${this.canBeMoved ? 'true' : 'false'}"
       >
@@ -174,6 +175,8 @@ export class VeContentElement extends LitElement {
         uid="${this.uid}"
         target="${-this.uid}"
         colPos="${this.colPos}"
+        allowedContentTypes="${this.parentElement.allowedContentTypes}"
+        disallowedContentTypes="${this.parentElement.disallowedContentTypes}"
         columnName="${this.parentElement.columnName}"
         tx_container_parent="${this.tx_container_parent}"
       ></ve-drop-zone>

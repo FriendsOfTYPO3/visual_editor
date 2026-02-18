@@ -75,7 +75,9 @@ final readonly class ContentElementWrapperService
         }
 
         $tag = GeneralUtility::makeInstance(TagBuilder::class, 've-content-element', $content);
+        $tag->forceClosingTag(true);
         $tag->addAttribute('elementName', $this->getContentTypeLabel($record));
+        $tag->addAttribute('CType', $record->get('CType'));
         $tag->addAttribute('table', $table);
         $uid = $record->getComputedProperties()->getLocalizedUid() ?: $record->getComputedProperties()->getVersionedUid() ?: $record->getUid();
         $tag->addAttribute('id', $table . ':' . $uid);

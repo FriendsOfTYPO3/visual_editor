@@ -17,6 +17,8 @@ export class VeDropZone extends LitElement {
 
     target: {type: Number},
     colPos: {type: Number},
+    allowedContentTypes: {type: String},
+    disallowedContentTypes: {type: String},
     columnName: {type: String},
     tx_container_parent: {type: Number},
 
@@ -41,6 +43,17 @@ export class VeDropZone extends LitElement {
 
     if (data.uid === this.uid && data.table === this.table) {
       return false;
+    }
+
+    if (this.allowedContentTypes) {
+      if (!this.allowedContentTypes.split(',').map(type => type.trim()).includes(data.CType)) {
+        return false;
+      }
+    }
+    if (this.disallowedContentTypes) {
+      if (this.disallowedContentTypes.split(',').map(type => type.trim()).includes(data.CType)) {
+        return false;
+      }
     }
 
     if (this.isAnyOfMyParents(data.table, data.uid)) {
