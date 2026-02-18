@@ -44,3 +44,9 @@ ve-editable-rich-text[changed] .ck-content {
 .ck-content {
   /*color: var(--ck-content-font-color); !* TODO fix this if color is white we want to use white *!*/
 }
+
+
+#typo3-preview-info {
+  /*  hide the preview info box, as it is not relevant for the editor and only distracts from the content */
+  display: none;
+}
