@@ -175,7 +175,7 @@ final class PageEditController
 
         if ($iframeUrl->getScheme() !== '' && $iframeUrl->getHost() !== '') {
             // temporarily(!) extend the CSP `frame-src` directive with the URL to be shown in the `<iframe>`
-            $mutation = new Mutation(MutationMode::Extend, Directive::FrameSrc, UriValue::fromUri($iframeUrl));
+            $mutation = new Mutation(MutationMode::Extend, Directive::FrameSrc, UriValue::fromUri($iframeUrl->withQuery('')));
             $this->policyRegistry->appendMutationCollection(new MutationCollection($mutation));
         }
 
