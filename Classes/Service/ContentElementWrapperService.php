@@ -99,6 +99,7 @@ final readonly class ContentElementWrapperService
         if ($record->has('tx_container_parent')) {
             // EXT:container compatibility
             $tag->addAttribute('tx_container_parent', $record->getRawRecord()->get('tx_container_parent'));
+            // TODO (test with sys_language_uid > 1) (test with workspace) possibly we need to find the correct overlay uid
         }
 
         return $tag->render();

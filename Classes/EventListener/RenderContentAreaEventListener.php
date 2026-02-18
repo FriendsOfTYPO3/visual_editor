@@ -45,9 +45,8 @@ final readonly class RenderContentAreaEventListener
 
         $extContainer = $event->getContentArea()->getConfiguration()['container'] ?? null;
         if ($extContainer instanceof Container) {
-            // TODO Test with workspace (versionId)
-            $localizedUid = $extContainer->getContainerRecord()['_LOCALIZED_UID'] ?? $extContainer->getUidOfLiveWorkspace();
-            $tag->addAttribute('tx_container_parent', (string)$localizedUid); // TODO (test with sys_language_uid > 1)
+            $localizedUid = $extContainer->getContainerRecord()['_ORIG_uid'] ?? $extContainer->getContainerRecord()['_LOCALIZED_UID'] ?? $extContainer->getUidOfLiveWorkspace();
+            $tag->addAttribute('tx_container_parent', (string)$localizedUid); // TODO (test with sys_language_uid > 1) (test with workspace)
         }
 
         // Backwards compatibility for TYPO3 13: (TODO remove this in TYPO3 15)
