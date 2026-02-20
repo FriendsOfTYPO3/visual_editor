@@ -1,7 +1,7 @@
 import {css, html, LitElement} from 'lit';
 import {classMap} from 'lit/directives/class-map.js';
 import {dataHandlerStore} from "@typo3/visual-editor/Frontend/stores/data-handler-store.mjs";
-import {showEmptyActive} from "@typo3/visual-editor/Shared/local-stores.js";
+import {showEmptyActive} from "@typo3/visual-editor/Shared/local-stores.mjs";
 
 /**
  * @extends {HTMLElement}

@@ -4,7 +4,7 @@ import {ClassicEditor as Editor} from '@ckeditor/ckeditor5-editor-classic';
 import {initCKEditorInstance} from '@typo3/rte-ckeditor/init-ckeditor-instance.js';
 import {removeRuleBySelector} from '@typo3/visual-editor/Shared/remove-rule-by-selector.mjs';
 import {dataHandlerStore} from "@typo3/visual-editor/Frontend/stores/data-handler-store.mjs";
-import {showEmptyActive} from "@typo3/visual-editor/Shared/local-stores.js";
+import {showEmptyActive} from "@typo3/visual-editor/Shared/local-stores.mjs";
 import {dragInProgressStore} from "@typo3/visual-editor/Frontend/stores/drag-store.mjs";
 
 /**

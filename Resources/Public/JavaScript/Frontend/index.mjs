@@ -11,7 +11,7 @@ import '@typo3/visual-editor/Frontend/components/ve-error.mjs';
 import '@typo3/visual-editor/Frontend/components/ve-iframe-popup.mjs';
 import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
 import {highlight, reset} from "@typo3/visual-editor/Frontend/spotlight-overlay.mjs";
-import {spotlightActive} from "@typo3/visual-editor/Shared/local-stores.js";
+import {spotlightActive} from "@typo3/visual-editor/Shared/local-stores.mjs";
 
 import {initSaveScrollPosition} from "@typo3/visual-editor/Frontend/init-save-scroll-position.mjs";
 

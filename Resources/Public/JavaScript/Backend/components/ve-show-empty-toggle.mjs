@@ -1,6 +1,6 @@
 import {html, LitElement} from 'lit';
 import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
-import {showEmptyActive} from "@typo3/visual-editor/Shared/local-stores.js";
+import {showEmptyActive} from "@typo3/visual-editor/Shared/local-stores.mjs";
 
 /**
  * @extends {HTMLElement}
