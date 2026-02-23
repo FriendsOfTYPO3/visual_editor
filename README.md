@@ -19,6 +19,11 @@ TODO put gifs here
 3. 🧹 Clear caches
 4. 🚀 Start editing!
 
+### Useful links:
+
+- [ddev demo setup](https://github.com/andersundsehr/ddev-demo-setup-visual-editor) (test it locally)
+- [fluid_styled_content addon](https://github.com/andersundsehr/visual_editor_fluid_styled_content_addon) (automatic text editing for fluid_styled_content)
+
 ## Where to add the ViewHelpers
 
 ### Text/RichText Fields
@@ -32,10 +37,17 @@ before:
 </f:if>
 
 after:
-<f:variable name="header" value="{record -> f:render.text(field:'header')}" />
+<f:variable name="header" value="{record -> f:render.text(field: 'header')}" />
 <f:if condition="{header}">
   <h1>{header}</h1>
 </f:if>
+````
+````html
+before:
+<h1>{record.header}</h1>
+
+after:
+<h1>{record -> f:render.text(field: 'header')}</h1>
 ````
 If you do not have a Record object yet, there are two options:  
 Add it via [DataProcessors](https://docs.typo3.org/permalink/t3tsref:recordtransformationprocessor):
