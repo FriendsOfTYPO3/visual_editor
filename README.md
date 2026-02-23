@@ -57,25 +57,6 @@ Add it via [DataProcessors](https://docs.typo3.org/permalink/t3tsref:recordtrans
 lib.contentElement.dataProcessing.1768551979 = record-transformation
 ````
 
-Or use the ViewHelpers:
-
-- data is an array of the complete database row:
-````html
-before:
-<h1>{data.header}</h1>
-
-after:
-<h1><f:render.text record="{f:record.fromArray(data: data, table: 'tt_content')}" field="header" /></h1>
-````
-- you only have the uid and the string you want to output:
-````html
-before:
-<h1>{header}</h1>
-
-after:
-<h1><f:render.text record="{f:record.fromUid(uid: uid, table: 'tt_content')}" field="header" /></h1>
-````  
-
 ### ContentArea
 Add the `f:mark.contentArea` ViewHelper to the container element that holds your content elements.
 
