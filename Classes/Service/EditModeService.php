@@ -12,6 +12,7 @@ use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\SecurityAspect;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordInterface;
+use TYPO3\CMS\Core\FormProtection\FormProtectionFactory;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\PageRenderer;
@@ -34,8 +35,8 @@ final readonly class EditModeService
         private TcaSchemaFactory $tcaSchema,
         private LanguageServiceFactory $languageServiceFactory,
         private LanguageModeService $languageModeService,
-        private Context $context,
         private LocalizationService $localizationService,
+        private FormProtectionFactory $formProtectionFactory,
     )
     {
     }
@@ -104,14 +105,13 @@ final readonly class EditModeService
                     'id' => '__PAGE_ID__',
                 ]),
             ]);
-            $nonce = SecurityAspect::provideIn($this->context)->provideNonce();
             $data = [
                 'pageId' => $pageId,
                 'languageId' => $siteLanguage->getLanguageId(),
                 'newContentUrl' => $newContentUrl,
                 'editContentUrl' => $editContentUrl,
                 'allowNewContent' => $this->languageModeService->getAllowNewContent($pageInformation, $siteLanguage),
-                'token' => RequestToken::create('friendsoftypo3/visual-editor')->toHashSignedJwt($nonce),
+                'token' => $this->formProtectionFactory->createForType('backend')->generateToken('visual_editor', 'save'),
             ];
             $this->assetCollector->addInlineJavaScript(
                 'veLangInfo',

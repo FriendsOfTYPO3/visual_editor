@@ -10,7 +10,7 @@ export async function useDataHandler(data = {}, cmd = {}) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-TYPO3-RequestToken': window.veInfo.token,
+      'X-Request-Token': window.veInfo.token,
     },
     body: JSON.stringify({data, cmd}, null, 2),
   });

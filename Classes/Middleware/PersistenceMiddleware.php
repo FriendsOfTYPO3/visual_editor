@@ -12,10 +12,10 @@ use RuntimeException;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Context\Context;
-use TYPO3\CMS\Core\Context\SecurityAspect;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Context\VisibilityAspect;
 use TYPO3\CMS\Core\Error\Http\UnauthorizedException;
+use TYPO3\CMS\Core\FormProtection\FormProtectionFactory;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ImmediateResponseException;
 use TYPO3\CMS\Core\Http\JsonResponse;
@@ -35,6 +35,7 @@ class PersistenceMiddleware implements MiddlewareInterface
         private readonly DataHandlerService $dataHandlerService,
         private readonly UriBuilder $uriBuilder,
         private readonly ViewFactoryInterface $viewFactory,
+        private readonly FormProtectionFactory $formProtectionFactory,
     )
     {
     }
@@ -50,8 +51,8 @@ class PersistenceMiddleware implements MiddlewareInterface
 
     private function saveStuff(ServerRequestInterface $request): ResponseInterface
     {
-        $token = SecurityAspect::provideIn($this->context)->getReceivedRequestToken();
-        if (!$token || $token->scope !== 'friendsoftypo3/visual-editor') {
+        $token = $request->getHeaderLine('X-Request-Token');
+        if (!$token || !$this->formProtectionFactory->createForType('backend')->validateToken($token, 'visual_editor', 'save')) {
             throw new UnauthorizedException('Invalid or missing request token');
         }
         $input = json_decode($request->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
