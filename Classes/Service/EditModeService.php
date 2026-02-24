@@ -120,6 +120,9 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
                 [
                     'type' => 'text/javascript',
                 ],
+                [
+                    'useNonce' => true,
+                ]
             );
         }
     }

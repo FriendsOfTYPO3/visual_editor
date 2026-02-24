@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 $importMap = [];
 $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__ . '/../Resources/Public/JavaScript/'));
 $allFiles = array_filter(iterator_to_array($iterator), fn($file) => $file->isFile());
@@ -11,6 +10,7 @@ foreach ($allFiles as $file) {
     $importPath = str_replace('.js', '', $importPath);
     $importMap['@typo3/visual-editor/' . $importPath] = 'EXT:visual_editor/Resources/Public/JavaScript/' . $importPath . '.js';
 }
+
 return [
     // required import configurations of other extensions,
     // in case a module imports from another package
