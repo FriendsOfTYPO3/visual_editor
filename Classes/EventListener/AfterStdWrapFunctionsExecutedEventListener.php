@@ -24,10 +24,12 @@ final readonly class AfterStdWrapFunctionsExecutedEventListener
 
         $contentObjectRenderer = $event->getContentObjectRenderer();
 
+        $request = $contentObjectRenderer->getRequest();
         $content = $this->contentElementWrapperService->wrapContentElementHtml(
             $contentObjectRenderer->getCurrentTable(),
             $contentObjectRenderer->data,
             $event->getContent(),
+            $request,
         );
         $event->setContent($content);
     }

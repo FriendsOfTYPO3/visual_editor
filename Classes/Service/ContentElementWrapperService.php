@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\Service;
 
+use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Domain\Record;
@@ -33,13 +34,13 @@ final readonly class ContentElementWrapperService
     /**
      * @param array<string, mixed> $data the raw database row
      */
-    public function wrapContentElementHtml(string $table, array $data, string $content): string
+    public function wrapContentElementHtml(string $table, array $data, string $content, ServerRequestInterface $request): string
     {
-        if (!$this->editModeService->isEditMode()) {
+        if (!$this->editModeService->isEditMode($request)) {
             return $content;
         }
 
-        $this->editModeService->init();
+        $this->editModeService->init($request);
 
         $canModifyRecord = true;
         /** @var BackendUserAuthentication $beUser */

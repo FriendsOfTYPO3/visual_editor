@@ -41,9 +41,9 @@ final readonly class EditModeService
     ) {
     }
 
-    public function isEditMode(): bool
+    public function isEditMode(ServerRequestInterface $request): bool
     {
-        $queryParams = $this->getRequest()->getQueryParams();
+        $queryParams = $request->getQueryParams();
 
         if (!($queryParams['editMode'] ?? false)) {
             return false;
@@ -53,9 +53,9 @@ final readonly class EditModeService
     }
 
 
-    public function init(): void
+    public function init(ServerRequestInterface $request): void
     {
-        if (!$this->isEditMode()) {
+        if (!$this->isEditMode($request)) {
             return;
         }
 
@@ -65,9 +65,6 @@ final readonly class EditModeService
         $this->loadLanguageLabelsInline();
 
         if (!$this->assetCollector->hasInlineJavaScript('veLangInfo')) {
-            $request = $GLOBALS['TYPO3_REQUEST'];
-            assert($request instanceof ServerRequestInterface);
-
             // backend and Frontend Context: determine current page id
             $pageInformation = $request->getAttribute('frontend.page.information');
             if (!$pageInformation instanceof PageInformation) {
@@ -110,7 +107,7 @@ final readonly class EditModeService
                 'languageId' => $siteLanguage->getLanguageId(),
                 'newContentUrl' => $newContentUrl,
                 'editContentUrl' => $editContentUrl,
-                'allowNewContent' => $this->languageModeService->getAllowNewContent($pageInformation, $siteLanguage),
+                'allowNewContent' => $this->languageModeService->getAllowNewContent($pageInformation, $siteLanguage, $request),
                 'token' => $this->formProtectionFactory->createForType('backend')->generateToken('visual_editor', 'save'),
             ];
             $this->assetCollector->addInlineJavaScript(
@@ -127,9 +124,9 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
         }
     }
 
-    public function canEditField(RecordInterface $record, string $field): bool
+    public function canEditField(RecordInterface $record, string $field, ServerRequestInterface $request): bool
     {
-        if (!$this->isEditMode()) {
+        if (!$this->isEditMode($request)) {
             return false; // not in edit mode
         }
 
@@ -173,11 +170,6 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
         }
 
         return true;
-    }
-
-    private function getRequest(): ServerRequestInterface
-    {
-        return $GLOBALS['TYPO3_REQUEST'];
     }
 
     private function isBeUser(): bool

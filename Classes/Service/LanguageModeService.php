@@ -27,7 +27,7 @@ final readonly class LanguageModeService
     {
     }
 
-    public function getBackendLanguageMode(PageInformation $pageInformation): LanguageMode
+    public function getBackendLanguageMode(PageInformation $pageInformation, ServerRequestInterface $request): LanguageMode
     {
         if ($pageInformation->getPageRecord()['sys_language_uid'] == 0) {
             return LanguageMode::Connected;
@@ -39,7 +39,7 @@ final readonly class LanguageModeService
         if ($this->typo3Version->getMajorVersion() >= 14) {
             $groupedRecords = $pageInformation->getPageLayout()->getContentAreas()->getGroupedRecords();
         } else {
-            $groupedRecords = $this->getGroupedRecordsTYPO3v13($pageInformation->getPageRecord());
+            $groupedRecords = $this->getGroupedRecordsTYPO3v13($pageInformation->getPageRecord(), $request);
         }
 
         foreach ($groupedRecords as $contentArea) {
@@ -79,7 +79,7 @@ final readonly class LanguageModeService
     /**
      * logic from: \TYPO3\CMS\Backend\View\PageLayoutContext::getAllowNewContent (v14)
      */
-    public function getAllowNewContent(PageInformation $pageInformation, SiteLanguage $language): bool
+    public function getAllowNewContent(PageInformation $pageInformation, SiteLanguage $language, ServerRequestInterface $request): bool
     {
         if ($language->getLanguageId() === 0) {
             return true;
@@ -87,7 +87,7 @@ final readonly class LanguageModeService
 
         $pageTsConfig = BackendUtility::getPagesTSconfig($pageInformation->getId());
         $allowInconsistentLanguageHandling = (bool)($pageTsConfig['mod.']['web_layout.']['allowInconsistentLanguageHandling'] ?? false);
-        $languageMode = $this->getBackendLanguageMode($pageInformation);
+        $languageMode = $this->getBackendLanguageMode($pageInformation, $request);
         if ($allowInconsistentLanguageHandling) {
             return true;
         }
@@ -98,10 +98,8 @@ final readonly class LanguageModeService
     /**
      * @deprecated will be removed after TYPO3 v13 support is dropped
      */
-    private function getGroupedRecordsTYPO3v13(array $pageRow): array
+    private function getGroupedRecordsTYPO3v13(array $pageRow, ServerRequestInterface $request): array
     {
-        $request = $GLOBALS['TYPO3_REQUEST'];
-        assert($request instanceof ServerRequestInterface);
         $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $contentObjectRenderer->setRequest($request);
         $contentObjectRenderer->start($pageRow, 'pages');

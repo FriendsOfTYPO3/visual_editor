@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TYPO3\CMS\VisualEditor\ViewHelpers\Render;
 
 use InvalidArgumentException;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Configuration\Richtext as RichtextConfiguration;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Domain\RecordInterface;
@@ -93,7 +94,8 @@ final class TextViewHelper extends AbstractViewHelper
 
     public function render(): Input|RichText
     {
-        $this->editModeService->init();
+        $request = $this->renderingContext->getAttribute(ServerRequestInterface::class);
+        $this->editModeService->init($request);
 
         $record = $this->renderChildren();
         $field = $this->arguments['field'];
@@ -125,7 +127,7 @@ final class TextViewHelper extends AbstractViewHelper
             );
         }
 
-        $canEdit = $this->editModeService->canEditField($record, $field);
+        $canEdit = $this->editModeService->canEditField($record, $field, $request);
 
         $schema = $this->tcaSchema->get($record->getFullType());
         $tableLabel = $schema->getTitle($this->localizationService->tryTranslation(...));

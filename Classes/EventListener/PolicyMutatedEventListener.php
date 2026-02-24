@@ -21,15 +21,17 @@ final readonly class PolicyMutatedEventListener
     #[AsEventListener]
     public function __invoke(PolicyMutatedEvent $event): void
     {
-        if (!$this->editModeService->isEditMode()) {
+        $request = $event->request ?? $GLOBALS['TYPO3_REQUEST'] ?? null;
+        if (!$request) {
             return;
         }
 
-        $event->getCurrentPolicy()
-            ->mutate(
-                // add style-src 'unsafe-inline' to allow a working ckeditor in the frontend.
-                new Mutation(MutationMode::Extend, Directive::StyleSrc, SourceKeyword::self, SourceKeyword::unsafeInline),
-            );
-        ;
+        if (!$this->editModeService->isEditMode($request)) {
+            return;
+        }
+
+        // add style-src 'unsafe-inline' to allow a working ckeditor in the frontend.
+        $mutation = new Mutation(MutationMode::Extend, Directive::StyleSrc, SourceKeyword::self, SourceKeyword::unsafeInline);
+        $event->getCurrentPolicy()->mutate($mutation);
     }
 }

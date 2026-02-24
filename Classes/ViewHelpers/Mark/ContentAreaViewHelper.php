@@ -61,9 +61,9 @@ final class ContentAreaViewHelper extends AbstractViewHelper
 
     public function render(): string
     {
-        $this->editModeService->init();
-
         $request = $this->renderingContext->getAttribute(ServerRequestInterface::class);
+
+        $this->editModeService->init($request);
 
         $additionalArguments = $this->arguments;
         unset($additionalArguments['colPos'], $additionalArguments['pageUid']);
