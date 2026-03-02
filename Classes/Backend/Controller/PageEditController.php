@@ -50,8 +50,10 @@ use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Versioning\VersionState;
 
+use function array_map;
 use function assert;
 use function count;
+use function in_array;
 use function is_array;
 use function sprintf;
 
@@ -93,6 +95,17 @@ final class PageEditController
             8412770259,
         ));
         $this->moduleData = $request->getAttribute('moduleData');
+        $site = $request->getAttribute('site');
+        if (!$site instanceof Site) {
+            throw new InvalidArgumentException('No site found for page id ' . $pageUid, 1616071820);
+        }
+
+        $this->site = $site;
+        $this->availableLanguages = $site->getAvailableLanguages($backendUser, false, $pageUid);
+        $this->selectedLanguage = $site->getLanguageById((int)($this->moduleData->get('language') ?? 0));
+        $this->pageRenderer->addInlineLanguageLabelFile('EXT:visual_editor/Resources/Private/Language/locallang.xlf');
+        $this->schema = $this->tcaSchemaFactory->get('pages');
+
         $pageInfo = BackendUtility::readPageAccess($pageUid, $backendUser->getPagePermsClause(Permission::PAGE_SHOW));
         if (!$pageInfo || count($pageInfo) === 1) {
             // if $pageInfo is "empty" it will have the property "_thePath"
@@ -110,19 +123,14 @@ final class PageEditController
         if ($record->getRecordType() === '254') {
             throw new InvalidArgumentException('Page record is of type "folder" and cannot be edited with the Visual Editor', 5965019514);
         }
-
         $this->pageRecord = $record;
 
-        $site = $request->getAttribute('site');
-        if (!$site instanceof Site) {
-            throw new InvalidArgumentException('No site found for page id ' . $pageUid, 1616071820);
-        }
+        $localizedPageRecord = $this->getLocalizedPageRecord($this->selectedLanguage->getLanguageId());
 
-        $this->site = $site;
-        $this->availableLanguages = $site->getAvailableLanguages($backendUser, false, $pageUid);
-        $this->selectedLanguage = $site->getLanguageById((int)($this->moduleData->get('language') ?? 0));
-        $this->pageRenderer->addInlineLanguageLabelFile('EXT:visual_editor/Resources/Private/Language/locallang.xlf');
-        $this->schema = $this->tcaSchemaFactory->get('pages');
+        if (!$localizedPageRecord) {
+            // if no translation is found for the selected langauge, we reset the langauge to the default language
+            $this->selectedLanguage = $site->getDefaultLanguage();
+        }
     }
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
@@ -406,16 +414,21 @@ final class PageEditController
         $actionMenu->setIdentifier('languageMenu');
         $actionMenu->setLabel('Language');
 
+        $pageTranslations = BackendUtility::getExistingPageTranslations($this->pageRecord->getUid());
+        $languageField = $this->schema->getCapability(TcaSchemaCapability::Language)->getLanguageField()->getName();
+        $translationLanguageUids = array_map(fn($pageTranslation) => (int)$pageTranslation[$languageField], $pageTranslations);
+        $translationLanguageUids[] = 0;
+
         foreach ($this->availableLanguages as $language) {
+            if (!in_array($language->getLanguageId(), $translationLanguageUids)) {
+                continue;
+            }
             $href = (string)$this->uriBuilder->buildUriFromRoute('web_edit', ['id' => $this->pageRecord->getUid(), 'language' => $language->getLanguageId()]);
             $menuItem = $actionMenu
                 ->makeMenuItem()
                 ->setTitle($language->getTitle())
-                ->setHref($href);
-            if ($language->getLanguageId() === $this->selectedLanguage->getLanguageId()) {
-                $menuItem->setActive(true);
-            }
-
+                ->setHref($href)
+                ->setActive($language->getLanguageId() === $this->selectedLanguage->getLanguageId());
             $actionMenu->addMenuItem($menuItem);
         }
 
