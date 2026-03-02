@@ -173,7 +173,7 @@ final class TextViewHelper extends AbstractViewHelper
         $tag = GeneralUtility::makeInstance(TagBuilder::class);
         $tag->setTagName('ve-editable-text');
         $tag->addAttribute('table', $record->getMainType());
-        $tag->addAttribute('uid', $record->getComputedProperties()->getLocalizedUid() ?: $record->getComputedProperties()->getVersionedUid() ?: $record->getUid());
+        $tag->addAttribute('uid', (string)($record->getComputedProperties()->getLocalizedUid() ?: $record->getComputedProperties()->getVersionedUid() ?: $record->getUid()));
         $tag->addAttribute('field', $field->getName());
 
         $tag->addAttribute('name', $label);
@@ -210,7 +210,7 @@ final class TextViewHelper extends AbstractViewHelper
         $tag = GeneralUtility::makeInstance(TagBuilder::class);
         $tag->setTagName('ve-editable-rich-text');
         $tag->addAttribute('table', $record->getMainType());
-        $tag->addAttribute('uid', $record->getComputedProperties()->getLocalizedUid() ?: $record->getComputedProperties()->getVersionedUid() ?: $record->getUid());
+        $tag->addAttribute('uid', (string)($record->getComputedProperties()->getLocalizedUid() ?: $record->getComputedProperties()->getVersionedUid() ?: $record->getUid()));
         $tag->addAttribute('field', $field->getName());
         $tag->addAttribute('name', $label);
 

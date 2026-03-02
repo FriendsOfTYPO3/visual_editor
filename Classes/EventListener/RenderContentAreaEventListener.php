@@ -36,8 +36,8 @@ final readonly class RenderContentAreaEventListener
         $tag->forceClosingTag(true);
 
         $pageUid = $event->getRequest()->getAttribute('frontend.page.information')->getId();
-        $tag->addAttribute('target', $pageUid);
-        $tag->addAttribute('colPos', $event->getContentArea()->getColPos());
+        $tag->addAttribute('target', (string)$pageUid);
+        $tag->addAttribute('colPos', (string)$event->getContentArea()->getColPos());
         $tag->addAttribute('allowedContentTypes', implode(',', $event->getContentArea()->getAllowedContentTypes()));
         $tag->addAttribute('disallowedContentTypes', implode(',', $event->getContentArea()->getDisallowedContentTypes()));
 

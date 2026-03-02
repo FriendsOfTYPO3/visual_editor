@@ -23,6 +23,7 @@ use TYPO3\CMS\Backend\Template\Components\Buttons\LanguageSelectorMode;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Backend\View\PageViewMode;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -55,7 +56,6 @@ use TYPO3\CMS\Core\Versioning\VersionState;
 use function array_map;
 use function assert;
 use function count;
-use function dump;
 use function in_array;
 use function is_array;
 use function sprintf;
@@ -249,9 +249,8 @@ final class PageEditController
         }
 
         // Clear Cache
-        if ($button = $this->makeClearCacheButton($buttonBar)) {
-            $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_RIGHT, buttonGroup: 1);
-        }
+        $button = $this->makeClearCacheButton($buttonBar);
+        $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_RIGHT, buttonGroup: 1);
 
         /*
          * TODO add Preview Settings button
@@ -361,8 +360,13 @@ final class PageEditController
     /**
      * Edit Button
      */
-    private function makeEditButton(ButtonBar $buttonBar, ServerRequestInterface $request): ButtonInterface
+    private function makeEditButton(ButtonBar $buttonBar, ServerRequestInterface $request): ?ButtonInterface
     {
+        $primaryLanguageId = $this->selectedLanguages[0]->getLanguageId();
+        if (!$this->isPageEditable($primaryLanguageId)) {
+            return null;
+        }
+
         $pageUid = $this->pageRecord->getUid();
         if ($this->selectedLanguages[0]->getLanguageId() > 0) {
             $localizedPageRecord = $this->getLocalizedPageRecord($this->selectedLanguages[0]->getLanguageId());
@@ -394,6 +398,36 @@ final class PageEditController
             ->setClasses('t3js-clear-page-cache')
             ->setTitle($this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.clear_cache'))
             ->setIcon($this->iconFactory->getIcon('actions-system-cache-clear', IconSize::SMALL));
+    }
+
+    /**
+     * Check if page can be edited by current user.
+     */
+    protected function isPageEditable(int $languageId): bool
+    {
+        if (empty($this->pageRecord)) {
+            return false;
+        }
+        if ($this->schema->hasCapability(TcaSchemaCapability::AccessReadOnly)) {
+            return false;
+        }
+        $backendUser = $this->getBackendUser();
+        if ($backendUser->isAdmin()) {
+            return true;
+        }
+        if ($this->schema->hasCapability(TcaSchemaCapability::AccessAdminOnly)) {
+            return false;
+        }
+        $isEditLocked = false;
+        if ($this->schema->hasCapability(TcaSchemaCapability::EditLock)) {
+            $isEditLocked = $this->pageRecord->get($this->schema->getCapability(TcaSchemaCapability::EditLock)->getFieldName()) ?? false;
+        }
+        if ($isEditLocked) {
+            return false;
+        }
+        return $backendUser->doesUserHaveAccess($this->pageRecord->getRawRecord()->toArray(true), Permission::PAGE_EDIT)
+            && $backendUser->checkLanguageAccess($languageId)
+            && $backendUser->check('tables_modify', 'pages');
     }
 
     /**
@@ -453,17 +487,17 @@ final class PageEditController
 
         $button = $buttonBar->makeButton(GenericButton::class);
         assert($button instanceof GenericButton);
-        $active = $this->getBackendUser()->workspace;
+        $workspace = (string)$this->getBackendUser()->workspace;
         return $button
             ->setTag('ve-auto-save-toggle')
             ->setAttributes([
-                ...($active ? [] : ['disabled' => true]),
-                'workspace' => $active,
-                'isWorkspaceInstalled' => $this->packageManager->isPackageActive('workspaces'),
+                ...($workspace ? [] : ['disabled' => 'true']),
+                'workspace' => $workspace,
+                'isWorkspaceInstalled' => (string)$this->packageManager->isPackageActive('workspaces'),
             ])
             ->setLabel(
                 $this->getLanguageService()->sL(
-                    $active ?
+                    $workspace ?
                         'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:autosave' :
                         'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:autosave.disabled',
                 ),
@@ -491,7 +525,7 @@ final class PageEditController
         assert($button instanceof GenericButton);
         return $button
             ->setTag('ve-backend-save-button')
-            ->setAttributes(['disabled' => true])
+            ->setAttributes(['disabled' => 'true'])
             ->setLabel($this->getLanguageService()->sL('LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:save'))
             ->setIcon($this->iconFactory->getIcon('actions-save', IconSize::SMALL))
             ->setShowLabelText(true);
@@ -576,6 +610,7 @@ final class PageEditController
                     'languages' => [$language->getLanguageId()],
                 ],
             );
+
             /** @var DropDownItemInterface $languageItem */
             $languageItem = GeneralUtility::makeInstance(DropDownRadio::class)
                 ->setActive($language->getLanguageId() === $this->selectedLanguages[0]->getLanguageId())
@@ -583,6 +618,10 @@ final class PageEditController
                 ->setHref($href)
                 ->setLabel($language->getTitle());
             $languageDropDownButton->addItem($languageItem);
+        }
+
+        if (count($languageDropDownButton->getItems()) <= 1) {
+            return null;
         }
 
         return $languageDropDownButton;

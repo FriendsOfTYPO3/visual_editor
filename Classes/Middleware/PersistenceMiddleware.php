@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\Middleware;
 
+use Exception;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -27,7 +28,6 @@ use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Service\DataHandlerService;
-
 use function array_keys;
 use function implode;
 use function json_decode;
@@ -97,7 +97,7 @@ readonly class PersistenceMiddleware implements MiddlewareInterface
             $view = $this->viewFactory
                 ->create(
                     new ViewFactoryData(
-                        templatePathAndFilename: 'EXT:visual_editor/Resources/Private/Templates/NotLoggedIn.fluid.html',
+                        templatePathAndFilename: 'EXT:visual_editor/Resources/Private/Templates/NotLoggedIn.html',
                         request: $request,
                     ),
                 )

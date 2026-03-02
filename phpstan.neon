@@ -5,3 +5,6 @@ includes:
 parameters:
   level: 8
   reportUnmatchedIgnoredErrors: false
+  typo3:
+    requestGetAttributeMapping:
+      pageContext: TYPO3\CMS\Backend\Context\PageContext|null
