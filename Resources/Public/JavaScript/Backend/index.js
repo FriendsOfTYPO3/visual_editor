@@ -45,7 +45,9 @@ onMessage('reloadFrames', () => reloadAllChildFrames());
 onMessage('openInMiddleFrame', (href) => {
   const parsedHref = new URL(href, window.location.href);
   // keep the origin of the current window to avoid CORS issues in the Backend.
-  parsedHref.origin = window.location.origin;
+  parsedHref.protocol = window.location.protocol;
+  parsedHref.host = window.location.host;
+
   window.location = parsedHref.href;
 });
 
