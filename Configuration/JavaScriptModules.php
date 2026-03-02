@@ -6,6 +6,7 @@ $importMap = [];
 $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__ . '/../Resources/Public/JavaScript/'));
 $allFiles = array_filter(iterator_to_array($iterator), fn($file) => $file->isFile());
 foreach ($allFiles as $file) {
+    assert($file instanceof SplFileInfo);
     $importPath = str_replace(__DIR__ . '/../Resources/Public/JavaScript/', '', $file->getPathname());
     $importPath = str_replace('.js', '', $importPath);
     $importMap['@typo3/visual-editor/' . $importPath] = 'EXT:visual_editor/Resources/Public/JavaScript/' . $importPath . '.js';

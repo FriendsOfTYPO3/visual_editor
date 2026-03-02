@@ -9,12 +9,15 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use TYPO3\CMS\Backend\Attribute\AsController;
+use TYPO3\CMS\Backend\Context\PageContext;
 use TYPO3\CMS\Backend\Module\ModuleData;
 use TYPO3\CMS\Backend\Routing\PreviewUriBuilder;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\Components\Buttons\ButtonInterface;
 use TYPO3\CMS\Backend\Template\Components\Buttons\GenericButton;
+use TYPO3\CMS\Backend\Template\Components\Buttons\LanguageSelectorBuilder;
+use TYPO3\CMS\Backend\Template\Components\Buttons\LanguageSelectorMode;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
@@ -24,7 +27,6 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\WorkspaceRestriction;
 use TYPO3\CMS\Core\Domain\Record;
-use TYPO3\CMS\Core\Domain\Record\VersionInfo;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
@@ -48,7 +50,6 @@ use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Versioning\VersionState;
 
-use function array_key_first;
 use function assert;
 use function count;
 use function is_array;
@@ -171,7 +172,7 @@ final class PageEditController
         $view->assign('returnUrl', $returnUrl);
 
         $this->makeButtons($view, $request);
-        $this->makeActionMenu($view);
+        $this->makeActionMenu($view, $request);
 
 
         if ($iframeUrl->getScheme() !== '' && $iframeUrl->getHost() !== '') {
@@ -245,7 +246,6 @@ final class PageEditController
          * Simulate user group [multi select]
          */
 
-        // Reload
         if ($this->typo3Version->getMajorVersion() >= 14) {
             // Shortcut
             $view->getDocHeaderComponent()->setShortcutContext(
@@ -262,6 +262,7 @@ final class PageEditController
                 ],
             );
         } else {
+            // Reload
             $reloadButton = $buttonBar
                 ->makeLinkButton()
                 ->setHref($request->getAttribute('normalizedParams')->getRequestUri())
@@ -380,8 +381,27 @@ final class PageEditController
      * This creates the dropdown menu with the different actions this module is able to provide.
      * For now, they are Columns and Languages.
      */
-    private function makeActionMenu(ModuleTemplate $view): void
+    private function makeActionMenu(ModuleTemplate $view, ServerRequestInterface $request): void
     {
+        if ($this->typo3Version->getMajorVersion() >= 14) {
+            $pageContext = $request->getAttribute('pageContext');
+            if (!$pageContext instanceof PageContext) {
+                throw new InvalidArgumentException('PageContext is missing from request attributes', 1772441095);
+            }
+
+            $languageSelectorBuilder = GeneralUtility::makeInstance(LanguageSelectorBuilder::class);
+            $languageSelector = $languageSelectorBuilder->build(
+                $pageContext,
+                LanguageSelectorMode::SINGLE_SELECT,
+                fn(array $languageIds): string => (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
+                    'id' => $pageContext->pageId,
+                    'language' => $languageIds[0] ?? 0,
+                ]),
+            );
+            $view->getDocHeaderComponent()->setLanguageSelector($languageSelector);
+            return;
+        }
+
         $actionMenu = $view->getDocHeaderComponent()->getMenuRegistry()->makeMenu();
         $actionMenu->setIdentifier('languageMenu');
         $actionMenu->setLabel('Language');
@@ -394,7 +414,6 @@ final class PageEditController
                 ->setHref($href);
             if ($language->getLanguageId() === $this->selectedLanguage->getLanguageId()) {
                 $menuItem->setActive(true);
-                $defaultKey = null;
             }
 
             $actionMenu->addMenuItem($menuItem);

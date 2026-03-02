@@ -29,8 +29,8 @@ use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Service\DataHandlerService;
-
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
+
 use function array_keys;
 use function implode;
 use function json_decode;
@@ -45,7 +45,6 @@ readonly class PersistenceMiddleware implements MiddlewareInterface
         private FormProtectionFactory $formProtectionFactory,
         private Typo3Version $typo3Version,
         private ListenerProvider $listenerProvider,
-        private EditModeService $editModeService,
     ) {
     }
 
