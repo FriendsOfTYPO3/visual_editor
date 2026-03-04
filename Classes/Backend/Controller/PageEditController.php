@@ -35,6 +35,7 @@ use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Package\PackageManager;
+use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
@@ -91,6 +92,7 @@ final class PageEditController
         private readonly PolicyRegistry $policyRegistry,
         private readonly Typo3Version $typo3Version,
         private readonly ConnectionPool $connectionPool,
+        private readonly AssetCollector $assetCollector,
     ) {
     }
 
@@ -383,12 +385,28 @@ final class PageEditController
                     $pageUid => 'edit',
                 ],
             ],
+            'module' => 'web_edit',
         ];
 
-        return $buttonBar
-            ->makeLinkButton()
-            ->setHref((string)$this->uriBuilder->buildUriFromRoute('record_edit', $params))
-            ->setTitle($this->getLanguageService()->sL('LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:editPageProperties'))
+        if ($this->typo3Version->getMajorVersion() <= 13) {
+            return $buttonBar
+                ->makeLinkButton()
+                ->setHref((string)$this->uriBuilder->buildUriFromRoute('record_edit', $params))
+                ->setTitle($this->getLanguageService()->sL('LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:editPageProperties'))
+                ->setIcon($this->iconFactory->getIcon('actions-page-open', IconSize::SMALL));
+        }
+
+        // TODO add this to the Templates/PageEdit.html if TYPO3 v14 is the minimum requirement
+        $this->assetCollector->addJavaScriptModule('@typo3/backend/element/contextual-record-edit-trigger.js');
+
+        // TODO use $this->componentFactory->createGenericButton() if TYPO3 v14 is the minimum requirement
+        return GeneralUtility::makeInstance(GenericButton::class)
+            ->setTag('typo3-backend-contextual-record-edit-trigger')
+            ->setAttributes([
+                'url' => (string)$this->uriBuilder->buildUriFromRoute('record_edit_contextual', $params),
+                'edit-url' => (string)$this->uriBuilder->buildUriFromRoute('record_edit', $params),
+            ])
+            ->setLabel($this->getLanguageService()->sL('LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:editPageProperties'))
             ->setIcon($this->iconFactory->getIcon('actions-page-open', IconSize::SMALL));
     }
 
@@ -598,7 +616,8 @@ final class PageEditController
 
         $languageService = $this->getLanguageService();
 
-        $languageDropDownButton = $buttonBar->makeDropDownButton()
+        $languageDropDownButton = $buttonBar
+            ->makeDropDownButton()
             ->setLabel($languageService->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.language'))
             ->setShowLabelText(true);
 

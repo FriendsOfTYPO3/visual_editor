@@ -10,6 +10,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
 use TYPO3\CMS\Backend\Middleware\JavaScriptLabelImportMapEntryResolver;
+use TYPO3\CMS\Backend\Routing\Router;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Context\Context;
@@ -22,7 +23,9 @@ use TYPO3\CMS\Core\Http\ImmediateResponseException;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Page\Event\ResolveVirtualJavaScriptImportEvent;
+use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\CMS\Frontend\Page\PageInformation;
@@ -31,6 +34,7 @@ use TYPO3\CMS\VisualEditor\Service\DataHandlerService;
 use function array_keys;
 use function implode;
 use function json_decode;
+use function substr;
 
 readonly class PersistenceMiddleware implements MiddlewareInterface
 {
@@ -42,6 +46,7 @@ readonly class PersistenceMiddleware implements MiddlewareInterface
         private FormProtectionFactory $formProtectionFactory,
         private Typo3Version $typo3Version,
         private ListenerProvider $listenerProvider,
+        private PageRenderer $pageRenderer,
     ) {
     }
 
@@ -169,6 +174,31 @@ readonly class PersistenceMiddleware implements MiddlewareInterface
             );
         }
 
+        $this->addAjaxSettingsToJS();
+
         return $handler->handle($request);
+    }
+
+    /**
+     * copied from \TYPO3\CMS\Core\Page\PageRenderer::addAjaxUrlsToInlineSettings (v14)
+     */
+    private function addAjaxSettingsToJS(): void
+    {
+        $ajaxUrls = [];
+        // Add the ajax-based routes
+        $router = GeneralUtility::makeInstance(Router::class);
+        foreach ($router->getRoutes() as $routeIdentifier => $route) {
+            if ($route->getOption('ajax')) {
+                $uri = (string)$this->uriBuilder->buildUriFromRoute($routeIdentifier);
+                // use the shortened value in order to use this in JavaScript
+                if (str_starts_with($routeIdentifier, 'ajax_')) {
+                    $routeIdentifier = substr($routeIdentifier, 5);
+                }
+
+                $ajaxUrls[$routeIdentifier] = $uri;
+            }
+        }
+
+        $this->pageRenderer->addInlineSetting(null, 'ajaxUrls', $ajaxUrls);
     }
 }

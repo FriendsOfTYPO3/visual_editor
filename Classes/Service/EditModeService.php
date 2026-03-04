@@ -11,6 +11,7 @@ use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\FormProtection\FormProtectionFactory;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\PageRenderer;
@@ -34,6 +35,7 @@ final readonly class EditModeService
         private LanguageModeService $languageModeService,
         private LocalizationService $localizationService,
         private FormProtectionFactory $formProtectionFactory,
+        private Typo3Version $typo3Version,
     ) {
     }
 
@@ -57,6 +59,9 @@ final readonly class EditModeService
 
         $this->assetCollector->addStyleSheet('editable', 'EXT:visual_editor/Resources/Public/Css/editable.css');
         $this->assetCollector->addJavaScriptModule('@typo3/visual-editor/Frontend/index');
+        if ($this->typo3Version->getMajorVersion() >= 14) {
+            $this->assetCollector->addJavaScriptModule('@typo3/backend/element/contextual-record-edit-trigger.js');
+        }
 
         $this->loadLanguageLabelsInline();
 
@@ -88,21 +93,25 @@ final readonly class EditModeService
                     'id' => $pageId,
                 ]),
             ]);
-            $editContentUrl = (string)$this->uriBuilder->buildUriFromRoute('record_edit', [
-                'edit' => [
-                    '__TABLE__' => [
-                        '__UID__' => 'edit',
-                    ],
-                ],
+
+            $editParams = [
+                'edit' => ['__TABLE__' => ['__UID__' => 'edit']],
                 'returnUrl' => (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
                     'id' => '__PAGE_ID__',
                 ]),
-            ]);
+                'module' => 'web_edit',
+            ];
+            $editContentUrl = (string)$this->uriBuilder->buildUriFromRoute('record_edit', $editParams);
+            if ($this->typo3Version->getMajorVersion() >= 14) {
+                $editContentContextualUrl = (string)$this->uriBuilder->buildUriFromRoute('record_edit_contextual', $editParams);
+            }
+
             $data = [
                 'pageId' => $pageId,
                 'languageId' => $siteLanguage->getLanguageId(),
                 'newContentUrl' => $newContentUrl,
                 'editContentUrl' => $editContentUrl,
+                'editContentContextualUrl' => $editContentContextualUrl ?? null,
                 'allowNewContent' => $this->languageModeService->getAllowNewContent($pageInformation, $siteLanguage, $request),
                 'token' => $this->formProtectionFactory->createForType('backend')->generateToken('visual_editor', 'save'),
             ];

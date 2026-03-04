@@ -27,10 +27,17 @@ export class VeContentElement extends LitElement {
     showElementOverlay: {type: Boolean, attribute: false},
   };
 
-  get editUrl() {
+  get editContentUrl() {
     return window.veInfo.editContentUrl
       .replace('__TABLE__', this.table)
       .replace('__UID__', this.uid)
+      .replace('__PAGE_ID__', this.pid);
+  }
+
+  get editContentContextualUrl() {
+    return window.veInfo.editContentContextualUrl
+      ?.replace('__TABLE__', this.table)
+      ?.replace('__UID__', this.uid)
       .replace('__PAGE_ID__', this.pid);
   }
 
@@ -43,7 +50,7 @@ export class VeContentElement extends LitElement {
       return;
     }
     event.preventDefault();
-    sendMessage('openInMiddleFrame', this.editUrl);
+    sendMessage('openInMiddleFrame', this.editContentUrl);
   }
 
   async _toggleHidden() {
@@ -146,9 +153,23 @@ export class VeContentElement extends LitElement {
                 ${this.canBeMoved ? '⠿ ' : ''}${this.elementName}
               </span>
         <!-- TODO extract button bar as separate component -->
-        <a class="button" href="${this.editUrl}" @click="${this._openEdit}">
-          <ve-icon name="actions-open"/>
-        </a>
+        ${
+          this.editContentContextualUrl
+            ? html`
+              <typo3-backend-contextual-record-edit-trigger
+                url="${this.editContentContextualUrl}"
+                edit-url="${this.editContentUrl}"
+                class="button"
+              >
+                <ve-icon name="actions-open"/>
+              </typo3-backend-contextual-record-edit-trigger>
+            `
+            : html`
+              <a class="button" href="${this.editContentUrl}" @click="${this._openEdit}">
+                <ve-icon name="actions-open"/>
+              </a>
+            `
+        }
         ${
           this.hiddenFieldName ?
             html`
