@@ -59,6 +59,31 @@ lib.contentElement.dataProcessing.1768551979 = record-transformation
 ````
 
 ### ContentArea
+
+#### ViewHelper `f:render.contentArea` (v14)
+
+This newly introduced ViewHelper (v14) is the recommended way to render content areas in the TYPO3 in general.
+
+Short description what you need to change in your templates:
+
+````html
+before:
+<f:cObject typoscriptObjectPath="lib.dynamicContent" data="{colPos: '3'}"/>
+
+after:
+<f:render.contentArea contentArea="{content.main}" />
+````
+
+`content.main` here is automatically filled if you use `PAGEVIEW` and a `BackendLayout` with a column with an Identifier named `main`.
+
+More information in the [Official Documentation](https://docs.typo3.org/permalink/t3viewhelper:typo3-fluid-render-contentarea).
+
+> If you can not use the `f:render.contentArea` ViewHelper, you can also use the `f:mark.contentArea` ViewHelper.
+
+#### ViewHelper `f:mark.contentArea` (v13)
+
+> Use `f:render.contentArea` if possible!
+
 Add the `f:mark.contentArea` ViewHelper to the container element that holds your content elements.
 
 search for:
