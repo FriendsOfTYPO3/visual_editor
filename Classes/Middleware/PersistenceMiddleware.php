@@ -199,6 +199,6 @@ readonly class PersistenceMiddleware implements MiddlewareInterface
             }
         }
 
-        $this->pageRenderer->addInlineSetting(null, 'ajaxUrls', $ajaxUrls);
+        $this->pageRenderer->addInlineSetting('', 'ajaxUrls', $ajaxUrls);
     }
 }

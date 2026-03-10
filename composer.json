@@ -18,19 +18,19 @@
   ],
   "require": {
     "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-    "typo3/cms-core": "^13.4.22 || ^14.2.0"
+    "typo3/cms-backend": "^13.4.22 || ^14.2.0 || 14.2.x-dev",
+    "typo3/cms-core": "^13.4.22 || ^14.2.0 || 14.2.x-dev",
+    "typo3/cms-extbase": "^13.4.22 || ^14.2.0 || 14.2.x-dev",
+    "typo3/cms-fluid": "^13.4.22 || ^14.2.0 || 14.2.x-dev",
+    "typo3/cms-frontend": "^13.4.22 || ^14.2.0 || 14.2.x-dev",
+    "typo3/cms-rte-ckeditor": "^13.4.22 || ^14.2.0 || 14.2.x-dev"
   },
   "require-dev": {
-    "b13/container": "^3.2",
-    "pluswerk/grumphp-config": "^10.2.5",
-    "saschaegerer/phpstan-typo3": "^2.0.0 || ^3.0.1",
-    "ssch/typo3-rector": "^3.1.0",
-    "typo3/cms-backend": "dev-main as 14.2.0",
-    "typo3/cms-core": "dev-main as 14.2.0",
-    "typo3/cms-extbase": "dev-main as 14.2.0",
-    "typo3/cms-fluid": "dev-main as 14.2.0",
-    "typo3/cms-frontend": "dev-main as 14.2.0",
-    "typo3/cms-rte-ckeditor": "dev-main as 14.2.0"
+    "b13/container": "^3.2.2",
+    "pluswerk/grumphp-config": "^10.2.6",
+    "saschaegerer/phpstan-typo3": "^2.1.1 || ^3.0.1",
+    "ssch/typo3-rector": "^3.12.1",
+    "typo3fluid/fluid": "^4.6.0 || 4.6.x-dev || ^5"
   },
   "suggest": {
     "wapplersystems/multisite-belogin": "You should install this extension, if you have multiple domains in your TYPO3 installation."
@@ -54,5 +54,17 @@
     "typo3/cms": {
       "extension-key": "visual_editor"
     }
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "@composer normalize"
+    ],
+    "post-update-cmd": [
+      "@composer bump --dev-only",
+      "@composer normalize"
+    ],
+    "post-autoload-dump": [
+      "sh -c 'MAJOR=$(typo3 --version | awk '\\''{split($3, v, \".\"); print v[1]}'\\''); ln -sfn \"phpstan-baseline-${MAJOR}.neon\" phpstan-baseline.neon'"
+    ]
   }
 }
