@@ -1,0 +1,145 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Access to constant SINGLE_SELECT on an unknown class TYPO3\\CMS\\Backend\\Template\\Components\\Buttons\\LanguageSelectorMode\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Access to property \$pageId on an unknown class TYPO3\\CMS\\Backend\\Context\\PageContext\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Call to an undefined method TYPO3\\CMS\\Backend\\Template\\Components\\DocHeaderComponent\:\:disableAutomaticReloadButton\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Call to an undefined method TYPO3\\CMS\\Backend\\Template\\Components\\DocHeaderComponent\:\:setLanguageSelector\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Call to an undefined method TYPO3\\CMS\\Backend\\Template\\Components\\DocHeaderComponent\:\:setPageBreadcrumb\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Call to an undefined method TYPO3\\CMS\\Backend\\Template\\Components\\DocHeaderComponent\:\:setShortcutContext\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Call to method build\(\) on an unknown class TYPO3\\CMS\\Backend\\Template\\Components\\Buttons\\LanguageSelectorBuilder\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Cannot call method getRequestUri\(\) on TYPO3\\CMS\\Core\\Http\\NormalizedParams\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Class TYPO3\\CMS\\Backend\\Context\\PageContext not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Class TYPO3\\CMS\\Backend\\Template\\Components\\Buttons\\LanguageSelectorBuilder not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Property TYPO3\\CMS\\VisualEditor\\Backend\\Controller\\PageEditController\:\:\$moduleData \(TYPO3\\CMS\\Backend\\Module\\ModuleData\) does not accept TYPO3\\CMS\\Backend\\Module\\ModuleData\|null\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Call to method getContentArea\(\) on an unknown class TYPO3\\CMS\\Fluid\\Event\\ModifyRenderedContentAreaEvent\.$#'
+			identifier: class.notFound
+			count: 6
+			path: Classes/EventListener/RenderContentAreaEventListener.php
+
+		-
+			message: '#^Call to method getRenderedContentArea\(\) on an unknown class TYPO3\\CMS\\Fluid\\Event\\ModifyRenderedContentAreaEvent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/EventListener/RenderContentAreaEventListener.php
+
+		-
+			message: '#^Call to method getRequest\(\) on an unknown class TYPO3\\CMS\\Fluid\\Event\\ModifyRenderedContentAreaEvent\.$#'
+			identifier: class.notFound
+			count: 3
+			path: Classes/EventListener/RenderContentAreaEventListener.php
+
+		-
+			message: '#^Call to method setRenderedContentArea\(\) on an unknown class TYPO3\\CMS\\Fluid\\Event\\ModifyRenderedContentAreaEvent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/EventListener/RenderContentAreaEventListener.php
+
+		-
+			message: '#^Parameter \$event of method TYPO3\\CMS\\VisualEditor\\EventListener\\RenderContentAreaEventListener\:\:__invoke\(\) has invalid type TYPO3\\CMS\\Fluid\\Event\\ModifyRenderedContentAreaEvent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/EventListener/RenderContentAreaEventListener.php
+
+		-
+			message: '#^Class TYPO3\\CMS\\Backend\\Middleware\\JavaScriptLabelImportMapEntryResolver not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Middleware/PersistenceMiddleware.php
+
+		-
+			message: '#^Class TYPO3\\CMS\\Core\\Page\\Event\\ResolveVirtualJavaScriptImportEvent not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Middleware/PersistenceMiddleware.php
+
+		-
+			message: '#^Cannot call method getGroupedRecords\(\) on array\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: Classes/Service/LanguageModeService.php
+
+		-
+			message: '#^Property TYPO3Fluid\\Fluid\\Core\\ViewHelper\\AbstractViewHelper\:\:\$renderingContext \(TYPO3Fluid\\Fluid\\Core\\Rendering\\RenderingContextInterface\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: Classes/ViewHelpers/EditModeViewHelper.php
+
+		-
+			message: '#^Property TYPO3Fluid\\Fluid\\Core\\ViewHelper\\AbstractViewHelper\:\:\$renderingContext \(TYPO3Fluid\\Fluid\\Core\\Rendering\\RenderingContextInterface\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: Classes/ViewHelpers/Mark/ContentAreaViewHelper.php
+
+		-
+			message: '#^Property TYPO3Fluid\\Fluid\\Core\\ViewHelper\\AbstractViewHelper\:\:\$renderingContext \(TYPO3Fluid\\Fluid\\Core\\Rendering\\RenderingContextInterface\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 2
+			path: Classes/ViewHelpers/Render/TextViewHelper.php
+
+		-
+			message: '#^Property TYPO3\\CMS\\VisualEditor\\ViewHelpers\\Render\\TextViewHelper\:\:\$typo3Version on left side of \?\? is not nullable nor uninitialized\.$#'
+			identifier: nullCoalesce.initializedProperty
+			count: 1
+			path: Classes/ViewHelpers/Render/TextViewHelper.php
+
+		-
+			message: '#^Class TYPO3\\CMS\\Fluid\\Event\\ModifyRenderedContentAreaEvent not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: ext_localconf.php

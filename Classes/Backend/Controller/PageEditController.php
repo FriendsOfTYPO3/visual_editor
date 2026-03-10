@@ -472,6 +472,7 @@ final class PageEditController
             throw new InvalidArgumentException('PageContext is missing from request attributes', 1772441095);
         }
 
+        // TODO use DI if v14 is the minimum requirement
         $languageSelectorBuilder = GeneralUtility::makeInstance(LanguageSelectorBuilder::class);
         $languageSelector = $languageSelectorBuilder->build(
             $pageContext,

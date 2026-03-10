@@ -13,7 +13,19 @@ parameters:
 			path: Classes/Backend/Controller/PageEditController.php
 
 		-
+			message: '#^Cannot access offset ''allowed\.'' on TYPO3\\CMS\\Core\\Page\\ContentArea\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Classes/ViewHelpers/Mark/ContentAreaViewHelper.php
+
+		-
 			message: '#^Cannot access offset ''colPos'' on TYPO3\\CMS\\Core\\Page\\ContentArea\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Classes/ViewHelpers/Mark/ContentAreaViewHelper.php
+
+		-
+			message: '#^Cannot access offset ''disallowed\.'' on TYPO3\\CMS\\Core\\Page\\ContentArea\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
 			count: 1
 			path: Classes/ViewHelpers/Mark/ContentAreaViewHelper.php

@@ -31,5 +31,5 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.php }}-composer-
-      - run: composer install --no-interaction --no-progress --ignore-platform-req=php+
+      - run: composer update --with typo3/cms-core:^${{ matrix.typo3 }}
       - run: ./vendor/bin/grumphp run --ansi

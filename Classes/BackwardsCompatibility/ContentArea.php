@@ -9,10 +9,16 @@ namespace TYPO3\CMS\VisualEditor\BackwardsCompatibility;
  */
 final readonly class ContentArea
 {
+    /**
+     * @param list<string> $allowedContentTypes
+     * @param list<string> $disallowedContentTypes
+     */
     public function __construct(
         private int $colPos,
         private string $name,
         private int $tx_container_parent,
+        private array $allowedContentTypes = [],
+        private array $disallowedContentTypes = [],
     ) {
     }
 
@@ -27,7 +33,7 @@ final readonly class ContentArea
     }
 
     /**
-     * @return array{tx_container_parent: int}
+     * @return array<string, mixed>
      */
     public function getConfiguration(): array
     {
@@ -37,20 +43,18 @@ final readonly class ContentArea
     }
 
     /**
-     * @return array{}
+     * @return list<string>
      */
     public function getAllowedContentTypes(): array
     {
-        // TODO use content EXT:content_defender here?
-        return [];
+        return $this->allowedContentTypes;
     }
 
     /**
-     * @return array{}
+     * @return list<string>
      */
     public function getDisallowedContentTypes(): array
     {
-        // TODO use content EXT:content_defender here?
-        return [];
+        return $this->disallowedContentTypes;
     }
 }
