@@ -27,7 +27,15 @@ This extension provides visual editing features for content elements in TYPO3 CM
 - [Example Commit](https://github.com/TYPO3/typo3/commit/a99a339634b7caed123576b6ca2bb49dfb5d8cbf) How to integrate `f:render.contentArea`
 - [Slack Channel](https://typo3.slack.com/archives/C0ALHJR23U4) ask questions
 
-## Where to add the ViewHelpers
+## Template Integration
+
+`visual_editor` uses ViewHelpers in Fluid templates to mark the areas that should be editable.
+In TYPO3 v14, the extension uses existing ViewHelpers in TYPO3 Core to hook into the rendering.
+This means that the extension works out-of-the-box for the new theme "Camino" and also for
+the default `fluid_styled_content` templates.
+
+If you want to add visual editing to your own templates, you need to add some ViewHelpers
+to all locations that should be editable:
 
 ### Text/RichText Fields
 Replace the output of your texts with the `f:render.text` ViewHelper.
@@ -85,7 +93,7 @@ More information in the [Official Documentation](https://docs.typo3.org/permalin
 
 > Use `f:render.contentArea` if possible!
 
-Add the `f:mark.contentArea` ViewHelper to the container element that holds your content elements.
+Add the `f:mark.contentArea` ViewHelper to the Fluid template that renders your content elements.
 
 search for:
 - `f:cObject` (typoscript rendering):
