@@ -33,3 +33,42 @@ jobs:
             ${{ runner.os }}-${{ matrix.php }}-composer-
       - run: composer update --with typo3/cms-core:^${{ matrix.typo3 }}
       - run: ./vendor/bin/grumphp run --ansi
+
+  ter-release:
+    name: Publish new version to TER
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [ lint-php ]
+    env:
+      TYPO3_API_TOKEN: ${{ secrets.TYPO3_API_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get the version
+        id: get-version
+        run: echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: intl, mbstring, xml, soap, zip, curl
+
+      - name: Install typo3/tailor
+        run: composer global require typo3/tailor --prefer-dist --no-progress
+
+      - name: Upload EXT:visual_editor to TER
+        run: |
+          sed -i 's/InstalledVersions::getPrettyVersion('\''friendsoftypo3\/visual-editor'\'')/'\''${{ env.version }}'\''/g' ext_emconf.php \
+          && git config --global user.email "no@one" \
+          && git config --global user.name "No One" \
+          && git add ext_emconf.php \
+          && git commit -m 'x' -n \
+          && git archive -o archive.zip HEAD --prefix=visual_editor-${{ env.version }}/ \
+          && git reset --hard HEAD~ \
+          && curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/FriendsOfTYPO3/visual_editor/releases/tags/${{ env.version }} > release.json \
+          && php ~/.composer/vendor/bin/tailor ter:publish ${{ env.version }} --artefact=archive.zip \
+          --comment="$(
+            jq -r '.name, "", .body, "", .html_url' release.json \
+            | php -r 'echo preg_replace("/[\x{1F1E6}-\x{1F1FF}\x{1F300}-\x{1FAFF}\x{2600}-\x{27BF}\x{FE0F}\x{200D}]/u", "", stream_get_contents(STDIN));'
+          )"
