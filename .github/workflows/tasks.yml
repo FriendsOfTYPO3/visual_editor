@@ -26,13 +26,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: ~/.composer/cache/files
-          key: ${{ runner.os }}-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.php }}-composer-
+      - uses: actions/checkout@v6
       - run: composer update --with typo3/cms-core:^${{ matrix.typo3 }}
       - run: ./vendor/bin/grumphp run --ansi
 
@@ -45,7 +39,7 @@ jobs:
       TYPO3_API_TOKEN: ${{ secrets.TYPO3_API_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Get the version
         id: get-version
         run: echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
@@ -78,7 +72,7 @@ jobs:
       - name: Upload EXT:visual_editor to TER
         run: |
           sed -i 's/InstalledVersions::getPrettyVersion('\''friendsoftypo3\/visual-editor'\'')/'\''${{ env.version }}'\''/g' ext_emconf.php \
-          sed -i 's/$version,/'\''${{ env.version }}'\','/g' ext_emconf.php \
+          && sed -i 's/$version,/'\''${{ env.version }}'\','/g' ext_emconf.php \
           && git config --global user.email "no@one" \
           && git config --global user.name "No One" \
           && git add ext_emconf.php \
