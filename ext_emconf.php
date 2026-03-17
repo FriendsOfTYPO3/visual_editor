@@ -1,14 +1,6 @@
 <?php
 
-use Composer\InstalledVersions;
-
 /** @var string $_EXTKEY */
-try {
-    $version = InstalledVersions::getPrettyVersion('friendsoftypo3/visual-editor');
-} catch (Exception) {
-    $version = 'dev-';
-}
-
 $EM_CONF[$_EXTKEY] = [
     'title' => 'TYPO3 CMS Visual Editor',
     'description' => 'Brings a modern WYSIWYG editing experience to TYPO3 CMS.',
@@ -16,7 +8,7 @@ $EM_CONF[$_EXTKEY] = [
     'author' => 'Matthis Vogel',
     'author_email' => 'm.vogel@andersundsehr.com',
     'state' => 'stable',
-    'version' => $version,
+    'version' => 'dev-',
     'constraints' => [
         'depends' => [
             'php' => '8.2.0-8.5.99',

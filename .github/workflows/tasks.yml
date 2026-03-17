@@ -71,8 +71,7 @@ jobs:
 
       - name: Upload EXT:visual_editor to TER
         run: |
-          sed -i 's/InstalledVersions::getPrettyVersion('\''friendsoftypo3\/visual-editor'\'')/'\''${{ env.version }}'\''/g' ext_emconf.php \
-          && sed -i 's/$version,/'\''${{ env.version }}'\','/g' ext_emconf.php \
+          sed -i "s|'dev-'|'${{ env.version }}'|g" ext_emconf.php \
           && git config --global user.email "no@one" \
           && git config --global user.name "No One" \
           && git add ext_emconf.php \
