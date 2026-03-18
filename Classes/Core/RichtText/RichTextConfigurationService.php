@@ -133,6 +133,8 @@ readonly class RichTextConfigurationService
             ],
         ];
 
+        $backendOrigin = $GLOBALS['BE_USER']->getSessionData('visual_editor_backend_origin') ?? '';
+
         $pluginConfiguration = [];
         foreach ($externalPlugins as $pluginName => $configuration) {
             $pluginConfiguration[$pluginName] = [
@@ -143,7 +145,8 @@ readonly class RichTextConfigurationService
             unset($configuration['resource']);
 
             if ($configuration['route'] ?? null) {
-                $configuration['routeUrl'] = (string)$this->uriBuilder->buildUriFromRoute($configuration['route'], $urlParameters);
+                $configuration['routeUrl'] = $backendOrigin
+                    . $this->uriBuilder->buildUriFromRoute($configuration['route'], $urlParameters);
             }
 
             $pluginConfiguration[$pluginName]['config'] = $configuration;

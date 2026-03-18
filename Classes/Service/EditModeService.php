@@ -93,12 +93,14 @@ final readonly class EditModeService
 
             $isExtContainerInstalled = ExtensionManagementUtility::isLoaded('container');
 
-            $returnUrl = (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
+            $backendOrigin = $GLOBALS['BE_USER']->getSessionData('visual_editor_backend_origin') ?? '';
+
+            $returnUrl = $backendOrigin . $this->uriBuilder->buildUriFromRoute('web_edit', [
                 'id' => $pageId,
                 'params' => $routing->getRouteArguments(),
             ]);
 
-            $newContentUrl = (string)$this->uriBuilder->buildUriFromRoute('new_content_element_wizard', [
+            $newContentUrl = $backendOrigin . $this->uriBuilder->buildUriFromRoute('new_content_element_wizard', [
                 'id' => $pageId,
                 'colPos' => '__COL_POS__',
                 'uid_pid' => '__UID_PID__',
@@ -111,9 +113,9 @@ final readonly class EditModeService
                 'returnUrl' => $returnUrl,
                 'module' => 'web_edit',
             ];
-            $editContentUrl = (string)$this->uriBuilder->buildUriFromRoute('record_edit', $editParams);
+            $editContentUrl = $backendOrigin . $this->uriBuilder->buildUriFromRoute('record_edit', $editParams);
             if ($this->typo3Version->getMajorVersion() >= 14) {
-                $editContentContextualUrl = (string)$this->uriBuilder->buildUriFromRoute('record_edit_contextual', $editParams);
+                $editContentContextualUrl = $backendOrigin . $this->uriBuilder->buildUriFromRoute('record_edit_contextual', $editParams);
             }
 
             $veInfo = [
@@ -126,6 +128,7 @@ final readonly class EditModeService
                 'token' => $this->formProtectionFactory->createForType('backend')->generateToken('visual_editor', 'save'),
                 'routeArguments' => (object)$this->flattenBracketKeys(['params' => $routing->getRouteArguments()]),
                 'allowedReferrer' => $this->getAllowedReferrer(),
+                'backendOrigin' => $backendOrigin,
             ];
             $this->assetCollector->addInlineJavaScript(
                 'veLangInfo',
@@ -239,6 +242,11 @@ window.veInfo = ' . json_encode($veInfo, JSON_THROW_ON_ERROR) . ';',
                 $origin = $language->getBase()->withQuery('')->withPath('')->withUserInfo('')->withFragment('');
                 $allowedReferrers[(string)$origin] = true;
             }
+        }
+
+        $backendOrigin = $GLOBALS['BE_USER']->getSessionData('visual_editor_backend_origin') ?? '';
+        if ($backendOrigin !== '') {
+            $allowedReferrers[$backendOrigin] = true;
         }
 
         return array_keys($allowedReferrers);

@@ -29,6 +29,7 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\WorkspaceRestriction;
 use TYPO3\CMS\Core\Domain\Record;
+use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
@@ -162,6 +163,11 @@ final class PageEditController
 
             return $view->renderResponse('PageLayout/PageModuleNoAccess');
         }
+
+        /** @var NormalizedParams $normalizedParams */
+        $normalizedParams = $request->getAttribute('normalizedParams');
+        $backendOrigin = rtrim($normalizedParams->getRequestHost(), '/');
+        $this->getBackendUser()->setAndSaveSessionData('visual_editor_backend_origin', $backendOrigin);
 
         $this->pageRenderer->getJavaScriptRenderer()->addJavaScriptModuleInstruction(
             JavaScriptModuleInstruction::create('@typo3/visual-editor/Backend/index'),
