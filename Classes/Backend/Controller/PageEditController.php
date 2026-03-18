@@ -52,6 +52,7 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Versioning\VersionState;
+use TYPO3\CMS\VisualEditor\Service\SessionTransferService;
 
 use function array_map;
 use function array_values;
@@ -93,6 +94,7 @@ final class PageEditController
         private readonly Typo3Version $typo3Version,
         private readonly ConnectionPool $connectionPool,
         private readonly AssetCollector $assetCollector,
+        private readonly SessionTransferService $sessionTransferService,
     ) {
     }
 
@@ -174,18 +176,13 @@ final class PageEditController
             $view->getDocHeaderComponent()->setPageBreadcrumb($this->pageRecord->getRawRecord()->toArray());
         }
 
-        $iframeUrl = $this->iframeUrl($request);
+        $siteLanguage = $this->selectedLanguages[0];
+        $iframeUrl = $this->iframeUrl($request, $siteLanguage);
+
         $view->assignMultiple([
             'pageId' => $this->pageRecord->getUid(),
             'iframeSrc' => $iframeUrl,
         ]);
-
-        $returnUrl = GeneralUtility::sanitizeLocalUrl(
-            (string)($request->getQueryParams()['returnUrl'] ?? ''),
-        ) ?: $this->uriBuilder->buildUriFromRoute('web_edit');
-
-        // Always add rootPageId as additional field to have a reference for new records
-        $view->assign('returnUrl', $returnUrl);
 
         $this->makeButtons($view, $request);
         $this->makeLanguageMenu($view, $request);
@@ -200,14 +197,28 @@ final class PageEditController
         return $view->renderResponse('PageEdit');
     }
 
-    private function iframeUrl(ServerRequestInterface $request): UriInterface
+    private function iframeUrl(ServerRequestInterface $request, SiteLanguage $siteLanguage): UriInterface
     {
+        $token = null;
+        if ($request->getHeaderLine('X-NoToken') === '') {
+            $origin = $this->site->getRouter()->generateUri(
+                $this->pageRecord->getUid(),
+                [
+                    ...$request->getQueryParams()['params'] ?? [],
+                    '_language' => $siteLanguage,
+                    'editMode' => 1,
+                ],
+            );
+            $token = $this->sessionTransferService->createSessionTransferTokenIfNeeded($origin, $request);
+        }
+
         return $this->site->getRouter()->generateUri(
             $this->pageRecord->getUid(),
             [
                 ...$request->getQueryParams()['params'] ?? [],
-                '_language' => $this->selectedLanguages[0]->getLanguageId(),
+                '_language' => $siteLanguage,
                 'editMode' => 1,
+                'token' => $token,
             ],
         );
     }

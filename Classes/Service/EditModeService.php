@@ -22,9 +22,10 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
-use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 
 use function method_exists;
+
+use const JSON_UNESCAPED_SLASHES;
 
 final readonly class EditModeService
 {
@@ -128,9 +129,9 @@ final readonly class EditModeService
                 'allowedReferrer' => $this->getAllowedReferrer(),
             ];
             $this->assetCollector->addInlineJavaScript(
-                'veLangInfo',
+                'veInfo',
                 'window.TYPO3 = window.TYPO3 || {};
-window.veInfo = ' . json_encode($veInfo, JSON_THROW_ON_ERROR) . ';',
+window.veInfo = ' . json_encode($veInfo, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES) . ';',
                 [
                     'type' => 'text/javascript',
                 ],

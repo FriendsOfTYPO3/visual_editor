@@ -69,7 +69,12 @@ async function loadModuleDocHeader(newUrl) {
   abortController = new AbortController();
   let response;
   try {
-    response = await fetch(newUrl, {signal: abortController.signal});
+    response = await fetch(newUrl, {
+      signal: abortController.signal,
+      headers: {
+        'X-NoToken': '1',
+      },
+    });
     if (!response.ok) {
       console.error('No doc header found.');
       return;

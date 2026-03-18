@@ -100,7 +100,7 @@ search for:
   ````html
   before:
   <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{colPos: '3'}"/>
-  
+
   after:
   <f:mark.contentArea colPos="3">
     <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{colPos: '3'}"/>
@@ -124,7 +124,7 @@ search for:
   ````html
   before:
   <v:content.render column="0"/>
-  
+
   after:
   <f:mark.contentArea colPos="0">
     <v:content.render column="0"/>
@@ -134,18 +134,12 @@ search for:
   ````html
   before:
   <flux:content.render area="column0"/>
-  
+
   after:
   <f:mark.contentArea colPos="{data.uid}00">
     <flux:content.render area="column0"/>
   </f:mark.contentArea>
   ````
-
-## Multi Site/Domain Setup
-
-You need to be Logged in to every Domain separately to use the Visual Editor.
-
-OR you can use [EXT:multisite_belogin](https://extensions.typo3.org/extension/multisite_belogin) it automatically logs you in to all sites/domains.
 
 ## License and Authors: License type, contributors, contact information
 

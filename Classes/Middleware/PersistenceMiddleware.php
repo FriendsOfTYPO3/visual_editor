@@ -9,6 +9,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\Cookie;
 use TYPO3\CMS\Backend\Middleware\JavaScriptLabelImportMapEntryResolver;
 use TYPO3\CMS\Backend\Routing\Router;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
@@ -21,15 +22,21 @@ use TYPO3\CMS\Core\FormProtection\FormProtectionFactory;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ImmediateResponseException;
 use TYPO3\CMS\Core\Http\JsonResponse;
+use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Page\Event\ResolveVirtualJavaScriptImportEvent;
 use TYPO3\CMS\Core\Page\PageRenderer;
+use TYPO3\CMS\Core\Routing\PageArguments;
+use TYPO3\CMS\Core\Site\Entity\Site;
+use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Service\DataHandlerService;
+use TYPO3\CMS\VisualEditor\Service\SessionTransferService;
+use UnexpectedValueException;
 
 use function array_keys;
 use function implode;
@@ -47,6 +54,7 @@ readonly class PersistenceMiddleware implements MiddlewareInterface
         private Typo3Version $typo3Version,
         private ListenerProvider $listenerProvider,
         private PageRenderer $pageRenderer,
+        private SessionTransferService $sessionTransferService,
     ) {
     }
 
@@ -96,6 +104,14 @@ readonly class PersistenceMiddleware implements MiddlewareInterface
 
         // backend user required
         $user = $this->context->getAspect('backend.user');
+
+        if (!empty($params['token'])) {
+            $cookie = $this->sessionTransferService->createCookieIfNeeded($request, $params['token']);
+            if ($cookie) {
+                // session is different to what it should be, update session cookie and reload:
+                $this->setSessionCookie($request, $cookie);
+            }
+        }
 
         if (!$user->isLoggedIn()) {
             $loginUrl = $this->uriBuilder->buildUriFromRoute('login', referenceType: UriBuilder::ABSOLUTE_URL)->__toString();
@@ -200,5 +216,35 @@ readonly class PersistenceMiddleware implements MiddlewareInterface
         }
 
         $this->pageRenderer->addInlineSetting('', 'ajaxUrls', $ajaxUrls);
+    }
+
+    private function setSessionCookie(ServerRequestInterface $request, Cookie $cookie): never
+    {
+        // recreate URI without token (to recreate chash)
+        $site = $request->getAttribute('site');
+        if (!$site instanceof Site) {
+            throw new UnexpectedValueException('"site" not found in request attributes', 9890374333);
+        }
+
+        $routing = $request->getAttribute('routing');
+        if (!$routing instanceof PageArguments) {
+            throw new UnexpectedValueException('"routing" not found in request attributes', 9890374334);
+        }
+
+        $language = $request->getAttribute('language');
+        if (!$language instanceof SiteLanguage) {
+            throw new UnexpectedValueException('"language" not found in request attributes', 9890374335);
+        }
+
+        $uri = $site->getRouter()->generateUri($routing->getPageId(), [
+            'type' => $routing->getPageType(),
+            '_language' => $language,
+            ...$routing->getArguments(),
+            'token' => null,
+        ]);
+
+        $response = new RedirectResponse($uri);
+        $response = $response->withAddedHeader('Set-Cookie', (string)$cookie);
+        throw new ImmediateResponseException($response, 1773838679);
     }
 }
