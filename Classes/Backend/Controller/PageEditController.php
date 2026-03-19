@@ -52,6 +52,7 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Versioning\VersionState;
+use TYPO3\CMS\VisualEditor\ExpressionLanguage\RequestConditionProvider;
 
 use function array_map;
 use function array_values;
@@ -174,18 +175,12 @@ final class PageEditController
             $view->getDocHeaderComponent()->setPageBreadcrumb($this->pageRecord->getRawRecord()->toArray());
         }
 
-        $iframeUrl = $this->iframeUrl($request);
+        $siteLanguage = $this->selectedLanguages[0];
+        $iframeUrl = $this->iframeUrl($request, $siteLanguage);
         $view->assignMultiple([
             'pageId' => $this->pageRecord->getUid(),
             'iframeSrc' => $iframeUrl,
         ]);
-
-        $returnUrl = GeneralUtility::sanitizeLocalUrl(
-            (string)($request->getQueryParams()['returnUrl'] ?? ''),
-        ) ?: $this->uriBuilder->buildUriFromRoute('web_edit');
-
-        // Always add rootPageId as additional field to have a reference for new records
-        $view->assign('returnUrl', $returnUrl);
 
         $this->makeButtons($view, $request);
         $this->makeLanguageMenu($view, $request);
@@ -200,16 +195,40 @@ final class PageEditController
         return $view->renderResponse('PageEdit');
     }
 
-    private function iframeUrl(ServerRequestInterface $request): UriInterface
+    private function iframeUrl(ServerRequestInterface $request, SiteLanguage $siteLanguage): UriInterface
     {
-        return $this->site->getRouter()->generateUri(
-            $this->pageRecord->getUid(),
-            [
-                ...$request->getQueryParams()['params'] ?? [],
-                '_language' => $this->selectedLanguages[0]->getLanguageId(),
-                'editMode' => 1,
-            ],
-        );
+        $parameters = [
+            ...$request->getQueryParams()['params'] ?? [],
+            '_language' => $siteLanguage->getLanguageId(),
+            'editMode' => 1,
+        ];
+
+        $uri = $this->site->getRouter()->generateUri($this->pageRecord->getUid(), $parameters);
+
+        if (
+            $uri->getScheme() === $request->getUri()->getScheme()
+            && $uri->getHost() === $request->getUri()->getHost()
+            && $uri->getPort() === $request->getUri()->getPort()
+        ) {
+            // if same origin, we do not need to use the preview url
+            return $uri;
+        }
+
+        RequestConditionProvider::$forceGeneration = true;
+        try {
+            $siteWithVePreview = new Site(
+                $this->site->getIdentifier(),
+                $this->site->getRootPageId(),
+                $this->site->getConfiguration(),
+                $this->site->getSettings(),
+                $this->site->getTypoScript(),
+                $this->site->getTSconfig(),
+            );
+        } finally {
+            RequestConditionProvider::$forceGeneration = false;
+        }
+
+        return $siteWithVePreview->getRouter()->generateUri($this->pageRecord->getUid(), $parameters);
     }
 
     private function makeButtons(ModuleTemplate $view, ServerRequestInterface $request): void
