@@ -108,11 +108,16 @@ export const calculateAllDebounced = () => {
 // on window resize, recalculate
 window.addEventListener('resize', calculateAllDebounced);
 
-// on DOM changes, recalculate
+// on DOM changes and visibility toggles, recalculate
 const observer = new MutationObserver(() => {
   // immediate
   calculateAllDebounced();
   // after animations are done:
   setTimeout(calculateAllDebounced, 310);
 });
-observer.observe(document.body, {childList: true, subtree: true});
+observer.observe(document.body, {
+  childList: true,
+  subtree: true,
+  attributes: true,
+  attributeFilter: ['class', 'style', 'hidden', 'open', 'aria-hidden'],
+});
