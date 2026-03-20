@@ -261,11 +261,10 @@ export class VeContentElement extends LitElement {
       color: #d9d9d9;
       border: 1px solid #d9d9d9;
       padding: 4px;
-      min-width: 200px;
       border-top-left-radius: 6px;
       border-top-right-radius: 6px;
       z-index: 10100;
-      font-size: 0.8em;
+      font-size: 14px;
 
       transition: opacity 0.2s;
     }
