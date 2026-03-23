@@ -74,23 +74,35 @@ export class VeContentElement extends LitElement {
 
   constructor() {
     super();
+    this.onDragInProgressChange = this.#onDragInProgressChange.bind(this);
+  }
 
-    dragInProgressStore.addEventListener('change', () => {
-      if (!dragInProgressStore.value) {
-        this.dragInProgress = false;
-      }
-      setTimeout(() => {
-        // delay the dragInProgress set to true, so the drag handle can be "screenshot". (to create the drag ghost image) (otherwise the drag will immediately end in chromium based browsers)
-        this.dragInProgress = !!dragInProgressStore.value;
-      });
+  connectedCallback() {
+    super.connectedCallback();
 
-    });
+    dragInProgressStore.addEventListener('change', this.onDragInProgressChange);
 
     if (this.parentElement.tagName.toLowerCase() !== 've-content-area') {
       let message = 'parent of ve-content-element must be ve-content-area, found ' + this.parentElement.tagName.toLowerCase();
       message += "\n" + 'drag and drop is disabled for this element.';
       console.warn(message);
     }
+  }
+
+  disconnectedCallback() {
+    dragInProgressStore.removeEventListener('change', this.onDragInProgressChange);
+
+    super.disconnectedCallback();
+  }
+
+  #onDragInProgressChange() {
+    if (!dragInProgressStore.value) {
+      this.dragInProgress = false;
+    }
+    setTimeout(() => {
+      // delay the dragInProgress set to true, so the drag handle can be "screenshot". (to create the drag ghost image) (otherwise the drag will immediately end in chromium based browsers)
+      this.dragInProgress = !!dragInProgressStore.value;
+    });
   }
 
   get hasContentAreaAsParent() {

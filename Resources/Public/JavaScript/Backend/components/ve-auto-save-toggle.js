@@ -34,24 +34,26 @@ export class VeAutoSaveToggle extends LitElement {
     super();
     this.count = 0;
     this.label = this.innerText;
+    this.disposeChangeListener = null;
+    this.onClick = this.#onClick.bind(this);
+  }
 
-    onMessageDebounced('change', (count) => {
-      this.count = count;
-      if (this.active && this.count > 0) {
-        sendMessage('doSave');
-      }
-    }, 300);
+  connectedCallback() {
+    super.connectedCallback();
 
-    this.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.active = !this.active;
+    if (!this.disposeChangeListener) {
+      this.disposeChangeListener = onMessageDebounced('change', this.#onChangeMessage.bind(this), 300);
+    }
 
-      autoSaveActive.set(this.active);
+    this.addEventListener('click', this.onClick);
+  }
 
-      if (this.active && this.count > 0) {
-        sendMessage('doSave');
-      }
-    })
+  disconnectedCallback() {
+    this.disposeChangeListener?.();
+    this.disposeChangeListener = null;
+    this.removeEventListener('click', this.onClick);
+
+    super.disconnectedCallback();
   }
 
   render() {
@@ -59,6 +61,24 @@ export class VeAutoSaveToggle extends LitElement {
     return html`
       <typo3-backend-icon identifier="${icon}" size="small"></typo3-backend-icon>
       ${(this.label)}`;
+  }
+
+  #onChangeMessage(count) {
+    this.count = count;
+    if (this.active && this.count > 0) {
+      sendMessage('doSave');
+    }
+  }
+
+  #onClick(e) {
+    e.preventDefault();
+    this.active = !this.active;
+
+    autoSaveActive.set(this.active);
+
+    if (this.active && this.count > 0) {
+      sendMessage('doSave');
+    }
   }
 
   static styles = css`

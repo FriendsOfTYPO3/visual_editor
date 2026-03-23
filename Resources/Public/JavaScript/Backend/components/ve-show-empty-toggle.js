@@ -23,17 +23,22 @@ export class VeShowEmptyToggle extends LitElement {
     this.innerHTML = '';
     this.active = showEmptyActive.get();
     sendMessage('showEmpty', this.active);
+    this.onShowEmptyChange = this.#onShowEmptyChange.bind(this);
+    this.onClick = this.#onClick.bind(this);
+  }
 
-    showEmptyActive.addEventListener('change', () => {
-      this.active = showEmptyActive.get();
-    });
-    this.addEventListener('click', (e) => {
-      e.preventDefault();
+  connectedCallback() {
+    super.connectedCallback();
 
-      this.active = !this.active;
-      showEmptyActive.set(this.active);
-      sendMessage('showEmpty', this.active);
-    })
+    showEmptyActive.addEventListener('change', this.onShowEmptyChange);
+    this.addEventListener('click', this.onClick);
+  }
+
+  disconnectedCallback() {
+    showEmptyActive.removeEventListener('change', this.onShowEmptyChange);
+    this.removeEventListener('click', this.onClick);
+
+    super.disconnectedCallback();
   }
 
   willUpdate(changedProperties) {
@@ -47,6 +52,18 @@ export class VeShowEmptyToggle extends LitElement {
       <typo3-backend-icon identifier="${this.active ? 'actions-eye' : 'actions-hyphen'}" size="small"></typo3-backend-icon>
       ${this.label}
     `;
+  }
+
+  #onShowEmptyChange() {
+    this.active = showEmptyActive.get();
+  }
+
+  #onClick(e) {
+    e.preventDefault();
+
+    this.active = !this.active;
+    showEmptyActive.set(this.active);
+    sendMessage('showEmpty', this.active);
   }
 }
 

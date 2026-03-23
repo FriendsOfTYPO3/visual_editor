@@ -27,35 +27,44 @@ export class VeEditableText extends LitElement {
     this.value = this.getAttribute('value');
     this.valueInitial = this.value;
     this.innerText = '';
-    this.addEventListener('click', (e) => {
-      e.stopPropagation();
-    })
-    this.addEventListener('mousedown', (e) => {
-      e.stopPropagation();
-    })
-    this.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-    })
-    this.addEventListener('dragstart', (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-    })
     this.showEmpty = showEmptyActive.get();
-    showEmptyActive.addEventListener('change', () => {
-      this.showEmpty = showEmptyActive.get();
-    });
-    dataHandlerStore.addEventListener('change', () => {
-      this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
-      this.valueInitial = dataHandlerStore.initialData[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
-      const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
-      const slot = this.shadowRoot?.querySelector('.slot');
-      if (storedValue?.trim() !== slot?.innerText?.trim()) {
-        this.value = storedValue ?? this.value;
-        if (slot) {
-          slot.innerText = this.value;
-        }
-      }
-    })
+    this.onClick = this.#onClick.bind(this);
+    this.onMousedown = this.#onMousedown.bind(this);
+    this.onPointerdown = this.#onPointerdown.bind(this);
+    this.onDragstart = this.#onDragstart.bind(this);
+    this.onMouseover = this.#onMouseover.bind(this);
+    this.onMouseout = this.#onMouseout.bind(this);
+    this.onContextmenu = this.#onContextmenu.bind(this);
+    this.onShowEmptyChange = this.#onShowEmptyChange.bind(this);
+    this.onDataHandlerChange = this.#onDataHandlerChange.bind(this);
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.addEventListener('click', this.onClick);
+    this.addEventListener('mousedown', this.onMousedown);
+    this.addEventListener('pointerdown', this.onPointerdown);
+    this.addEventListener('dragstart', this.onDragstart);
+    this.addEventListener('mouseover', this.onMouseover);
+    this.addEventListener('mouseout', this.onMouseout);
+    this.addEventListener('contextmenu', this.onContextmenu);
+    showEmptyActive.addEventListener('change', this.onShowEmptyChange);
+    dataHandlerStore.addEventListener('change', this.onDataHandlerChange);
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('click', this.onClick);
+    this.removeEventListener('mousedown', this.onMousedown);
+    this.removeEventListener('pointerdown', this.onPointerdown);
+    this.removeEventListener('dragstart', this.onDragstart);
+    this.removeEventListener('mouseover', this.onMouseover);
+    this.removeEventListener('mouseout', this.onMouseout);
+    this.removeEventListener('contextmenu', this.onContextmenu);
+    showEmptyActive.removeEventListener('change', this.onShowEmptyChange);
+    dataHandlerStore.removeEventListener('change', this.onDataHandlerChange);
+
+    super.disconnectedCallback();
   }
 
   /**
@@ -63,50 +72,8 @@ export class VeEditableText extends LitElement {
    */
   firstUpdated(changedProperties) {
     this.placeholder = '👀' + (this.placeholder || this.title);
-    this.#initHandleLinkClick();
     this.shadowRoot.querySelector('.slot').innerText = this.valueInitial || '';
     dataHandlerStore.setInitialData(this.table, this.uid, this.field, this.valueInitial);
-  }
-
-  #initHandleLinkClick() {
-    const aTag = this.closest('a');
-    if (!(aTag instanceof HTMLAnchorElement)) {
-      return;
-    }
-    aTag.dataset.veHref = aTag.href;
-
-    // remove the href if the text is hovered.
-    this.addEventListener('mouseover', () => aTag.removeAttribute('href'));
-    // add the href back when the mouse leaves the text.
-    this.addEventListener('mouseout', () => aTag.href = aTag.dataset.veHref);
-
-    // on right-click on the text, we want to open the context menu for the link, so we need to add the href back before the context menu opens, and remove it again after.
-    this.addEventListener('contextmenu', () => {
-      aTag.href = aTag.dataset.veHref;
-      setTimeout(() => aTag.removeAttribute('href'));
-    });
-
-    // on middle-click or ctrl/cmd + left click, we want to open the link
-    // we want to open the link in the same tab, even if it has target="_blank"
-    // we do that because otherwise you can not open the link in the same tab.
-    // you can still open the link in a new tab by right-clicking and choosing "open link in new tab"
-    this.addEventListener('mousedown', (e) => {
-      const ctrlPressed = e.ctrlKey || e.metaKey;
-      const middleClick = e.button === 1;
-      if (ctrlPressed || middleClick) {
-        e.preventDefault();
-        aTag.href = aTag.dataset.veHref;
-
-        const target = aTag.target;
-        aTag.target = '_self';
-        aTag.click();
-
-        setTimeout(() => {
-          aTag.target = target;
-          aTag.removeAttribute('href');
-        });
-      }
-    });
   }
 
   updated(changedProperties) {
@@ -194,6 +161,92 @@ export class VeEditableText extends LitElement {
 
     // if there are other child nodes, we should be inline
     return childNodes.length > 1;
+  }
+
+  #getClosestAnchor() {
+    const aTag = this.closest('a');
+    if (!(aTag instanceof HTMLAnchorElement)) {
+      return null;
+    }
+    aTag.dataset.veHref = aTag.dataset.veHref || aTag.href;
+    return aTag;
+  }
+
+  #onClick(e) {
+    e.stopPropagation();
+  }
+
+  #onMousedown(e) {
+    e.stopPropagation();
+
+    const aTag = this.#getClosestAnchor();
+    if (!aTag) {
+      return;
+    }
+
+    const ctrlPressed = e.ctrlKey || e.metaKey;
+    const middleClick = e.button === 1;
+    if (ctrlPressed || middleClick) {
+      e.preventDefault();
+      aTag.href = aTag.dataset.veHref;
+
+      const target = aTag.target;
+      aTag.target = '_self';
+      aTag.click();
+
+      setTimeout(() => {
+        aTag.target = target;
+        aTag.removeAttribute('href');
+      });
+    }
+  }
+
+  #onPointerdown(e) {
+    e.stopPropagation();
+  }
+
+  #onDragstart(e) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
+
+  #onMouseover() {
+    const aTag = this.#getClosestAnchor();
+    aTag?.removeAttribute('href');
+  }
+
+  #onMouseout() {
+    const aTag = this.#getClosestAnchor();
+    if (aTag) {
+      aTag.href = aTag.dataset.veHref;
+    }
+  }
+
+  #onContextmenu() {
+    const aTag = this.#getClosestAnchor();
+    if (!aTag) {
+      return;
+    }
+
+    aTag.href = aTag.dataset.veHref;
+    setTimeout(() => aTag.removeAttribute('href'));
+  }
+
+  #onShowEmptyChange() {
+    this.showEmpty = showEmptyActive.get();
+  }
+
+  #onDataHandlerChange() {
+    this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
+    this.valueInitial = dataHandlerStore.initialData[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
+    const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
+    const slot = this.shadowRoot?.querySelector('.slot');
+    if (storedValue?.trim() !== slot?.innerText?.trim()) {
+      this.value = storedValue ?? this.value;
+      if (slot) {
+        slot.innerText = this.value;
+      }
+    }
   }
 
   static styles = css`

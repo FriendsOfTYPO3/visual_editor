@@ -15,26 +15,36 @@ export class VeDragHandle extends LitElement {
 
   constructor() {
     super();
+    this.onDragStart = this.#dragStart.bind(this);
+    this.onDragEnd = this.#dragEnd.bind(this);
+  }
 
+  connectedCallback() {
+    super.connectedCallback();
+
+    if (this.isActive === 'true') {
+      this.setAttribute('draggable', 'true');
+      this.addEventListener('dragstart', this.onDragStart);
+      this.addEventListener('dragend', this.onDragEnd);
+    }
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('dragstart', this.onDragStart);
+    this.removeEventListener('dragend', this.onDragEnd);
+
+    super.disconnectedCallback();
   }
 
   firstUpdated(changedProperties) {
     autoNoOverlap(this, 've-drag-handle');
     this.style.paddingBottom = 'calc(var(--auto-no-overlap-padding, 0px) + 4px)';
-
-    if (this.isActive === 'true') {
-      /** @type {HTMLElement} */
-      const element = this;
-      element.setAttribute('draggable', 'true');
-      element.addEventListener('dragstart', this._dragStart.bind(this));
-      element.addEventListener('dragend', this._dragEnd.bind(this));
-    }
   }
 
   /**
    * @param {DragEvent} event
    */
-  _dragStart(event) {
+  #dragStart(event) {
     event.dataTransfer.effectAllowed = 'copyMove';
     event.dataTransfer.clearData();
 
@@ -51,7 +61,7 @@ export class VeDragHandle extends LitElement {
   /**
    * @param {DragEvent} event
    */
-  _dragEnd(event) {
+  #dragEnd(event) {
     dragInProgressStore.value = false;
   }
 

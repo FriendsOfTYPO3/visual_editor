@@ -22,17 +22,22 @@ export class VeSpotlightToggle extends LitElement {
     this.label = this.innerText;
     this.innerHTML = '';
     this.active = spotlightActive.get();
+    this.onSpotlightChange = this.#onSpotlightChange.bind(this);
+    this.onClick = this.#onClick.bind(this);
+  }
 
-    spotlightActive.addEventListener('change', () => {
-      this.active = spotlightActive.get();
-    });
+  connectedCallback() {
+    super.connectedCallback();
 
-    this.addEventListener('click', (e) => {
-      e.preventDefault();
+    spotlightActive.addEventListener('change', this.onSpotlightChange);
+    this.addEventListener('click', this.onClick);
+  }
 
-      this.active = !this.active;
-      spotlightActive.set(this.active);
-    })
+  disconnectedCallback() {
+    spotlightActive.removeEventListener('change', this.onSpotlightChange);
+    this.removeEventListener('click', this.onClick);
+
+    super.disconnectedCallback();
   }
 
   willUpdate(changedProperties) {
@@ -46,6 +51,17 @@ export class VeSpotlightToggle extends LitElement {
       <typo3-backend-icon identifier="${this.active ? 'actions-lightbulb-on' : 'actions-lightbulb'}" size="small"></typo3-backend-icon>
       ${this.label}
     `;
+  }
+
+  #onSpotlightChange() {
+    this.active = spotlightActive.get();
+  }
+
+  #onClick(e) {
+    e.preventDefault();
+
+    this.active = !this.active;
+    spotlightActive.set(this.active);
   }
 }
 

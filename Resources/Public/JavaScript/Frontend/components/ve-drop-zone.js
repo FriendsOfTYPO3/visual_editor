@@ -98,14 +98,20 @@ export class VeDropZone extends LitElement {
   constructor() {
     super();
     this.isDragHovering = false;
+    this.onDragInProgressChange = this.#onDragInProgressChange.bind(this);
+  }
 
-    dragInProgressStore.addEventListener('change', () => {
-      const newValue = this.shouldShow();
-      if (this.show !== newValue) {
-        setTimeout(calculateAllDebounced);
-      }
-      this.show = newValue;
-    });
+  connectedCallback() {
+    super.connectedCallback();
+
+    dragInProgressStore.addEventListener('change', this.onDragInProgressChange);
+  }
+
+  disconnectedCallback() {
+    dragInProgressStore.removeEventListener('change', this.onDragInProgressChange);
+    this.dragOverTimeout && clearTimeout(this.dragOverTimeout);
+
+    super.disconnectedCallback();
   }
 
   firstUpdated(changedProperties) {
@@ -217,6 +223,14 @@ export class VeDropZone extends LitElement {
         flipInsertBefore(firstParent, sourceElement, firstParent.firstChild);
         return;
     }
+  }
+
+  #onDragInProgressChange() {
+    const newValue = this.shouldShow();
+    if (this.show !== newValue) {
+      setTimeout(calculateAllDebounced);
+    }
+    this.show = newValue;
   }
 
   render() {
