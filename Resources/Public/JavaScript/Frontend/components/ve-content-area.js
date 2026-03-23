@@ -19,10 +19,19 @@ export class VeContentArea extends LitElement {
   constructor() {
     super();
     // observe child changes and rerender this component
-    const observer = new MutationObserver(() => {
-      this.requestUpdate();
-    });
-    observer.observe(this, {childList: true});
+    this.observer = new MutationObserver(() => this.requestUpdate());
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.observer.observe(this, {childList: true});
+  }
+
+  disconnectedCallback() {
+    this.observer?.disconnect();
+
+    super.disconnectedCallback();
   }
 
   firstUpdated(changedProperties) {

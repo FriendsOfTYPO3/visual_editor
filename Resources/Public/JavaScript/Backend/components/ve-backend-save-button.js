@@ -24,27 +24,37 @@ export class VeBackendSaveButton extends LitElement {
     this.count = 0;
     this.saving = false;
     this.disabled = true;
+    this.disposeUpdateChangesCountListener = null;
+    this.disposeOnSaveListener = null;
+    this.disposeSaveEndedListener = null;
+  }
 
-    onMessage('updateChangesCount', (count) => {
-      this.count = count;
-    });
+  connectedCallback() {
+    super.connectedCallback();
 
-    onMessage('onSave', () => {
-      this.saving = true;
-    });
+    if (!this.disposeUpdateChangesCountListener) {
+      this.disposeUpdateChangesCountListener = onMessage('updateChangesCount', this.onUpdateChangesCount.bind(this));
+    }
+    if (!this.disposeOnSaveListener) {
+      this.disposeOnSaveListener = onMessage('onSave', this.onSaveMessage.bind(this));
+    }
+    if (!this.disposeSaveEndedListener) {
+      this.disposeSaveEndedListener = onMessage('saveEnded', this.onSaveEndedMessage.bind(this));
+    }
 
-    onMessage('saveEnded', ({updatePageTree}) => {
-      this.saving = false;
+    this.addEventListener('click', this.onClick);
+  }
 
-      if (updatePageTree) {
-        console.log('Updating page tree after save', {updatePageTree});
-        top.document.dispatchEvent(new CustomEvent('typo3:pagetree:refresh'));
-      }
-    });
-    this.addEventListener('click', (e) => {
-      e.preventDefault();
-      sendMessage('doSave');
-    })
+  disconnectedCallback() {
+    this.disposeUpdateChangesCountListener?.();
+    this.disposeUpdateChangesCountListener = null;
+    this.disposeOnSaveListener?.();
+    this.disposeOnSaveListener = null;
+    this.disposeSaveEndedListener?.();
+    this.disposeSaveEndedListener = null;
+    this.removeEventListener('click', this.onClick);
+
+    super.disconnectedCallback();
   }
 
   render() {
@@ -59,6 +69,28 @@ export class VeBackendSaveButton extends LitElement {
       <typo3-backend-icon identifier="actions-save" size="small"></typo3-backend-icon>
       ${label}
     `;
+  }
+
+  onUpdateChangesCount(count) {
+    this.count = count;
+  }
+
+  onSaveMessage() {
+    this.saving = true;
+  }
+
+  onSaveEndedMessage({updatePageTree}) {
+    this.saving = false;
+
+    if (updatePageTree) {
+      console.log('Updating page tree after save', {updatePageTree});
+      top.document.dispatchEvent(new CustomEvent('typo3:pagetree:refresh'));
+    }
+  }
+
+  onClick(e) {
+    e.preventDefault();
+    sendMessage('doSave');
   }
 
 

@@ -77,8 +77,10 @@ let isMessageListenerInitialized = false;
  * @param callback {(detail: VECommandDetailMap[K]) => void}
  */
 export function onMessage(command, callback) {
-  messageListeners[`ve_${command}`] = messageListeners[`ve_${command}`] || [];
-  messageListeners[`ve_${command}`].push(callback);
+  const listenerKey = `ve_${command}`;
+
+  messageListeners[listenerKey] = messageListeners[listenerKey] || [];
+  messageListeners[listenerKey].push(callback);
   if (!isMessageListenerInitialized) {
     isMessageListenerInitialized = true;
 
@@ -98,6 +100,23 @@ export function onMessage(command, callback) {
       }
     });
   }
+
+  return () => {
+    const listeners = messageListeners[listenerKey];
+    if (!listeners) {
+      return;
+    }
+
+    const index = listeners.indexOf(callback);
+    if (index === -1) {
+      return;
+    }
+
+    listeners.splice(index, 1);
+    if (listeners.length === 0) {
+      delete messageListeners[listenerKey];
+    }
+  };
 }
 
 /**
@@ -114,7 +133,12 @@ export function onMessageDebounced(command, callback, delay = 300) {
       callback(detail);
     }, delay);
   };
-  onMessage(command, debouncedCallback);
+  const unsubscribe = onMessage(command, debouncedCallback);
+
+  return () => {
+    clearTimeout(timeoutId);
+    unsubscribe();
+  };
 }
 
 /**
@@ -122,5 +146,5 @@ export function onMessageDebounced(command, callback, delay = 300) {
  * @param command {K}
  */
 export function stopListeningMessages(command) {
-  delete messageListeners[command];
+  delete messageListeners[`ve_${command}`];
 }

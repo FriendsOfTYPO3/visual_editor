@@ -17,32 +17,30 @@ export class VeSaveButton extends LitElement {
     super();
     this.saving = false;
     this.count = 0;
+    this.disposeDoSaveListener = null;
+    this.onDataHandlerChange = this.#onDataHandlerChange.bind(this);
+    this.onKeydown = this.#onKeydown.bind(this);
+    this.onDoSaveMessage = this.#onDoSaveMessage.bind(this);
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+
     sendMessage('updateChangesCount', this.count);
+    dataHandlerStore.addEventListener('change', this.onDataHandlerChange);
+    document.addEventListener('keydown', this.onKeydown);
+    if (!this.disposeDoSaveListener) {
+      this.disposeDoSaveListener = onMessage('doSave', this.onDoSaveMessage);
+    }
+  }
 
-    dataHandlerStore.addEventListener('change', () => {
-      sendMessage('change', dataHandlerStore.changesCount);
-      if (dataHandlerStore.changesCount === this.count) {
-        return;
-      }
-      this.count = dataHandlerStore.changesCount;
+  disconnectedCallback() {
+    dataHandlerStore.removeEventListener('change', this.onDataHandlerChange);
+    document.removeEventListener('keydown', this.onKeydown);
+    this.disposeDoSaveListener?.();
+    this.disposeDoSaveListener = null;
 
-      sendMessage('updateChangesCount', this.count);
-    });
-
-    document.addEventListener('keydown', (event) => {
-      // on CTRL + S
-      if (!((event.ctrlKey || event.metaKey) && event.key === 's')) {
-        return;
-      }
-
-      event.preventDefault();
-
-      this.trySave();
-    });
-
-    onMessage('doSave', () => {
-      this.trySave();
-    });
+    super.disconnectedCallback();
   }
 
   trySave() {
@@ -94,6 +92,29 @@ export class VeSaveButton extends LitElement {
         ${label}
       </button>
     `;
+  }
+
+  #onDataHandlerChange() {
+    sendMessage('change', dataHandlerStore.changesCount);
+    if (dataHandlerStore.changesCount === this.count) {
+      return;
+    }
+    this.count = dataHandlerStore.changesCount;
+
+    sendMessage('updateChangesCount', this.count);
+  }
+
+  #onKeydown(event) {
+    if (!((event.ctrlKey || event.metaKey) && event.key === 's')) {
+      return;
+    }
+
+    event.preventDefault();
+    this.trySave();
+  }
+
+  #onDoSaveMessage() {
+    this.trySave();
   }
 
 

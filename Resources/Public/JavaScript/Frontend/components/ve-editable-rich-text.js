@@ -36,22 +36,26 @@ export class VeEditableRichText extends LitElement {
   constructor() {
     super();
     this.value = this.innerHTML;
-    dataHandlerStore.addEventListener('change', () => {
-      this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
-      const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
-      if (storedValue?.trim() !== this.editor?.getData({ skipListItemIds: true })?.trim()) {
-        this.value = storedValue ?? this.value;
-        this.editor?.setData(this.value);
-      }
-    })
     this.showEmpty = showEmptyActive.get();
-    showEmptyActive.addEventListener('change', () => {
-      this.showEmpty = showEmptyActive.get();
-    });
-    // disable drop while dragging content elements
-    dragInProgressStore.addEventListener('change', () => {
-      this.style.pointerEvents = dragInProgressStore.value ? 'none' : '';
-    });
+    this.onDataHandlerChange = this.#onDataHandlerChange.bind(this);
+    this.onShowEmptyChange = this.#onShowEmptyChange.bind(this);
+    this.onDragInProgressChange = this.#onDragInProgressChange.bind(this);
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    dataHandlerStore.addEventListener('change', this.onDataHandlerChange);
+    showEmptyActive.addEventListener('change', this.onShowEmptyChange);
+    dragInProgressStore.addEventListener('change', this.onDragInProgressChange);
+  }
+
+  disconnectedCallback() {
+    dataHandlerStore.removeEventListener('change', this.onDataHandlerChange);
+    showEmptyActive.removeEventListener('change', this.onShowEmptyChange);
+    dragInProgressStore.removeEventListener('change', this.onDragInProgressChange);
+
+    super.disconnectedCallback();
   }
 
   async firstUpdated() {
@@ -145,6 +149,23 @@ export class VeEditableRichText extends LitElement {
    */
   async hash(input) {
     return new Uint8Array(await crypto.subtle.digest('SHA-1', new TextEncoder().encode(input))).toHex();
+  }
+
+  #onDataHandlerChange() {
+    this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
+    const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
+    if (storedValue?.trim() !== this.editor?.getData({ skipListItemIds: true })?.trim()) {
+      this.value = storedValue ?? this.value;
+      this.editor?.setData(this.value);
+    }
+  }
+
+  #onShowEmptyChange() {
+    this.showEmpty = showEmptyActive.get();
+  }
+
+  #onDragInProgressChange() {
+    this.style.pointerEvents = dragInProgressStore.value ? 'none' : '';
   }
 }
 
