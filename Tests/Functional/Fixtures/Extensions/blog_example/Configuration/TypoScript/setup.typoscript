@@ -1,0 +1,16 @@
+ # Plugin configuration
+plugin.tx_blogexample {
+	settings {
+		 # maximum number of posts to display per page
+		postsPerPage = 3
+		 # Editor FE Usergroup uid
+		editorUsergroupUid = {$plugin.tx_blogexample.settings.editorUsergroupUid}
+		 # Plaintext page type number
+		plaintextPageType = {$plugin.tx_blogexample.settings.plaintextPageType}
+		# When creating new entries, where to store records
+		pidNewRecords = {$plugin.tx_blogexample.persistence.storagePid}
+	}
+	persistence {
+		storagePid = {$plugin.tx_blogexample.persistence.storagePid}
+	}
+}

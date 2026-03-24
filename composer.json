@@ -18,19 +18,23 @@
   ],
   "require": {
     "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-    "typo3/cms-backend": "^13.4.22 || ^14.2.0 || 14.2.x-dev",
-    "typo3/cms-core": "^13.4.22 || ^14.2.0 || 14.2.x-dev",
-    "typo3/cms-extbase": "^13.4.22 || ^14.2.0 || 14.2.x-dev",
-    "typo3/cms-fluid": "^13.4.22 || ^14.2.0 || 14.2.x-dev",
-    "typo3/cms-frontend": "^13.4.22 || ^14.2.0 || 14.2.x-dev",
-    "typo3/cms-rte-ckeditor": "^13.4.22 || ^14.2.0 || 14.2.x-dev"
+    "typo3/cms-backend": "^13.4.22 || ^14.3.0",
+    "typo3/cms-core": "^13.4.22 || ^14.3.0",
+    "typo3/cms-extbase": "^13.4.22 || ^14.3.0",
+    "typo3/cms-fluid": "^13.4.22 || ^14.3.0",
+    "typo3/cms-frontend": "^13.4.22 || ^14.3.0",
+    "typo3/cms-rte-ckeditor": "^13.4.22 || ^14.3.0"
   },
   "require-dev": {
     "b13/container": "^3.2.3",
-    "pluswerk/grumphp-config": "^10.2.6",
+    "phpunit/phpunit": "^11.5.55",
+    "pluswerk/grumphp-config": "^10.2.7",
     "saschaegerer/phpstan-typo3": "^2.1.1 || ^3.0.1",
     "ssch/typo3-rector": "^3.14.1",
-    "typo3fluid/fluid": "^4.6.0 || 4.6.x-dev || ^5"
+    "typo3/cms-install": "^13.4.0 || ^14.3.0",
+    "typo3/cms-workspaces": "^13.4.0 || ^14.3.0",
+    "typo3/testing-framework": "^9.5.0",
+    "typo3fluid/fluid": "^4.6.0 || ^5.3.1"
   },
   "suggest": {
     "wapplersystems/multisite-belogin": "You should install this extension, if you have multiple domains in your TYPO3 installation."
@@ -38,6 +42,11 @@
   "autoload": {
     "psr-4": {
       "TYPO3\\CMS\\VisualEditor\\": "Classes/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "TYPO3\\CMS\\VisualEditor\\Tests\\": "Tests/"
     }
   },
   "config": {
@@ -52,6 +61,7 @@
   },
   "extra": {
     "typo3/cms": {
+      "cms-package-dir": "{$vendor-dir}/typo3/cms",
       "extension-key": "visual_editor"
     }
   },
@@ -66,6 +76,8 @@
     "post-autoload-dump": [
       "sh -c 'MAJOR=$(typo3 --version | awk '\\''{split($3, v, \".\"); print v[1]}'\\''); ln -sfn \"phpstan-baseline-${MAJOR}.neon\" phpstan-baseline.neon'"
     ],
-    "test:js": "node --test $(find Resources/Public/JavaScript -name \"*.test.js\" | sort)"
+    "test:functional": "./Build/Scripts/runTests.sh -s functional",
+    "test:js": "node --test $(find Resources/Public/JavaScript -name \"*.test.js\" | sort)",
+    "test:unit": "phpunit -c Build/phpunit/UnitTests.xml"
   }
 }

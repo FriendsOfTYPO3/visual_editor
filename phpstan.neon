@@ -8,6 +8,8 @@ parameters:
   typo3:
     requestGetAttributeMapping:
       pageContext: TYPO3\CMS\Backend\Context\PageContext|null
+  excludePaths:
+    - Tests/Functional/Fixtures/Extensions/blog_example
 
 services:
   -

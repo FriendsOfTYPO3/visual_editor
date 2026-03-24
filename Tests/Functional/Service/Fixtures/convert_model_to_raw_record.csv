@@ -1,0 +1,19 @@
+"pages"
+,"uid","pid","sorting","title","deleted","perms_everybody"
+,1,0,128,"Root",0,15
+fe_users,,,,,
+,uid,pid,username,password,name,tx_extbase_type,usergroup,disable,deleted
+,1,1,admin,password,John Doe,TYPO3Tests\BlogExample\Domain\Model\Administrator,"1,2",0,0
+fe_groups,,,,
+,uid,pid,title,hidden,deleted
+,1,1,"Group A",0,0
+,2,1,"Group B",0,0
+tx_blogexample_domain_model_blog,,,
+,uid,pid,title,description,posts,categories,administrator,sys_language_uid,l18n_parent,t3ver_oid,t3ver_state,t3ver_wsid
+,1,1,"New Blog Post","This is a new blog post.",2,0,1,0,0,0,0,0
+,2,1,"Neuer Blog Post","Dies ist ein neuer Blog Post.",0,0,1,1,1,0,0,0
+,3,1,"New Blog Post (WS)","This is a new blog post (workspace draft).",0,0,1,0,0,1,0,1
+tx_blogexample_domain_model_post,,,
+,uid,pid,blog,title,date,hidden,deleted
+,1,1,1,"First post for blog 1",1710000000,0,0
+,2,1,1,"Second post for blog 1",1710003600,0,0

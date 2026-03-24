@@ -15,7 +15,7 @@ final readonly class LocalizationService
      */
     public function tryTranslation(string $label, ?array $arguments = null, Locale|string|null $languageKey = null): string
     {
-        $languageKey ??=  $this->getBackendUserLanguage();
+        $languageKey ??= $this->getBackendUserLanguage();
 
         try {
             return LocalizationUtility::translate($label, null, $arguments, $languageKey)
@@ -27,11 +27,6 @@ final readonly class LocalizationService
 
     public function getBackendUserLanguage(): ?string
     {
-        $backendUserAuthentication = $GLOBALS['BE_USER'];
-        if ($backendUserAuthentication?->user['lang'] !== null) {
-            return $backendUserAuthentication->user['lang'];
-        }
-
-        return null;
+        return $GLOBALS['BE_USER']?->user['lang'] ?? null;
     }
 }
