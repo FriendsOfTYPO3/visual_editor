@@ -13,6 +13,7 @@ import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 import {highlight, reset} from '@typo3/visual-editor/Frontend/spotlight-overlay';
 import {spotlightActive} from '@typo3/visual-editor/Shared/local-stores';
 import {initSaveScrollPosition} from '@typo3/visual-editor/Frontend/init-save-scroll-position';
+import {initializeCrossOriginNavigations} from '@typo3/visual-editor/Frontend/initializeCrossOriginNavigations';
 
 if (window.location.hash === '#ve-close') {
   sendMessage('closeModal');
@@ -23,7 +24,7 @@ if (window.location.hash === '#ve-close') {
 const element = document.createElement('ve-save-button');
 document.body.appendChild(element);
 
-(function spotlight() {
+(function () {
   const setSpotlight = () => {
     if (spotlightActive.get()) {
       highlight('ve-editable-text, ve-editable-rich-text, .ck-editor__top');
@@ -41,3 +42,4 @@ if (window.veInfo) {
 }
 
 initSaveScrollPosition();
+initializeCrossOriginNavigations();
