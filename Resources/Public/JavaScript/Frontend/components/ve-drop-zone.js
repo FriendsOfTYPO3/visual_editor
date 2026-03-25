@@ -1,7 +1,7 @@
 import {css, html, LitElement} from 'lit';
 import {lll} from "@typo3/core/lit-helper.js";
 import {classMap} from 'lit/directives/class-map.js';
-import {isDirectMode, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
+import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 import {useDataHandler} from '@typo3/visual-editor/Frontend/use-data-handler';
 import {dragInProgressStore} from '@typo3/visual-editor/Frontend/stores/drag-store';
 import {flipInsertBefore} from '@typo3/visual-editor/Frontend/flip-insert-before';
@@ -187,11 +187,6 @@ export class VeDropZone extends LitElement {
       dataHandlerStore.addCmd(data.table, data.uid, 'copy', actionData);
       await useDataHandler(dataHandlerStore.data, dataHandlerStore.cmdArray);
       dataHandlerStore.markSaved();
-
-      if (isDirectMode) {
-        window.location.reload();
-        return;
-      }
       sendMessage('reloadFrames');
       return;
     }

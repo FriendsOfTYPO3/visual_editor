@@ -93,8 +93,9 @@ final readonly class EditModeService
 
             $isExtContainerInstalled = ExtensionManagementUtility::isLoaded('container');
 
-            $returnUrl = (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
+            $backendEditUrl = (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
                 'id' => $pageId,
+                'languages' => [$siteLanguage->getLanguageId()],
                 'params' => $routing->getRouteArguments(),
             ]);
 
@@ -103,12 +104,12 @@ final readonly class EditModeService
                 'colPos' => '__COL_POS__',
                 'uid_pid' => '__UID_PID__',
                 ...($isExtContainerInstalled ? ['tx_container_parent' => '__TX_CONTAINER_PARENT__'] : []),
-                'returnUrl' => $returnUrl,
+                'returnUrl' => $backendEditUrl,
             ]);
 
             $editParams = [
                 'edit' => ['__TABLE__' => ['__UID__' => 'edit']],
-                'returnUrl' => $returnUrl,
+                'returnUrl' => $backendEditUrl,
                 'module' => 'web_edit',
             ];
             $editContentUrl = (string)$this->uriBuilder->buildUriFromRoute('record_edit', $editParams);
@@ -119,6 +120,7 @@ final readonly class EditModeService
             $veInfo = [
                 'pageId' => $pageId,
                 'languageId' => $siteLanguage->getLanguageId(),
+                'backendEditUrl' => $backendEditUrl,
                 'newContentUrl' => $newContentUrl,
                 'editContentUrl' => $editContentUrl,
                 'editContentContextualUrl' => $editContentContextualUrl ?? null,
@@ -130,7 +132,15 @@ final readonly class EditModeService
             $this->assetCollector->addInlineJavaScript(
                 'veLangInfo',
                 'window.TYPO3 = window.TYPO3 || {};
-window.veInfo = ' . json_encode($veInfo, JSON_THROW_ON_ERROR) . ';',
+window.veInfo = ' . json_encode($veInfo, JSON_THROW_ON_ERROR) . ';
+/* if you open this page without it being in an iframe we redirect to the backend */
+if (window.parent === window && window.veInfo) {
+  const backendEditUrl = window.veInfo.backendEditUrl || null;
+  if (backendEditUrl) {
+    window.location.replace(backendEditUrl);
+    document.body.innerHTML = "";
+  }
+}',
                 [
                     'type' => 'text/javascript',
                 ],

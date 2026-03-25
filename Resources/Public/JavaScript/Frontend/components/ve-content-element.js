@@ -1,7 +1,7 @@
 import {css, html, LitElement} from 'lit';
 import {lll} from "@typo3/core/lit-helper.js";
 import {dragInProgressStore} from '@typo3/visual-editor/Frontend/stores/drag-store';
-import {isDirectMode, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
+import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 import {openModal} from '@typo3/visual-editor/Frontend/components/ve-iframe-popup';
 import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
 
@@ -44,7 +44,7 @@ export class VeContentElement extends LitElement {
    */
   _openEdit(event) {
     // if clicked with middle mouse button or ctrl/cmd key, open in new tab
-    if (event.button === 1 || event.ctrlKey || event.metaKey || isDirectMode) {
+    if (event.button === 1 || event.ctrlKey || event.metaKey) {
       return;
     }
     event.preventDefault();
