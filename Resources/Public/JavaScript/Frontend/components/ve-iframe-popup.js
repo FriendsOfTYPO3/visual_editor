@@ -1,5 +1,5 @@
 import {css, html, LitElement} from 'lit';
-import {isDirectMode, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
+import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 
 /**
  * @param {string} src
@@ -8,19 +8,6 @@ import {isDirectMode, sendMessage} from '@typo3/visual-editor/Shared/iframe-mess
  * @param {'iframe' | 'ajax'} type
  */
 export function openModal(src, title, size = 'large', type = 'iframe') {
-  if (isDirectMode) {
-    // direct mode, just navigate
-    try {
-      const parsed = new URL(src, window.location.href);
-      if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && parsed.host === window.location.host) {
-        window.location = parsed.href;
-      }
-    } catch {
-      // invalid URL, ignore
-    }
-    return;
-  }
-
   const message = {
     src: src + '%23ve-close',
     title,

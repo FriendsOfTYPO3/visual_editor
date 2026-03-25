@@ -1,6 +1,3 @@
-export const isDirectMode = window.parent === window;
-
-
 /**
  * @typedef {Object} VECommandDetailMap
  * @property openModal {{ src: String, title: String, size: 'medium' | 'large' | 'full', type: 'iframe' | 'ajax' }}
