@@ -30,6 +30,8 @@ use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\WorkspaceRestriction;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
+use TYPO3\CMS\Core\Http\HtmlResponse;
+use TYPO3\CMS\Core\Http\ImmediateResponseException;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Information\Typo3Version;
@@ -60,6 +62,8 @@ use function count;
 use function in_array;
 use function is_array;
 use function sprintf;
+
+use const JSON_UNESCAPED_SLASHES;
 
 /**
  * @phpstan-type LanguageRef -1|0|positive-int
@@ -174,18 +178,12 @@ final class PageEditController
             $view->getDocHeaderComponent()->setPageBreadcrumb($this->pageRecord->getRawRecord()->toArray());
         }
 
-        $iframeUrl = $this->iframeUrl($request);
+        $siteLanguage = $this->selectedLanguages[0];
+        $iframeUrl = $this->iframeUrl($request, $siteLanguage);
         $view->assignMultiple([
             'pageId' => $this->pageRecord->getUid(),
             'iframeSrc' => $iframeUrl,
         ]);
-
-        $returnUrl = GeneralUtility::sanitizeLocalUrl(
-            (string)($request->getQueryParams()['returnUrl'] ?? ''),
-        ) ?: $this->uriBuilder->buildUriFromRoute('web_edit');
-
-        // Always add rootPageId as additional field to have a reference for new records
-        $view->assign('returnUrl', $returnUrl);
 
         $this->makeButtons($view, $request);
         $this->makeLanguageMenu($view, $request);
@@ -200,16 +198,40 @@ final class PageEditController
         return $view->renderResponse('PageEdit');
     }
 
-    private function iframeUrl(ServerRequestInterface $request): UriInterface
+    private function iframeUrl(ServerRequestInterface $request, SiteLanguage $siteLanguage): UriInterface
     {
-        return $this->site->getRouter()->generateUri(
-            $this->pageRecord->getUid(),
-            [
-                ...$request->getQueryParams()['params'] ?? [],
-                '_language' => $this->selectedLanguages[0]->getLanguageId(),
-                'editMode' => 1,
-            ],
-        );
+        $parameters = [
+            ...$request->getQueryParams()['params'] ?? [],
+            '_language' => $siteLanguage->getLanguageId(),
+            'editMode' => 1,
+        ];
+
+        $uri = $this->site->getRouter()->generateUri($this->pageRecord->getUid(), $parameters);
+
+        if (
+            $uri->getScheme() === $request->getUri()->getScheme()
+            && $uri->getHost() === $request->getUri()->getHost()
+            && $uri->getPort() === $request->getUri()->getPort()
+        ) {
+            // if same origin, we can return the Uri
+            return $uri;
+        }
+
+        // redirect to the correct backend origin:
+        $backendUrl = $this->uriBuilder
+            ->buildUriFromRoute(
+                'web_edit',
+                [
+                    'id' => $this->pageRecord->getUid(),
+                    'languages' => array_map(fn(SiteLanguage $siteLanguage): int => $siteLanguage->getLanguageId(), $this->selectedLanguages),
+                ],
+                referenceType: UriBuilder::ABSOLUTE_URL,
+            )
+            ->withScheme($uri->getScheme())
+            ->withHost($uri->getHost())
+            ->withPort($uri->getPort());
+        $html = '<script>window.top.location.href = ' . json_encode((string)$backendUrl, JSON_UNESCAPED_SLASHES) . ';</script>';
+        throw new ImmediateResponseException(new HtmlResponse($html, 406), 3234807219);
     }
 
     private function makeButtons(ModuleTemplate $view, ServerRequestInterface $request): void

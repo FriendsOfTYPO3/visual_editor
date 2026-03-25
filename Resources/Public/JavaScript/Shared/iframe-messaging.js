@@ -31,7 +31,7 @@ function getPeerOrigin() {
 
   if (document.referrer) {
     const origin = new URL(document.referrer).origin;
-    if (window.veInfo.allowedReferrer.includes(origin)) {
+    if (window.veInfo.allowedOrigins.includes(origin)) {
       return origin;
     }
   }

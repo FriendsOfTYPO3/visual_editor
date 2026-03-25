@@ -125,7 +125,7 @@ final readonly class EditModeService
                 'allowNewContent' => $this->languageModeService->getAllowNewContent($pageInformation, $siteLanguage, $request),
                 'token' => $this->formProtectionFactory->createForType('backend')->generateToken('visual_editor', 'save'),
                 'routeArguments' => (object)$this->flattenBracketKeys(['params' => $routing->getRouteArguments()]),
-                'allowedReferrer' => $this->getAllowedReferrer(),
+                'allowedOrigins' => $this->getAllowedOrigins(),
             ];
             $this->assetCollector->addInlineJavaScript(
                 'veLangInfo',
@@ -228,19 +228,19 @@ window.veInfo = ' . json_encode($veInfo, JSON_THROW_ON_ERROR) . ';',
      * returns the origins of all configured sites and languages
      * @return list<string>
      */
-    private function getAllowedReferrer(): array
+    public function getAllowedOrigins(): array
     {
-        $allowedReferrers = [];
+        $allowed = [];
         $sites = $this->siteFinder->getAllSites();
         foreach ($sites as $site) {
             $origin = $site->getBase()->withQuery('')->withPath('')->withUserInfo('')->withFragment('');
-            $allowedReferrers[(string)$origin] = true;
+            $allowed[(string)$origin] = true;
             foreach ($site->getLanguages() as $language) {
                 $origin = $language->getBase()->withQuery('')->withPath('')->withUserInfo('')->withFragment('');
-                $allowedReferrers[(string)$origin] = true;
+                $allowed[(string)$origin] = true;
             }
         }
 
-        return array_keys($allowedReferrers);
+        return array_keys($allowed);
     }
 }
