@@ -209,9 +209,12 @@ final class PageEditController
         $uri = $this->site->getRouter()->generateUri($this->pageRecord->getUid(), $parameters);
 
         if (
-            $uri->getScheme() === $request->getUri()->getScheme()
-            && $uri->getHost() === $request->getUri()->getHost()
-            && $uri->getPort() === $request->getUri()->getPort()
+            ($uri->getScheme() === '' && $uri->getHost() === '')
+            || (
+                $uri->getScheme() === $request->getUri()->getScheme()
+                && $uri->getHost() === $request->getUri()->getHost()
+                && $uri->getPort() === $request->getUri()->getPort()
+            )
         ) {
             // if same origin, we can return the Uri
             return $uri;
