@@ -1,39 +1,58 @@
 import {css, html, LitElement} from 'lit';
+import {lll} from '@typo3/core/lit-helper.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
 import {showEmptyActive} from '@typo3/visual-editor/Shared/local-stores';
+import '@typo3/visual-editor/Frontend/components/ve-icon';
+import '@typo3/visual-editor/Frontend/components/ve-validation-overlay';
+import {getEditValue, insertTextAtSelection} from '@typo3/visual-editor/Frontend/components/ve-editable-text/editing';
+import {getValidationIssues, normalizeValue} from '@typo3/visual-editor/Frontend/components/ve-editable-text/validation';
 
 /**
  * @extends {HTMLElement}
  */
 export class VeEditableText extends LitElement {
   static properties = {
-    changed: {type: Boolean, reflect: true,},
-    value: {type: String, reflect: true,},
+    changed: {type: Boolean, reflect: true},
+    value: {type: String, reflect: true},
 
-    name: {type: String,},
-    table: {type: String,},
-    uid: {type: Number,},
-    field: {type: String,},
-    valueInitial: {type: String,},
-    placeholder: {type: String,},
-    allowNewlines: {type: Boolean,},
-    showEmpty: {type: Boolean,},
+    name: {type: String},
+    table: {type: String},
+    uid: {type: Number},
+    field: {type: String},
+    valueInitial: {type: String},
+    placeholder: {type: String},
+    allowNewlines: {type: Boolean},
+    validation: {type: Object},
+    invalid: {type: Boolean, reflect: true},
+    validationErrors: {type: Array},
+    showEmpty: {type: Boolean},
+    focused: {type: Boolean},
+    hovered: {type: Boolean},
   };
 
   constructor() {
     super();
 
-    this.value = this.getAttribute('value');
+    this.value = this.getAttribute('value') ?? '';
     this.valueInitial = this.value;
-    this.innerText = '';
+    this.validation = this.getAttribute('validation') || {};
+    this.invalid = false;
+    this.validationErrors = [];
     this.showEmpty = showEmptyActive.get();
+    this.focused = false;
+    this.hovered = false;
+    this.shakeTimeout = null;
+    this.deniedInputPulseTimeout = null;
+    this.skipNextValueNormalization = false;
     this.onClick = this.#onClick.bind(this);
     this.onMousedown = this.#onMousedown.bind(this);
     this.onPointerdown = this.#onPointerdown.bind(this);
     this.onDragstart = this.#onDragstart.bind(this);
     this.onMouseover = this.#onMouseover.bind(this);
     this.onMouseout = this.#onMouseout.bind(this);
+    this.onMouseenter = this.#onMouseenter.bind(this);
+    this.onMouseleave = this.#onMouseleave.bind(this);
     this.onContextmenu = this.#onContextmenu.bind(this);
     this.onShowEmptyChange = this.#onShowEmptyChange.bind(this);
     this.onDataHandlerChange = this.#onDataHandlerChange.bind(this);
@@ -48,6 +67,8 @@ export class VeEditableText extends LitElement {
     this.addEventListener('dragstart', this.onDragstart);
     this.addEventListener('mouseover', this.onMouseover);
     this.addEventListener('mouseout', this.onMouseout);
+    this.addEventListener('mouseenter', this.onMouseenter);
+    this.addEventListener('mouseleave', this.onMouseleave);
     this.addEventListener('contextmenu', this.onContextmenu);
     showEmptyActive.addEventListener('change', this.onShowEmptyChange);
     dataHandlerStore.addEventListener('change', this.onDataHandlerChange);
@@ -60,9 +81,20 @@ export class VeEditableText extends LitElement {
     this.removeEventListener('dragstart', this.onDragstart);
     this.removeEventListener('mouseover', this.onMouseover);
     this.removeEventListener('mouseout', this.onMouseout);
+    this.removeEventListener('mouseenter', this.onMouseenter);
+    this.removeEventListener('mouseleave', this.onMouseleave);
     this.removeEventListener('contextmenu', this.onContextmenu);
     showEmptyActive.removeEventListener('change', this.onShowEmptyChange);
     dataHandlerStore.removeEventListener('change', this.onDataHandlerChange);
+    if (this.shakeTimeout) {
+      clearTimeout(this.shakeTimeout);
+      this.shakeTimeout = null;
+    }
+    if (this.deniedInputPulseTimeout) {
+      clearTimeout(this.deniedInputPulseTimeout);
+      this.deniedInputPulseTimeout = null;
+    }
+    this.shadowRoot?.querySelector('ve-validation-overlay')?.clear();
 
     super.disconnectedCallback();
   }
@@ -71,18 +103,25 @@ export class VeEditableText extends LitElement {
    * @param changedProperties {Map<PropertyKey, unknown>}
    */
   firstUpdated(changedProperties) {
-    this.placeholder = '👀' + (this.placeholder || this.title);
-    this.shadowRoot.querySelector('.slot').innerText = this.valueInitial || '';
+    this.placeholder = '👀' + this.title;
+    this.skipNextValueNormalization = true;
+    this.#setSlotText(this.valueInitial);
     dataHandlerStore.setInitialData(this.table, this.uid, this.field, this.valueInitial);
+    this.#applyValidationState(this.valueInitial);
   }
 
   updated(changedProperties) {
     this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
-    if (changedProperties.has('value')) {
-      dataHandlerStore.setData(this.table, this.uid, this.field, this.value);
+    if (changedProperties.has('value') || changedProperties.has('validation')) {
+      if (this.skipNextValueNormalization) {
+        this.skipNextValueNormalization = false;
+        this.#applyValidationState(this.value);
+      } else {
+        this.#validateAndStore(this.value);
+      }
     }
 
-    const hideEmpty = !this.showEmpty && this.value === '' && !this.matches(':focus-within') && !this.changed;
+    const hideEmpty = !this.showEmpty && this.value === '' && !this.focused && !this.changed && !this.invalid;
     if (hideEmpty) {
       this.style.display = 'none';
       if (this.parentElement.innerText.trim() === '') {
@@ -96,44 +135,91 @@ export class VeEditableText extends LitElement {
 
   onReset = () => {
     this.value = this.valueInitial;
-    this.shadowRoot.querySelector('.slot').innerText = this.valueInitial;
+    this.#setSlotText(this.valueInitial);
+    this.skipNextValueNormalization = true;
+    this.#applyValidationState(this.valueInitial);
+    dataHandlerStore.setData(this.table, this.uid, this.field, this.valueInitial);
   };
 
-  render() {
-    let buttonCount = 0;
-    let buttons = html``;
-    if (this.changed) {
-      buttonCount = 1;
-      buttons = html`
-        <div class="buttons">
-          <ve-reset-button @click="${this.onReset}"></ve-reset-button>
-        </div>`;
+  /**
+   * @api used by initialize-save-handling.js focusFirstInvalidField function
+   */
+  focusEditable() {
+    this.style.display = '';
+    if (this.parentElement) {
+      this.parentElement.style.display = '';
     }
+    this.scrollIntoView({
+      block: 'center',
+      inline: 'nearest',
+      behavior: 'auto',
+    });
+
+    const slot = this.shadowRoot?.querySelector('.slot');
+    slot?.focus({preventScroll: true});
+  }
+
+  render() {
+    const showValidationErrors = this.hovered || this.focused;
+    const showInvalidIcon = this.invalid;
+    const buttonControls = [];
+
+    if (showInvalidIcon) {
+      buttonControls.push(html`
+        <span class="status-icon" title="${this.validationErrors[0] || ''}" aria-hidden="true">
+          <ve-icon name="actions-exclamation-circle-alt" width="100%"></ve-icon>
+        </span>
+      `);
+    }
+
+    if (this.changed) {
+      buttonControls.push(html`
+        <ve-reset-button @click="${this.onReset}"></ve-reset-button>
+      `);
+    }
+
+    const buttonCount = buttonControls.length;
+    const buttons = buttonCount > 0 ? html`
+      <div class="buttons">
+        ${buttonControls}
+      </div>` : html``;
     const shouldBeInline = this.shouldBeInline();
 
     this.classList.toggle('block', !shouldBeInline);
+
+    const slot = this.shadowRoot?.querySelector('.slot');
+    const showPlaceholder = !this.focused && !(slot?.innerText || this.value).length;
     return html`
       <span
-        class=${classMap({slot: true, synced: this.isSynced, changed: this.changed, block: !shouldBeInline})}
+        class=${classMap({
+          slot: true,
+          changed: this.changed,
+          invalid: this.invalid,
+          block: !shouldBeInline,
+        })}
         style="--button-count: ${buttonCount};"
-        contenteditable="${this.isSynced ? 'false' : 'plaintext-only'}"
+        contenteditable="plaintext-only"
         role="textbox"
+        aria-invalid="${this.invalid ? 'true' : 'false'}"
         spellcheck="true"
-        data-placeholder="${this.value.length ? '' : (this.placeholder || '\u200B'/* placeholder keeps firefox from breaking out*/)}"
-        @input="${(event) => {
-          this.value = event.currentTarget.innerText.trim();
-          if (this.value.length === 0) {
-            this.shadowRoot.querySelector('.slot').innerText = '';
-          }
+        data-placeholder="${showPlaceholder ? (this.placeholder || '\u200B'/* placeholder keeps firefox from breaking out*/) : ''}"
+        @focus="${() => {
+          this.#handleFocus();
         }}"
-        @blur="${() => this.shadowRoot.querySelector('.slot').innerText = this.value}"
-        @keypress="${(event) => {
-          if (event.which === 13 && !this.allowNewlines) {
-            event.preventDefault();
-          }
+        @beforeinput="${(event) => {
+          this.#handleBeforeInput(event.currentTarget, event);
+        }}"
+        @input="${(event) => {
+          this.#handleInput();
+        }}"
+        @blur="${(event) => {
+          this.#handleBlur();
         }}"
       ></span>
       ${buttons}
+      <ve-validation-overlay
+        .validationErrors=${showValidationErrors ? this.validationErrors : []}
+      ></ve-validation-overlay>
     `;
   }
 
@@ -222,6 +308,14 @@ export class VeEditableText extends LitElement {
     }
   }
 
+  #onMouseenter() {
+    this.hovered = true;
+  }
+
+  #onMouseleave() {
+    this.hovered = false;
+  }
+
   #onContextmenu() {
     const aTag = this.#getClosestAnchor();
     if (!aTag) {
@@ -236,17 +330,192 @@ export class VeEditableText extends LitElement {
     this.showEmpty = showEmptyActive.get();
   }
 
-  #onDataHandlerChange() {
+  #onDataHandlerChange(event) {
+    if (!this.#isRelevantDataHandlerEvent(event.detail)) {
+      return;
+    }
+
     this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
     this.valueInitial = dataHandlerStore.initialData[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
     const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
     const slot = this.shadowRoot?.querySelector('.slot');
-    if (storedValue?.trim() !== slot?.innerText?.trim()) {
+    const isFocused = this.matches(':focus-within');
+    if (!isFocused && storedValue?.trim() !== slot?.innerText?.trim()) {
+      this.skipNextValueNormalization = true;
       this.value = storedValue ?? this.value;
-      if (slot) {
-        slot.innerText = this.value;
+      this.#setSlotText(this.value);
+    }
+  }
+
+  /**
+   * @param {string} value
+   */
+  #setSlotText(value) {
+    const element = this.shadowRoot?.querySelector('.slot');
+    if (element) {
+      element.innerText = value;
+    }
+  }
+
+  #getSlotText() {
+    return this.shadowRoot?.querySelector('.slot')?.innerText.replace(/\n$/, '') ?? '';
+  }
+
+  /**
+   * @param {HTMLElement} element
+   * @param {InputEvent} event
+   */
+  #handleBeforeInput(element, event) {
+    const edit = getEditValue(element, event);
+    if (edit === null) {
+      return;
+    }
+
+    if (edit.type === 'delete') {
+      return;
+    }
+
+    if (edit.type === 'insertBreak') {
+      if (!this.allowNewlines) {
+        event.preventDefault();
+        this.#showDeniedInputReason(lll('inputDenial.noNewlines'), element);
+      }
+      return;
+    }
+
+    const {text, reasons} = normalizeValue(edit.insertedText, this.validation);
+    let insertedText = text;
+
+    for (const reason of reasons) {
+      this.#showDeniedInputReason(lll(reason.key, ...(reason.args || [])), element);
+    }
+
+    const nextValue = edit.currentValue.slice(0, edit.start) + insertedText + edit.currentValue.slice(edit.end);
+
+    if (!this.allowNewlines) {
+      if (insertedText.match(/\n/)) {
+        insertedText = insertedText.replaceAll(/\n/g, '');
+        this.#showDeniedInputReason(lll('inputDenial.noNewlines'), element);
       }
     }
+
+    const max = Number(this.validation?.max || 0);
+    if (max > 0 && nextValue.length > max) {
+      insertedText = insertedText.slice(0, max - edit.currentValue.length + (edit.end - edit.start));
+      this.#showDeniedInputReason(lll('validation.max', max), element);
+    }
+
+    if (insertedText !== edit.insertedText) {
+      event.preventDefault();
+      insertTextAtSelection(element, insertedText);
+      this.#validateAndStore(this.#getSlotText());
+    }
+  }
+
+  #handleInput() {
+    this.#validateAndStore(this.#getSlotText());
+  }
+
+  #handleFocus() {
+    this.focused = true;
+  }
+
+  #handleBlur() {
+    this.focused = false;
+    this.#setSlotText(this.#validateAndStore(this.#getSlotText()));
+  }
+
+  /**
+   * @param {string} reason
+   * @param {HTMLElement} element
+   */
+  #showDeniedInputReason(reason, element) {
+    if (!reason) {
+      return;
+    }
+
+    this.#shakeInvalidInput(element);
+    this.#restartDeniedInputPulse(element);
+    this.shadowRoot?.querySelector('ve-validation-overlay')?.show(reason);
+  }
+
+  /**
+   * @param {HTMLElement} element
+   */
+  #shakeInvalidInput(element) {
+    element.classList.remove('shake-invalid');
+    void element.offsetWidth;
+    element.classList.add('shake-invalid');
+    if (this.shakeTimeout) {
+      clearTimeout(this.shakeTimeout);
+    }
+    this.shakeTimeout = setTimeout(() => {
+      element.classList.remove('shake-invalid');
+      this.shakeTimeout = null;
+    }, 250);
+  }
+
+  /**
+   * @param {HTMLElement} element
+   */
+  #restartDeniedInputPulse(element) {
+    element.classList.remove('deniedInputPulse');
+    void element.offsetWidth;
+    element.classList.add('deniedInputPulse');
+    if (this.deniedInputPulseTimeout) {
+      clearTimeout(this.deniedInputPulseTimeout);
+    }
+    this.deniedInputPulseTimeout = setTimeout(() => {
+      element.classList.remove('deniedInputPulse');
+      this.deniedInputPulseTimeout = null;
+    }, 2000);
+  }
+
+  /**
+   * @param {string} value
+   * @returns {string}
+   */
+  #validateAndStore(value) {
+    this.value = value;
+    this.#applyValidationState(value);
+
+    let normalizedValue = normalizeValue(value, this.validation).text;
+
+    const min = Number(this.validation?.min || 0);
+    const isRequired = Boolean(this.validation?.required || false);
+    if (normalizedValue.length < min && !isRequired) {
+      normalizedValue = '';
+    }
+
+    const max = Number(this.validation?.max || 0);
+    if (max > 0 && normalizedValue.length > max) {
+      normalizedValue = normalizedValue.slice(0, max);
+    }
+
+    dataHandlerStore.setData(this.table, this.uid, this.field, normalizedValue);
+    return normalizedValue;
+  }
+
+  /**
+   * @param {string} value
+   */
+  #applyValidationState(value) {
+    const validationErrors = getValidationIssues(value, this.validation)
+      .map(({key, args = []}) => lll(key, ...args));
+    this.invalid = validationErrors.length > 0;
+    this.validationErrors = validationErrors;
+
+    dataHandlerStore.setInvalid(this.table, this.uid, this.field, this.invalid);
+  }
+
+  #isRelevantDataHandlerEvent(detail) {
+    if (!detail || detail.scope === 'global') {
+      return true;
+    }
+
+    return detail.table === this.table
+      && detail.uid === this.uid
+      && detail.field === this.field;
   }
 
   static styles = css`
@@ -279,8 +548,9 @@ export class VeEditableText extends LitElement {
       --padding-right: calc(4px + var(--button-size) * var(--button-count) + 4px * 2 * var(--button-count));
       padding: 4px var(--padding-right) 4px 4px;
       margin: -4px;
+      outline: 0.25rem solid transparent;
 
-      transition: box-shadow 0.2s, backdrop-filter 0.2s, outline 0.2s;
+      transition: backdrop-filter 0.2s;
 
       &:before {
         content: attr(data-placeholder);
@@ -291,25 +561,37 @@ export class VeEditableText extends LitElement {
     .slot:hover, .slot:focus {
       box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.50) inset;
       backdrop-filter: blur(10px) invert(20%);
-      outline: 0.25rem solid #5432fe;
+      outline-color: #5432fe;
     }
 
     .slot.block {
       display: block;
     }
 
-    .slot.synced {
-      /* blur the text: */
-      user-select: none;
-      // TODO use backdrop-filter
-      color: #888;
-      background: #f2f2f2;
-      outline-color: #bfbfbf;
-      cursor: not-allowed;
-    }
-
     .slot.changed {
       backdrop-filter: blur(10px) hue-rotate(120deg) invert(30%);
+    }
+
+    .slot.invalid {
+      outline-color: #a40000;
+      box-shadow: 0 0 4px 0 rgba(164, 0, 0, 0.7) inset;
+    }
+
+    .slot.shake-invalid {
+      animation: shake-invalid 0.2s ease-in-out;
+    }
+
+    .slot.deniedInputPulse {
+      outline-color: #a40000;
+      box-shadow: 0 0 4px 0 rgba(164, 0, 0, 0.7) inset;
+    }
+
+    .slot.deniedInputPulse {
+      animation: denied-input-pulse 4s ease-out;
+    }
+
+    .slot.shake-invalid.deniedInputPulse {
+      animation: shake-invalid 0.2s ease-in-out, denied-input-pulse 4s ease-out;
     }
 
     .buttons {
@@ -337,6 +619,50 @@ export class VeEditableText extends LitElement {
           color: black;
           background-color: #e6e6e6;
         }
+      }
+    }
+
+    .status-icon {
+      color: #a40000;
+      pointer-events: none;
+      cursor: default;
+
+      ve-icon {
+        display: block;
+      }
+    }
+
+    @keyframes shake-invalid {
+      0% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-3px);
+      }
+
+      50% {
+        transform: translateX(3px);
+      }
+
+      75% {
+        transform: translateX(-2px);
+      }
+
+      100% {
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes denied-input-pulse {
+      0% {
+        outline-color: rgba(164, 0, 0, 1);
+        box-shadow: 0 0 4px 0 rgba(164, 0, 0, 0.7) inset;
+      }
+
+      100% {
+        outline-color: rgba(164, 0, 0, 0);
+        box-shadow: 0 0 4px 0 rgba(164, 0, 0, 0) inset;
       }
     }
   `;

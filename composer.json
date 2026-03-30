@@ -65,6 +65,7 @@
     ],
     "post-autoload-dump": [
       "sh -c 'MAJOR=$(typo3 --version | awk '\\''{split($3, v, \".\"); print v[1]}'\\''); ln -sfn \"phpstan-baseline-${MAJOR}.neon\" phpstan-baseline.neon'"
-    ]
+    ],
+    "test:js": "node --test $(find Resources/Public/JavaScript -name \"*.test.js\" | sort)"
   }
 }

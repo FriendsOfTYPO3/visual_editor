@@ -33,6 +33,7 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use function get_debug_type;
 use function htmlspecialchars;
 use function is_array;
+use function is_int;
 use function is_string;
 use function json_encode;
 use function nl2br;
@@ -165,7 +166,7 @@ final class TextViewHelper extends AbstractViewHelper
         InputFieldType|TextFieldType $field,
         string $label,
         bool $editMode,
-        bool $allowNewlines = false
+        bool $allowNewlines = false,
     ): Input {
         $html = htmlspecialchars($value);
         if ($allowNewlines) {
@@ -191,12 +192,54 @@ final class TextViewHelper extends AbstractViewHelper
         $tag->addAttribute('title', $title);
         $tag->addAttribute('allowNewlines', $allowNewlines);
         $tag->addAttribute('value', str_replace('<br>', "\n", $value));
+        $tag->addAttribute('validation', $this->getInputValidationConfiguration($field, $allowNewlines));
 
         $tag->setContent($html);
 
         $tag->forceClosingTag(true);
 
         return new Input($label, $tag->render(), !$value, $value ?: '');
+    }
+
+    private function getInputValidationConfiguration(InputFieldType|TextFieldType $field, bool $allowNewlines): string
+    {
+        $config = $field->getConfiguration();
+        $validation = [
+            'required' => $field->isRequired(),
+            'allowNewlines' => $allowNewlines,
+        ];
+
+        $min = $config['min'] ?? null;
+        if (is_int($min) || (is_string($min) && $min !== '')) {
+            $min = (int)$min;
+            if ($min > 0) {
+                $validation['min'] = $min;
+            }
+        }
+
+        $max = $config['max'] ?? null;
+        if (is_int($max) || (is_string($max) && $max !== '')) {
+            $max = (int)$max;
+            if ($max > 0) {
+                $validation['max'] = $max;
+            }
+        }
+
+        $evalList = array_flip(GeneralUtility::trimExplode(',', (string)($config['eval'] ?? ''), true));
+
+        $evals = [];
+        $evalOrder = ['trim', 'upper', 'lower', 'alpha', 'num', 'alphanum', 'alphanum_x', 'nospace'];
+        foreach ($evalOrder as $rule) {
+            if (array_key_exists($rule, $evalList)) {
+                $evals[] = $rule;
+            }
+        }
+
+        if ($evals !== []) {
+            $validation['eval'] = $evals;
+        }
+
+        return json_encode($validation, JSON_THROW_ON_ERROR);
     }
 
     private function renderRichText(string $value, RecordInterface $record, TextFieldType $field, string $label, bool $editMode): RichText

@@ -25,6 +25,7 @@ export class VeIcon extends LitElement {
     'actions-document-add': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g fill="currentColor"><path d="M7 14H2V2h12v5l1 1V1.5a.5.5 0 0 0-.5-.5h-13a.5.5 0 0 0-.5.5v13a.5.5 0 0 0 .5.5H8l-1-1z"/><path d="M3 3h10v2H3zM3 6h8l-1 1H3zM3 10h4l-1 1H3zM3 12h3v1H3zM3 8h6L8 9H3zM15.5 13H13v2.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5V13H8.5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5H11V8.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5V11h2.5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5z"/></g></svg>',
     'apps-pagetree-drag-move-into': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g><path fill="#AAA" d="M.5 10.5v-5h2.293l1 1H6.5v4z"/><path fill="#666" d="m2.586 6 .707.707.293.293H6v3H1V6h1.586M3 5H0v6h7V6H4L3 5z"/></g><path fill="currentColor" d="M13 11 9 8.5 13 6v2h3v1h-3z"/></svg>',
     'actions-undo': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g fill="currentColor"><path d="M8 2c-1.8 0-3.4.8-4.5 2l-1-1c-.2-.2-.4-.1-.4.1l-.9 3.8c0 .2.1.3.3.3l3.8-.9c.2 0 .3-.3.1-.4l-1-1c.9-1 2.2-1.7 3.7-1.7 2.7 0 4.9 2.2 4.9 4.9S10.8 13 8.1 13c-1.5 0-2.8-.7-3.7-1.7l-.9.7c1.1 1.2 2.7 2 4.5 2 3.3 0 6-2.7 6-6s-2.7-6-6-6z"/></g></svg>',
+    'actions-exclamation-circle-alt': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g fill="currentColor"><path d="M8 1C4.1 1 1 4.1 1 8s3.1 7 7 7 7-3.1 7-7-3.1-7-7-7zm-.448 3h.896a.5.5 0 0 1 .497.55L8.5 9h-1l-.445-4.45A.5.5 0 0 1 7.552 4zM8 12a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></g></svg>',
   };
 
   // createRenderRoot() {

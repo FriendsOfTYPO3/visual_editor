@@ -23,8 +23,41 @@
       <trans-unit id="save.changes">
         <source>Save %d changes</source>
       </trans-unit>
+      <trans-unit id="save.fixInvalidField">
+        <source>Fix an error</source>
+      </trans-unit>
+      <trans-unit id="save.fixInvalidFields">
+        <source>Fix %d errors</source>
+      </trans-unit>
       <trans-unit id="saving">
         <source>Saving ...</source>
+      </trans-unit>
+      <trans-unit id="validation.required">
+        <source>This field is required.</source>
+      </trans-unit>
+      <trans-unit id="validation.min">
+        <source>Please enter at least %d characters.</source>
+      </trans-unit>
+      <trans-unit id="validation.max">
+        <source>Please enter no more than %d characters.</source>
+      </trans-unit>
+      <trans-unit id="inputDenial.noNewlines">
+        <source>Line breaks are not allowed.</source>
+      </trans-unit>
+      <trans-unit id="inputDenial.nospace">
+        <source>Spaces are not allowed.</source>
+      </trans-unit>
+      <trans-unit id="inputDenial.alpha">
+        <source>Only letters are allowed.</source>
+      </trans-unit>
+      <trans-unit id="inputDenial.num">
+        <source>Only numbers are allowed.</source>
+      </trans-unit>
+      <trans-unit id="inputDenial.alphanum">
+        <source>Only letters and numbers are allowed.</source>
+      </trans-unit>
+      <trans-unit id="inputDenial.alphanum_x">
+        <source>Only letters, numbers, _ and - are allowed.</source>
       </trans-unit>
 
       <trans-unit id="frontend.confirmCopy">

@@ -23,8 +23,41 @@
       <trans-unit id="save.changes">
         <target>%d Änderungen speichern</target>
       </trans-unit>
+      <trans-unit id="save.fixInvalidField">
+        <target>1 Fehler beheben</target>
+      </trans-unit>
+      <trans-unit id="save.fixInvalidFields">
+        <target>%d Fehler beheben</target>
+      </trans-unit>
       <trans-unit id="saving">
         <target>Wird gespeichert ...</target>
+      </trans-unit>
+      <trans-unit id="validation.required">
+        <target>Dieses Feld ist erforderlich.</target>
+      </trans-unit>
+      <trans-unit id="validation.min">
+        <target>Bitte mindestens %d Zeichen eingeben.</target>
+      </trans-unit>
+      <trans-unit id="validation.max">
+        <target>Bitte nicht mehr als %d Zeichen eingeben.</target>
+      </trans-unit>
+      <trans-unit id="inputDenial.noNewlines">
+        <target>Zeilenumbrüche sind nicht erlaubt.</target>
+      </trans-unit>
+      <trans-unit id="inputDenial.nospace">
+        <target>Leerzeichen sind nicht erlaubt.</target>
+      </trans-unit>
+      <trans-unit id="inputDenial.alpha">
+        <target>Es sind nur Buchstaben erlaubt.</target>
+      </trans-unit>
+      <trans-unit id="inputDenial.num">
+        <target>Es sind nur Zahlen erlaubt.</target>
+      </trans-unit>
+      <trans-unit id="inputDenial.alphanum">
+        <target>Es sind nur Buchstaben und Zahlen erlaubt.</target>
+      </trans-unit>
+      <trans-unit id="inputDenial.alphanum_x">
+        <target>Es sind nur Buchstaben, Zahlen, _ und - erlaubt.</target>
       </trans-unit>
 
       <trans-unit id="frontend.confirmCopy">

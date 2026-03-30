@@ -3,13 +3,12 @@
  * @property openModal {{ src: String, title: String, size: 'medium' | 'large' | 'full', type: 'iframe' | 'ajax' }}
  * @property closeModal {null}
  * @property reloadFrames {null}
- * @property updateChangesCount {number}
+ * @property updateEditorState {{count: number, invalidCount: number}}
  * @property doSave {null}
  * @property onSave {null}
  * @property saveEnded {{updatePageTree: boolean}}
  * @property pageChanged {{pageId: number, languageId: number}}
  * @property openInMiddleFrame {String}
- * @property change {Number}
  * @property localStoreChange {{key: String, value: any}}
  * @property localStoreRequest {String}
  */

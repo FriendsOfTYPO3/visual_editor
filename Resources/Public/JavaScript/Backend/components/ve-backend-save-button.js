@@ -2,38 +2,46 @@ import {css, html, LitElement} from 'lit';
 import {lll} from "@typo3/core/lit-helper.js";
 import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 
+let lastInfo = null;
+
 /**
  * @extends {HTMLElement}
  */
 export class VeBackendSaveButton extends LitElement {
   static properties = {
-    count: {type: Number, reflect: true},
-    disabled: {type: Boolean, reflect: true},
+    count: {type: Number},
+    invalidCount: {type: Number},
     saving: {type: Boolean},
   };
 
-  willUpdate(changedProperties) {
-    this.disabled = this.saving === true || this.count === 0;
+  willUpdate() {
+    this.setAttribute('aria-disabled', this.isVisuallyDisabled ? 'true' : 'false');
+    this.toggleAttribute('disabled', this.isInteractionDisabled);
 
-    this.classList.toggle('btn-default', this.disabled);
-    this.classList.toggle('btn-warning', !this.disabled);
+    this.classList.toggle('btn-default', this.isInteractionDisabled && !this.hasInvalidFields);
+    this.classList.toggle('btn-warning', !this.isVisuallyDisabled);
+    this.classList.toggle('btn-danger', this.hasInvalidFields);
   }
 
   constructor() {
     super();
     this.count = 0;
+    this.invalidCount = 0;
     this.saving = false;
-    this.disabled = true;
-    this.disposeUpdateChangesCountListener = null;
+    this.onClick = this.onClick.bind(this);
+    this.disposeUpdateEditorStateListener = null;
     this.disposeOnSaveListener = null;
     this.disposeSaveEndedListener = null;
+    if (lastInfo) {
+      this.onUpdateEditorState(lastInfo);
+    }
   }
 
   connectedCallback() {
     super.connectedCallback();
 
-    if (!this.disposeUpdateChangesCountListener) {
-      this.disposeUpdateChangesCountListener = onMessage('updateChangesCount', this.onUpdateChangesCount.bind(this));
+    if (!this.disposeUpdateEditorStateListener) {
+      this.disposeUpdateEditorStateListener = onMessage('updateEditorState', this.onUpdateEditorState.bind(this));
     }
     if (!this.disposeOnSaveListener) {
       this.disposeOnSaveListener = onMessage('onSave', this.onSaveMessage.bind(this));
@@ -46,8 +54,8 @@ export class VeBackendSaveButton extends LitElement {
   }
 
   disconnectedCallback() {
-    this.disposeUpdateChangesCountListener?.();
-    this.disposeUpdateChangesCountListener = null;
+    this.disposeUpdateEditorStateListener?.();
+    this.disposeUpdateEditorStateListener = null;
     this.disposeOnSaveListener?.();
     this.disposeOnSaveListener = null;
     this.disposeSaveEndedListener?.();
@@ -62,17 +70,23 @@ export class VeBackendSaveButton extends LitElement {
     if (this.count > 0) {
       label = this.count === 1 ? lll('save.change') : lll('save.changes', this.count);
     }
+    if (this.invalidCount) {
+      label = this.invalidCount === 1 ? lll('save.fixInvalidField') : lll('save.fixInvalidFields', this.invalidCount);
+    }
     if (this.saving) {
       label = lll('saving');
     }
+    const icon = this.hasInvalidFields ? 'actions-exclamation-circle-alt' : 'actions-save';
     return html`
-      <typo3-backend-icon identifier="actions-save" size="small"></typo3-backend-icon>
+      <typo3-backend-icon identifier="${icon}" size="small"></typo3-backend-icon>
       ${label}
     `;
   }
 
-  onUpdateChangesCount(count) {
-    this.count = count;
+  onUpdateEditorState(info) {
+    lastInfo = info;
+    this.count = info.count;
+    this.invalidCount = info.invalidCount;
   }
 
   onSaveMessage() {
@@ -83,16 +97,33 @@ export class VeBackendSaveButton extends LitElement {
     this.saving = false;
 
     if (updatePageTree) {
-      console.log('Updating page tree after save', {updatePageTree});
       top.document.dispatchEvent(new CustomEvent('typo3:pagetree:refresh'));
     }
   }
 
   onClick(e) {
     e.preventDefault();
+    if (this.isInteractionDisabled) {
+      return;
+    }
     sendMessage('doSave');
   }
 
+  get hasChanges() {
+    return this.count > 0;
+  }
+
+  get hasInvalidFields() {
+    return this.invalidCount > 0;
+  }
+
+  get isInteractionDisabled() {
+    return this.saving === true || (!this.hasChanges && !this.hasInvalidFields);
+  }
+
+  get isVisuallyDisabled() {
+    return this.isInteractionDisabled || this.hasInvalidFields;
+  }
 
   static styles = css`
     :host {
