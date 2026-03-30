@@ -1,14 +1,14 @@
-import {getObjectLeafCount} from '@typo3/visual-editor/Shared/get-object-leaf-count';
+import {getObjectLeafCount} from '../../Shared/get-object-leaf-count.js';
 
 /**
- * @method addEventListener(type: 'change', listener: (event: CustomEvent<{data: Object, cmd Object}>) => void): void
+ * @method addEventListener(type: 'change', listener: (event: CustomEvent<{scope: 'field'|'table'|'global', kind: 'data'|'initial'|'invalid'|'cmd'|'saved', table?: string, uid?: number, field?: string}>) => void): void
  */
 class DataHandlerStore extends EventTarget {
 
   #data = {};
   #initialData = {};
   #cmdArray = [];
-  #oldDetail = {};
+  #invalidFields = {};
 
   constructor() {
     super();
@@ -32,9 +32,22 @@ class DataHandlerStore extends EventTarget {
     return structuredClone(this.#cmdArray);
   }
 
+  get invalidFields() {
+    return structuredClone(this.#invalidFields);
+  }
 
   get changesCount() {
-    return getObjectLeafCount(this.data) + this.getCmdChanges();
+    return getObjectLeafCount(this.#data) + this.getCmdChanges();
+  }
+
+  get invalidCount() {
+    let count = 0;
+    for (const tables of Object.values(this.#invalidFields)) {
+      for (const fields of Object.values(tables)) {
+        count += Object.keys(fields).length;
+      }
+    }
+    return count;
   }
 
   /**
@@ -45,10 +58,19 @@ class DataHandlerStore extends EventTarget {
    * @return {void}
    */
   setInitialData(table, uid, field, value) {
+    if (this.#initialData[table]?.[uid]?.[field] === value) {
+      return;
+    }
+
     this.#initialData[table] = this.#initialData[table] || {};
     this.#initialData[table][uid] = this.#initialData[table][uid] || {};
     this.#initialData[table][uid][field] = value;
-    this.updateAndNotify();
+
+    if (this.#data[table]?.[uid]?.[field] === value) {
+      this.#deleteDataField(table, uid, field);
+    }
+
+    this.#dispatchChange({scope: 'field', kind: 'initial', table, uid, field});
   }
 
   /**
@@ -59,10 +81,23 @@ class DataHandlerStore extends EventTarget {
    * @return {void}
    */
   setData(table, uid, field, value) {
+    if (this.#data[table]?.[uid]?.[field] === value) {
+      return;
+    }
+
+    if (this.#data[table]?.[uid]?.[field] === undefined && this.#initialData[table]?.[uid]?.[field] === value) {
+      return;
+    }
+
     this.#data[table] = this.#data[table] || {};
     this.#data[table][uid] = this.#data[table][uid] || {};
     this.#data[table][uid][field] = value;
-    this.updateAndNotify();
+
+    if (this.#initialData[table]?.[uid]?.[field] === value) {
+      this.#deleteDataField(table, uid, field);
+    }
+
+    this.#dispatchChange({scope: 'field', kind: 'data', table, uid, field});
   }
 
   /**
@@ -80,7 +115,7 @@ class DataHandlerStore extends EventTarget {
         },
       },
     });
-    this.updateAndNotify();
+    this.#dispatchChange({scope: 'table', kind: 'cmd', table, uid});
   }
 
   markSaved() {
@@ -95,43 +130,8 @@ class DataHandlerStore extends EventTarget {
 
     this.#data = {};
     this.#cmdArray = [];
-    this.updateAndNotify();
-    // send change event as updateAndNotify skips it when there are "no changes"
-    this.dispatchEvent(new CustomEvent('change'));
-  }
-
-  updateAndNotify() {
-    // remove everything from #data that is equal to initialData
-    this.#removeStaleData();
-
-    const detail = {data: this.data, cmd: this.cmdArray};
-
-    const oldDetail = this.#oldDetail;
-    this.#oldDetail = detail;
-    if (JSON.stringify(oldDetail) === JSON.stringify(detail)) {
-      return;
-    }
-    this.dispatchEvent(new CustomEvent('change'));
-  }
-
-  #removeStaleData() {
-    for (const table in this.#data) {
-      for (const uid in this.#data[table]) {
-        for (const fieldName in this.#data[table][uid]) {
-          if (this.#initialData[table] &&
-            this.#initialData[table][uid] &&
-            this.#initialData[table][uid][fieldName] === this.#data[table][uid][fieldName]) {
-            delete this.#data[table][uid][fieldName];
-          }
-        }
-        if (Object.keys(this.#data[table][uid]).length === 0) {
-          delete this.#data[table][uid];
-        }
-      }
-      if (Object.keys(this.#data[table]).length === 0) {
-        delete this.#data[table];
-      }
-    }
+    this.#invalidFields = {};
+    this.#dispatchChange({scope: 'global', kind: 'saved'});
   }
 
   /**
@@ -142,6 +142,42 @@ class DataHandlerStore extends EventTarget {
    */
   hasChangedData(table, uid, field) {
     return !!(this.#data[table] !== undefined && this.#data[table][uid] !== undefined && this.#data[table][uid][field] !== undefined);
+  }
+
+  /**
+   * @param {string} table
+   * @param {number} uid
+   * @param {string} field
+   * @param {boolean} hasErrors
+   * @return {void}
+   */
+  setInvalid(table, uid, field, hasErrors) {
+    hasErrors = hasErrors ? true : undefined;
+    const currentValue = this.#invalidFields[table]?.[uid]?.[field];
+
+    if (currentValue === hasErrors) {
+      return;
+    }
+
+    if (!hasErrors) {
+      if (currentValue === undefined) {
+        return;
+      }
+
+      delete this.#invalidFields[table][uid][field];
+      if (Object.keys(this.#invalidFields[table][uid]).length === 0) {
+        delete this.#invalidFields[table][uid];
+      }
+      if (Object.keys(this.#invalidFields[table]).length === 0) {
+        delete this.#invalidFields[table];
+      }
+    } else {
+      this.#invalidFields[table] = this.#invalidFields[table] || {};
+      this.#invalidFields[table][uid] = this.#invalidFields[table][uid] || {};
+      this.#invalidFields[table][uid][field] = hasErrors;
+    }
+
+    this.#dispatchChange({scope: 'field', kind: 'invalid', table, uid, field});
   }
 
   getCmdChanges() {
@@ -157,6 +193,24 @@ class DataHandlerStore extends EventTarget {
       return true;
     }
     return this.#cmdArray.findIndex((cmd) => cmd[table] !== undefined) !== -1;
+  }
+
+  #dispatchChange(detail) {
+    this.dispatchEvent(new CustomEvent('change', {detail}));
+  }
+
+  #deleteDataField(table, uid, field) {
+    if (this.#data[table]?.[uid]?.[field] === undefined) {
+      return;
+    }
+
+    delete this.#data[table][uid][field];
+    if (Object.keys(this.#data[table][uid]).length === 0) {
+      delete this.#data[table][uid];
+    }
+    if (Object.keys(this.#data[table]).length === 0) {
+      delete this.#data[table];
+    }
   }
 }
 

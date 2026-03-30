@@ -151,9 +151,13 @@ export class VeEditableRichText extends LitElement {
     return new Uint8Array(await crypto.subtle.digest('SHA-1', new TextEncoder().encode(input))).toHex();
   }
 
-  #onDataHandlerChange() {
+  #onDataHandlerChange(event) {
+    if (!this.#isRelevantDataHandlerEvent(event.detail)) {
+      return;
+    }
+
     this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
-    const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
+    const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? undefined;
     if (storedValue?.trim() !== this.editor?.getData({ skipListItemIds: true })?.trim()) {
       this.value = storedValue ?? this.value;
       this.editor?.setData(this.value);
@@ -166,6 +170,16 @@ export class VeEditableRichText extends LitElement {
 
   #onDragInProgressChange() {
     this.style.pointerEvents = dragInProgressStore.value ? 'none' : '';
+  }
+
+  #isRelevantDataHandlerEvent(detail) {
+    if (!detail || detail.scope === 'global') {
+      return true;
+    }
+
+    return detail.table === this.table
+      && detail.uid === this.uid
+      && (detail.field === undefined || detail.field === this.field);
   }
 }
 

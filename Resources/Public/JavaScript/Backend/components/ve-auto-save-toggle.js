@@ -33,24 +33,25 @@ export class VeAutoSaveToggle extends LitElement {
   constructor() {
     super();
     this.count = 0;
+    this.invalidCount = 0;
     this.label = this.innerText;
-    this.disposeChangeListener = null;
+    this.disposeUpdateEditorStateListener = null;
     this.onClick = this.#onClick.bind(this);
   }
 
   connectedCallback() {
     super.connectedCallback();
 
-    if (!this.disposeChangeListener) {
-      this.disposeChangeListener = onMessageDebounced('change', this.#onChangeMessage.bind(this), 300);
+    if (!this.disposeUpdateEditorStateListener) {
+      this.disposeUpdateEditorStateListener = onMessageDebounced('updateEditorState', this.#onEditorStateMessage.bind(this), 300);
     }
 
     this.addEventListener('click', this.onClick);
   }
 
   disconnectedCallback() {
-    this.disposeChangeListener?.();
-    this.disposeChangeListener = null;
+    this.disposeUpdateEditorStateListener?.();
+    this.disposeUpdateEditorStateListener = null;
     this.removeEventListener('click', this.onClick);
 
     super.disconnectedCallback();
@@ -63,9 +64,10 @@ export class VeAutoSaveToggle extends LitElement {
       ${(this.label)}`;
   }
 
-  #onChangeMessage(count) {
+  #onEditorStateMessage({count, invalidCount}) {
     this.count = count;
-    if (this.active && this.count > 0) {
+    this.invalidCount = invalidCount;
+    if (this.active && this.count > 0 && this.invalidCount === 0) {
       sendMessage('doSave');
     }
   }
@@ -76,7 +78,7 @@ export class VeAutoSaveToggle extends LitElement {
 
     autoSaveActive.set(this.active);
 
-    if (this.active && this.count > 0) {
+    if (this.active && this.count > 0 && this.invalidCount === 0) {
       sendMessage('doSave');
     }
   }

@@ -583,6 +583,7 @@ final class PageEditController
             ->setAttributes(['disabled' => 'true'])
             ->setLabel($this->getLanguageService()->sL('LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:save'))
             ->setIcon($this->iconFactory->getIcon('actions-save', IconSize::SMALL))
+            ->setTitle('')
             ->setShowLabelText(true);
     }
 

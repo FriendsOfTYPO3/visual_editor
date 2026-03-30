@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {getObjectLeafCount} from '@typo3/visual-editor/Shared/get-object-leaf-count';
+import {getObjectLeafCount} from './get-object-leaf-count.js';
 
 // Simple flat object
 test('getObjectLeafCount counts leaves in a flat object', () => {
