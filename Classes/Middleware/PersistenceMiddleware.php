@@ -66,7 +66,8 @@ readonly class PersistenceMiddleware implements MiddlewareInterface
             throw new UnauthorizedException('Invalid or missing request token', 8148623595);
         }
 
-        $input = json_decode($request->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+        $input = $request->getParsedBody() ??
+            json_decode($request->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 
         $data = $input['data'] ?? [];
         unset($input['data']);
