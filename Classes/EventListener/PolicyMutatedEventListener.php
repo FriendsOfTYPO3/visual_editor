@@ -33,5 +33,10 @@ final readonly class PolicyMutatedEventListener
         // add style-src 'unsafe-inline' to allow a working ckeditor in the frontend.
         $mutation = new Mutation(MutationMode::Extend, Directive::StyleSrc, SourceKeyword::self, SourceKeyword::unsafeInline);
         $event->getCurrentPolicy()->mutate($mutation);
+
+        if ($event->getCurrentPolicy()->get(Directive::StyleSrcAttr)) {
+            $mutation = new Mutation(MutationMode::Extend, Directive::StyleSrcAttr, SourceKeyword::unsafeInline);
+            $event->getCurrentPolicy()->mutate($mutation);
+        }
     }
 }
