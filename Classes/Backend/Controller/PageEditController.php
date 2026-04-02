@@ -81,8 +81,6 @@ final class PageEditController
     /** @var array<LanguageRef, SiteLanguage> */
     private array $availableLanguages = [];
 
-    private Site $site;
-
     private TcaSchema $schema;
 
     public function __construct(
@@ -113,7 +111,6 @@ final class PageEditController
             throw new InvalidArgumentException('No site found for page id ' . $pageUid, 1616071820);
         }
 
-        $this->site = $site;
         $this->availableLanguages = $site->getAvailableLanguages($backendUser, false, $pageUid);
         $languages = $this->moduleData->get('languages') ?? [0];
         $this->selectedLanguages = array_values(array_map(fn($languageUid): SiteLanguage => $site->getLanguageById((int)$languageUid), $languages));
@@ -205,8 +202,12 @@ final class PageEditController
             '_language' => $siteLanguage->getLanguageId(),
             'editMode' => 1,
         ];
-
-        $uri = $this->site->getRouter()->generateUri($this->pageRecord->getUid(), $parameters);
+        $previewUriBuilder = PreviewUriBuilder::create($this->pageRecord->getRawRecord()->toArray())
+            ->withAdditionalQueryParameters($parameters);
+        $uri = $previewUriBuilder->buildUri();
+        if (!$uri instanceof UriInterface) {
+            throw new InvalidArgumentException('Could not generate preview URI for page ' . $this->pageRecord->getUid(), 4148517490);
+        }
 
         if (
             ($uri->getScheme() === '' && $uri->getHost() === '')
