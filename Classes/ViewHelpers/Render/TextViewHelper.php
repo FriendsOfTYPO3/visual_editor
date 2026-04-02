@@ -16,7 +16,6 @@ use TYPO3\CMS\Core\Schema\Field\InputFieldType;
 use TYPO3\CMS\Core\Schema\Field\TextFieldType;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 use TYPO3\CMS\Fluid\ViewHelpers\Format\HtmlViewHelper;
 use TYPO3\CMS\Frontend\Page\PageInformation;
@@ -32,7 +31,6 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 
 use function get_debug_type;
 use function htmlspecialchars;
-use function is_array;
 use function is_int;
 use function is_string;
 use function json_encode;
@@ -54,8 +52,6 @@ use const JSON_THROW_ON_ERROR;
 final class TextViewHelper extends AbstractViewHelper
 {
     private const RECORD_TYPE = RecordInterface::class . '|' . PageInformation::class . '|' . DomainObjectInterface::class;
-
-    private const DEFAULT_RTE_CONTENTS_CSS_RESOURCE = 'EXT:rte_ckeditor/Resources/Public/Css/contents.css';
 
     /**
      * Extbase models have a __toString() method and Fluid calls that if we escape the Children (arguments)
@@ -309,23 +305,6 @@ final class TextViewHelper extends AbstractViewHelper
         );
 
         $config = $this->richTextConfigurationService->resolveCkEditorConfiguration($richTextConfigurationServiceDto);
-        if (is_array($config['contentsCss'] ?? null)) {
-            $defaultRteContentsCss = PathUtility::getAbsoluteWebPath(
-                GeneralUtility::createVersionNumberedFilename(
-                    GeneralUtility::getFileAbsFileName(self::DEFAULT_RTE_CONTENTS_CSS_RESOURCE),
-                ),
-            );
-            $contentsCss = [];
-            foreach ($config['contentsCss'] as $path) {
-                if (is_string($path) && $path === $defaultRteContentsCss) {
-                    continue;
-                }
-
-                $contentsCss[] = $path;
-            }
-
-            $config['contentsCss'] = $contentsCss;
-        }
 
         unset($config['height']); // height is set by the content itself and css
         $config['debug'] = false; // for now we disable debug mode

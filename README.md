@@ -147,6 +147,12 @@ You need to be Logged in to every Domain separately to use the Visual Editor.
 
 OR you can use [EXT:multisite_belogin](https://extensions.typo3.org/extension/multisite_belogin) it automatically logs you in to all sites/domains.
 
+## Rich Text Styling
+
+Visual Editor uses your regular frontend CSS for the editing view. CSS that is configured only in the TYPO3 RTE configuration (`contentsCss`) is not applied there.
+
+If your project defines custom rich-text styles, add the relevant rules to your frontend CSS so the page output and the editor share the same styling. Projects with custom `lib.parseFunc_RTE` setups may also need matching frontend rules.
+
 ## License and Authors: License type, contributors, contact information
 
 This extension is licensed under the [GPL-2.0-or-later](https://spdx.org/licenses/GPL-2.0-or-later.html) license.
