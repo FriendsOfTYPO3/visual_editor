@@ -2,7 +2,6 @@ import {LitElement} from 'lit';
 import {ClassicEditor as Editor} from '@ckeditor/ckeditor5-editor-classic';
 // import {InlineEditor as Editor} from '@ckeditor/ckeditor5-editor-inline'; // TODO fix issues with inline editor
 import {initCKEditorInstance} from '@typo3/rte-ckeditor/init-ckeditor-instance.js';
-import {prefixAndRebaseCss} from '@typo3/rte-ckeditor/css-prefixer.js';
 import {removeRuleBySelector} from '@typo3/visual-editor/Shared/remove-rule-by-selector';
 import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
 import {showEmptyActive} from '@typo3/visual-editor/Shared/local-stores';
@@ -68,8 +67,6 @@ export class VeEditableRichText extends LitElement {
     }
     element.appendChild(wrapper);
 
-    this.includeCssScoped(this.options.contentsCss);
-
     this.editor = await initCKEditorInstance(this.options || {}, wrapper, wrapper, Editor);
     this.editor.editing.view.document.getRoot('main').placeholder = this.placeholder;
     this.editor.model.document.on('change:data', () => {
@@ -97,58 +94,6 @@ export class VeEditableRichText extends LitElement {
       this.style.display = '';
       this.parentElement.display = '';
     }
-  }
-
-  /**
-   * @param {string[]} contentsCss
-   */
-  async includeCssScoped(contentsCss) {
-    if (!contentsCss) {
-      return;
-    }
-    // set id to this if not already present
-    if (!this.dataset.cssHash) {
-      // hash of contentsCss using SubtleCrypto.digest()
-      this.dataset.cssHash = 've-' + await this.hash(contentsCss.join(','));
-    }
-
-    // skip if there already is a stylesheet with this id
-    if (document.adoptedStyleSheets.some(sheet => sheet.cssHash === this.dataset.cssHash)) {
-      return;
-    }
-
-    let completeCss = '';
-
-    const scopedSheet = new CSSStyleSheet();
-    scopedSheet.name = `Scoped styles for ${this.dataset.cssHash}`;
-    scopedSheet.cssHash = this.dataset.cssHash;
-    scopedSheet.replaceSync(completeCss);
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, scopedSheet];
-
-    const promisesArray = contentsCss.map(async url => {
-      try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error('Status ' + response.status);
-        }
-        const cssContent = await response.text();
-        const cssPrefixed = prefixAndRebaseCss(cssContent, url, [`[data-css-hash=${this.dataset.cssHash}]`]);
-        completeCss += cssPrefixed;
-        scopedSheet.replaceSync(completeCss);
-      } catch (error) {
-        console.error(`Failed to fetch CSS content for CKEditor 5 prefixing: "${url}"`, error);
-      }
-    });
-
-    await Promise.allSettled(promisesArray);
-  }
-
-  /**
-   * @param {string} input
-   * @return {Promise<string>}
-   */
-  async hash(input) {
-    return new Uint8Array(await crypto.subtle.digest('SHA-1', new TextEncoder().encode(input))).toHex();
   }
 
   #onDataHandlerChange(event) {
