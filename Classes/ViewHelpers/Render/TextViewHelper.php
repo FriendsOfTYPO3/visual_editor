@@ -7,6 +7,7 @@ namespace TYPO3\CMS\VisualEditor\ViewHelpers\Render;
 use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Configuration\Richtext as RichtextConfiguration;
+use TYPO3\CMS\Core\Domain\Exception\RecordPropertyNotFoundException;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Html\RteHtmlParser;
@@ -27,6 +28,7 @@ use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 use TYPO3\CMS\VisualEditor\Service\ModelToRawRecordService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
+use TYPO3Fluid\Fluid\Core\ViewHelper\InvalidArgumentValueException;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 
 use function get_debug_type;
@@ -87,6 +89,7 @@ final class TextViewHelper extends AbstractViewHelper
 
         $this->registerArgument('record', $type, 'A Record API Object (field is also needed)');
         $this->registerArgument('field', 'string', 'the field that should be rendered', true);
+        $this->registerArgument('optional', 'boolean', 'If the provided field does not exist in the record, null will be returned.', false, false);
     }
 
     public function getContentArgumentName(): string
@@ -94,7 +97,7 @@ final class TextViewHelper extends AbstractViewHelper
         return 'record';
     }
 
-    public function render(): Input|RichText
+    public function render(): Input|RichText|null
     {
         $renderingContext = $this->renderingContext ?? throw new InvalidArgumentException('$this->renderingContext is not available', 1772464146);
         $request = $renderingContext->getAttribute(ServerRequestInterface::class);
@@ -120,7 +123,19 @@ final class TextViewHelper extends AbstractViewHelper
             );
         }
 
-        $value = $record->get($field) ?? '';
+        try {
+            $value = $record->get($field) ?? '';
+        } catch (RecordPropertyNotFoundException $recordPropertyNotFoundException) {
+            if ($this->arguments['optional']) {
+                return null;
+            }
+
+            throw new InvalidArgumentValueException(
+                'The field "' . $field . '" does not exist in the given record `' . $record->getFullType() . '`.',
+                1775554099,
+                $recordPropertyNotFoundException,
+            );
+        }
 
         if (!is_string($value)) {
             $table = $record->getMainType();
