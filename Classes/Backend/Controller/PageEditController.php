@@ -473,7 +473,7 @@ final class PageEditController
 
         $isEditLocked = false;
         if ($this->schema->hasCapability(TcaSchemaCapability::EditLock)) {
-            $isEditLocked = $this->pageRecord->get($this->schema->getCapability(TcaSchemaCapability::EditLock)->getFieldName()) ?? false;
+            $isEditLocked = $this->pageRecord->getRawRecord()->get($this->schema->getCapability(TcaSchemaCapability::EditLock)->getFieldName()) ?? false;
         }
 
         if ($isEditLocked) {
