@@ -1,0 +1,21 @@
+# Exclude development and local-only files from git archive / TER zip exports.
+
+.codex export-ignore
+.editorconfig export-ignore
+.gitignore export-ignore
+.github/ export-ignore
+.idea/ export-ignore
+
+grumphp.yml export-ignore
+phpstan-baseline-13.neon export-ignore
+phpstan-baseline-14.neon export-ignore
+phpstan-baseline.neon export-ignore
+phpstan.neon export-ignore
+rector.php export-ignore
+
+public/ export-ignore
+var/ export-ignore
+vendor/ export-ignore
+
+Resources/Public/JavaScript/tsconfig.json export-ignore
+Resources/Public/JavaScript/**/*.test.js export-ignore
