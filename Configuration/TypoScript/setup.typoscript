@@ -6,7 +6,7 @@ tt_content.stdWrap.wrapContentElementsWithVeWrapper = 1
 # add parameter editMode to every link in edit mode.
 config.linkVars = editMode(1)
 
-# disable admin panel if editMode is set.
-[globalVar = GP:editMode = 1]
+# disable admin panel if editMode is set. this most likely dose not work as this setup.typoscript file is loaded as one of the first typoscript files
+[request && traverse(request.getQueryParams(),'editMode') == 1]
   config.admPanel = 0
-[global]
+[end]
