@@ -3,4 +3,5 @@
 /vendor/
 /composer.lock
 /public/
-phpstan-baseline.neon
+/phpstan-baseline.neon
+/.codex

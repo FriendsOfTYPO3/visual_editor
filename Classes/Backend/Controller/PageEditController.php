@@ -24,6 +24,7 @@ use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
@@ -95,6 +96,7 @@ final class PageEditController
         private readonly Typo3Version $typo3Version,
         private readonly ConnectionPool $connectionPool,
         private readonly AssetCollector $assetCollector,
+        private readonly Context $context,
     ) {
     }
 
@@ -204,7 +206,20 @@ final class PageEditController
         ];
         $previewUriBuilder = PreviewUriBuilder::create($this->pageRecord->getRawRecord()->toArray())
             ->withAdditionalQueryParameters($parameters);
-        $uri = $previewUriBuilder->buildUri();
+
+        // unset the context workspace so we do not get the split screen workspace preview in the editor.
+        $context = clone $this->context;
+        $context->unsetAspect('workspace');
+
+        // setting the workspace in $GLOBALS['BE_USER'] is needed until https://review.typo3.org/c/Packages/TYPO3.CMS/+/93603 is merged and than the lowest supported version includes it.
+        $workspace = $this->getBackendUser()->workspace;
+        $this->getBackendUser()->workspace = 0;
+        try {
+            $uri = $previewUriBuilder->buildUri(context: $context);
+        } finally {
+            $this->getBackendUser()->workspace = $workspace;
+        }
+
         if (!$uri instanceof UriInterface) {
             throw new InvalidArgumentException('Could not generate preview URI for page ' . $this->pageRecord->getUid(), 4148517490);
         }
