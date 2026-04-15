@@ -5,17 +5,21 @@
 /**
  * @param {string} input
  * @param {Record<string, any>} validation
+ * @param {{preserveLeadingAndTrailingWhitespace?: boolean}} [options]
  * @returns {{text: string, reasons: ValidationMessage[]}}
  */
-export function normalizeValue(input, validation) {
+export function normalizeValue(input, validation, options = {}) {
   let text = input;
   const reasons = [];
+  const preserveLeadingAndTrailingWhitespace = options.preserveLeadingAndTrailingWhitespace === true;
 
   const evalList = Array.isArray(validation?.eval) ? validation.eval : [];
   for (const evalName of evalList) {
     switch (evalName) {
       case 'trim':
-        text = text.trim();
+        if (!preserveLeadingAndTrailingWhitespace) {
+          text = text.trim();
+        }
         break;
       case 'upper':
         text = text.toLocaleUpperCase();

@@ -30,6 +30,9 @@ export class VeIframePopup extends LitElement {
 
 
   static styles = css`
+        :host {
+          padding: 5px;
+        }
         button {
             cursor: pointer;
             display: inline-flex;
