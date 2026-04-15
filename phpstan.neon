@@ -8,3 +8,14 @@ parameters:
   typo3:
     requestGetAttributeMapping:
       pageContext: TYPO3\CMS\Backend\Context\PageContext|null
+
+services:
+  -
+    class: TYPO3\CMS\VisualEditor\PhpStanRule\NamedArgumentUsageRule
+    arguments:
+      allowedNamespaces:
+        - 'TYPO3\CMS\Core\Tests'
+        - 'TYPO3\CMS\Extbase\Tests'
+        - 'TYPO3\CMS\Frontend\Tests'
+    tags:
+      - phpstan.rules.rule

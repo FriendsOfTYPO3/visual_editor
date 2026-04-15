@@ -161,7 +161,7 @@ final class TextViewHelper extends AbstractViewHelper
 
         if ($fieldSchema instanceof TextFieldType) {
             if (!$fieldSchema->isRichText()) {
-                return $this->renderInput($value, $record, $fieldSchema, $label, $canEdit, allowNewlines: true);
+                return $this->renderInput($value, $record, $fieldSchema, $label, $canEdit, true);
             }
 
             return $this->renderRichText($value, $record, $fieldSchema, $label, $canEdit);
@@ -198,7 +198,7 @@ final class TextViewHelper extends AbstractViewHelper
 
         $title = $this->localizationService->tryTranslation(
             'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:editable.title',
-            arguments: [$label],
+            [$label],
         );
         $tag->addAttribute('title', $title);
         $tag->addAttribute('allowNewlines', $allowNewlines);
@@ -278,7 +278,7 @@ final class TextViewHelper extends AbstractViewHelper
 
         $title = $this->localizationService->tryTranslation(
             'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:editable.title',
-            arguments: [$label],
+            [$label],
         );
         $tag->addAttribute('title', $title);
         $tag->addAttribute('options', $options);

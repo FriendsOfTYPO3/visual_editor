@@ -98,7 +98,7 @@ readonly class PersistenceMiddleware implements MiddlewareInterface
         $user = $this->context->getAspect('backend.user');
 
         if (!$user->isLoggedIn()) {
-            $loginUrl = $this->uriBuilder->buildUriFromRoute('login', referenceType: UriBuilder::ABSOLUTE_URL)->__toString();
+            $loginUrl = $this->uriBuilder->buildUriFromRoute('login', [], UriBuilder::ABSOLUTE_URL)->__toString();
             $view = $this->viewFactory
                 ->create(
                     new ViewFactoryData(

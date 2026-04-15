@@ -215,7 +215,7 @@ final class PageEditController
         $workspace = $this->getBackendUser()->workspace;
         $this->getBackendUser()->workspace = 0;
         try {
-            $uri = $previewUriBuilder->buildUri(context: $context);
+            $uri = $previewUriBuilder->buildUri(null, $context);
         } finally {
             $this->getBackendUser()->workspace = $workspace;
         }
@@ -244,7 +244,7 @@ final class PageEditController
                     'id' => $this->pageRecord->getUid(),
                     'languages' => array_map(fn(SiteLanguage $siteLanguage): int => $siteLanguage->getLanguageId(), $this->selectedLanguages),
                 ],
-                referenceType: UriBuilder::ABSOLUTE_URL,
+                UriBuilder::ABSOLUTE_URL,
             )
             ->withScheme($uri->getScheme())
             ->withHost($uri->getHost())
@@ -259,42 +259,42 @@ final class PageEditController
 
         // Language Select in v13
         if ($button = $this->makeLanguageSelect($buttonBar)) {
-            $buttonBar->addButton($button, buttonGroup: 1);
+            $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 1);
         }
 
         // Auto Save
         if ($button = $this->makeAutoSaveButton($buttonBar)) {
-            $buttonBar->addButton($button, buttonGroup: 2);
+            $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 2);
         }
 
         // Save
         if ($button = $this->makeSaveButton($buttonBar)) {
-            $buttonBar->addButton($button, buttonGroup: 2);
+            $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 2);
         }
 
         // Spotlight Toggle
         if ($button = $this->makeSpotlightToggleButton($buttonBar)) {
-            $buttonBar->addButton($button, buttonGroup: 3);
+            $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 3);
         }
 
         // Show Empty Toggle
         if ($button = $this->makeShowEmptyToggleButton($buttonBar)) {
-            $buttonBar->addButton($button, buttonGroup: 3);
+            $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 3);
         }
 
         // View
         if ($button = $this->makeViewButton($buttonBar, $request)) {
-            $buttonBar->addButton($button, buttonGroup: 4);
+            $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 4);
         }
 
         // Edit Page Properties
         if ($button = $this->makeEditButton($buttonBar, $request)) {
-            $buttonBar->addButton($button, buttonGroup: 4);
+            $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 4);
         }
 
         // Clear Cache
         $button = $this->makeClearCacheButton();
-        $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_RIGHT, buttonGroup: 1);
+        $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_RIGHT, 1);
 
         /*
          * TODO add Preview Settings button
@@ -311,14 +311,14 @@ final class PageEditController
         if ($this->typo3Version->getMajorVersion() >= 14) {
             // Shortcut
             $view->getDocHeaderComponent()->setShortcutContext(
-                routeIdentifier: 'web_edit',
-                displayName: sprintf(
+                'web_edit',
+                sprintf(
                     '%s: %s [%d]',
                     $this->getLanguageService()->sL('LLL:EXT:visual_editor/Resources/Private/Language/locallang_mod.xlf:edit_page'),
                     $this->pageRecord->get('title'),
                     $this->pageRecord->getUid(),
                 ),
-                arguments: [
+                [
                     'id' => $this->pageRecord->getUid(),
                     //                    'languages' => $this->pageContext->selectedLanguageIds,
                 ],
