@@ -121,7 +121,7 @@ export class VeEditableText extends LitElement {
       }
     }
 
-    const hideEmpty = !this.showEmpty && this.value === '' && !this.focused && !this.changed && !this.invalid;
+    const hideEmpty = !this.showEmpty && this.value === '' && !this.focused && !this.invalid;
     if (hideEmpty) {
       this.style.display = 'none';
       if (this.parentElement.innerText.trim() === '') {
