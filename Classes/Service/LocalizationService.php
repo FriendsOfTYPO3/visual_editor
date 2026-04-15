@@ -18,7 +18,7 @@ final readonly class LocalizationService
         $languageKey ??=  $this->getBackendUserLanguage();
 
         try {
-            return LocalizationUtility::translate($label, arguments: $arguments, languageKey: $languageKey)
+            return LocalizationUtility::translate($label, null, $arguments, $languageKey)
                 ?? $label;
         } catch (InvalidArgumentException) {
             return $label;

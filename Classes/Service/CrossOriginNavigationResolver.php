@@ -64,7 +64,7 @@ final readonly class CrossOriginNavigationResolver
                     'languages' => [$languageId],
                     'params' => $route->getArguments(),
                 ],
-                referenceType: UriBuilder::ABSOLUTE_URL,
+                UriBuilder::ABSOLUTE_URL,
             )
             ->withScheme($uri->getScheme())
             ->withHost($uri->getHost())

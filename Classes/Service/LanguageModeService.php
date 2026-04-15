@@ -102,12 +102,12 @@ final readonly class LanguageModeService
         $contentObjectRenderer->setRequest($request);
         $contentObjectRenderer->start($pageRow, 'pages');
         return $this->pageContentFetchingProcessor->process(
-            cObj: $contentObjectRenderer,
-            contentObjectConfiguration: [],
-            processorConfiguration: [
+            $contentObjectRenderer,
+            [],
+            [
                 'as' => 'groupedRecords',
             ],
-            processedData: [],
+            [],
         )['groupedRecords'];
     }
 }
