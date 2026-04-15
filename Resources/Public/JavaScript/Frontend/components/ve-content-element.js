@@ -4,6 +4,7 @@ import {dragInProgressStore} from '@typo3/visual-editor/Frontend/stores/drag-sto
 import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 import {openModal} from '@typo3/visual-editor/Frontend/components/ve-iframe-popup';
 import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
+import {calculateAllDebounced} from '@typo3/visual-editor/Frontend/auto-no-overlap';
 
 /**
  * @extends {HTMLElement}
@@ -23,6 +24,7 @@ export class VeContentElement extends LitElement {
     canModifyRecord: {type: Boolean},
     canBeMoved: {type: Boolean},
 
+    isHovered: {type: Boolean, state: true, attribute: false},
     dragInProgress: {type: Boolean, state: true, attribute: false},
     showElementOverlay: {type: Boolean, attribute: false},
   };
@@ -75,6 +77,14 @@ export class VeContentElement extends LitElement {
   constructor() {
     super();
     this.onDragInProgressChange = this.#onDragInProgressChange.bind(this);
+    this.addEventListener('mouseenter', () => {
+      this.isHovered = true;
+      setTimeout(calculateAllDebounced);
+    });
+    this.addEventListener('mouseleave', () => {
+      this.isHovered = false;
+      setTimeout(calculateAllDebounced);
+    });
   }
 
   connectedCallback() {
@@ -157,13 +167,13 @@ export class VeContentElement extends LitElement {
 
   render() {
     const toggleIcon = this.isHidden ? 'actions-toggle-off' : 'actions-toggle-on';
-    const statusBar = html`
+    const actionBar = html`
       <ve-drag-handle
         table="${this.table}" uid="${this.uid}" CType="${this.CType}"
-        class="button-bar ${this.isHidden ? 'hidden' : ''} ${this.dragInProgress ? 'dragAndDropActive' : ''}"
+        class="action-bar${this.isHidden ? ' hidden' : ''}${this.dragInProgress ? ' dragAndDropActive' : ''}${this.isHovered ? ' hovered': ''}"
         isActive="${(this.canBeMoved && this.hasContentAreaAsParent) ? 'true' : 'false'}"
       >
-        <span class="button-bar-headline" title="uid:${this.uid}">
+        <span class="action-bar-headline" title="uid:${this.uid}">
                 ${(this.canBeMoved && this.hasContentAreaAsParent) ? '⠿ ' : ''}${this.elementName}
               </span>
         <!-- TODO extract button bar as separate component -->
@@ -205,7 +215,7 @@ export class VeContentElement extends LitElement {
       </ve-drag-handle>`;
 
     return html`
-      ${this.canModifyRecord ? statusBar : ''}
+      ${this.canModifyRecord ? actionBar : ''}
       <slot></slot><!-- slot must be top level to mitigate all CSS problems -->
       ${
         this.hasContentAreaAsParent ? html`
@@ -220,7 +230,7 @@ export class VeContentElement extends LitElement {
             tx_container_parent="${this.tx_container_parent}"
           ></ve-drop-zone>` : ''
       }
-      <div class="border ${this.isHidden ? 'hidden' : ''} ${this.showElementOverlay ? 'showElementOverlay' : ''}"></div>
+      <div class="border${this.isHidden ? ' hidden' : ''}${this.showElementOverlay ? ' showElementOverlay' : ''}${this.isHovered ? ' hovered': ''}"></div>
     `;
   }
 
@@ -253,23 +263,19 @@ export class VeContentElement extends LitElement {
       background-image: linear-gradient(to top, rgba(59, 158, 59, 0.90) 0%, transparent min(500px, max(100px, 50%)));
     }
 
-    *:hover ~ .border,
-    .border:hover,
-    .border:has(~ *:hover) {
+    .border.hovered {
       outline: 1px solid #d1d1d1;
       outline-offset: 0;
       box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.5) inset, 0 0 40px 0 rgba(255, 255, 255, 0.5) inset;
     }
 
-    .button-bar {
-      display: flex;
+    .action-bar {
+      display: none;
       gap: 2px;
       position: absolute;
       bottom: 100%;
       left: -1px;
       background: #171717;
-      opacity: 0.001;
-      /*opacity: 0.5;*/
       color: #d9d9d9;
       border: 1px solid #d9d9d9;
       padding: 4px;
@@ -281,25 +287,24 @@ export class VeContentElement extends LitElement {
       transition: opacity 0.2s;
     }
 
-    .button-bar[isActive="true"] {
+    .action-bar[isActive="true"] {
       cursor: grab;
     }
 
-    *:hover ~ .button-bar,
-    .button-bar:hover,
-    .button-bar:has(~ *:hover) {
-      opacity: 1;
+    .action-bar.hovered {
+      display: flex;
     }
 
-    .button-bar.dragAndDropActive {
+    .action-bar.dragAndDropActive {
       display: none;
     }
 
-    .button-bar.hidden {
+    .action-bar.hidden {
+      display: flex;
       opacity: 0.5;
     }
 
-    .button-bar-headline {
+    .action-bar-headline {
       padding-right: 1em;
     }
 
