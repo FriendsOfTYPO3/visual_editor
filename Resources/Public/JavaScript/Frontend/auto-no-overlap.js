@@ -51,7 +51,12 @@ function findConcealedElements(element, htmlElements) {
  * @param group {'ve-drag-handle'|'ve-drop-zone'}
  */
 function calculate(list, group) {
-  const orderedList = sortTheNodesThroughTheShadowRootsAndSlots(list).reverse();
+  const orderedList = sortTheNodesThroughTheShadowRootsAndSlots(list)
+    .reverse()
+    .filter((element) => {
+      // Filter out all elements that are currently being hovered over, so that their position does not change.
+      return !element.matches(':hover');
+    });
   if (orderedList.length === 0) {
     return;
   }
