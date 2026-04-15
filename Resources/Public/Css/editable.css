@@ -20,6 +20,12 @@
   outline: 0.25rem solid #5432fe !important;
 }
 
+ve-editable-rich-text[empty] .ck-content {
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.50) inset !important;
+  backdrop-filter: blur(10px) invert(20%) !important;
+  outline: 0.25rem solid #5432fe !important;
+}
+
 ve-editable-rich-text[changed] .ck-content {
   backdrop-filter: blur(10px) hue-rotate(120deg) invert(30%) !important;
 }
@@ -45,6 +51,15 @@ ve-editable-rich-text[changed] .ck-content {
   /*color: var(--ck-content-font-color); !* TODO fix this if color is white we want to use white *!*/
 }
 
+/* hide placeholder if focused */
+.ck.ck-editor__editable.ck-focused > .ck-placeholder::before,
+.ck.ck-editor__editable.ck-focused .ck-placeholder::before {
+  display: none;
+}
+
+.ck-placeholder {
+  font-style: italic;
+}
 
 #typo3-preview-info {
   /*  hide the preview info box, as it is not relevant for the editor and only distracts from the content */

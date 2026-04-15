@@ -103,7 +103,7 @@ export class VeEditableText extends LitElement {
    * @param changedProperties {Map<PropertyKey, unknown>}
    */
   firstUpdated(changedProperties) {
-    this.placeholder = '👀' + this.title;
+    this.placeholder = this.name;
     this.skipNextValueNormalization = true;
     this.#setSlotText(this.valueInitial);
     dataHandlerStore.setInitialData(this.table, this.uid, this.field, this.valueInitial);
@@ -189,11 +189,13 @@ export class VeEditableText extends LitElement {
 
     const slot = this.shadowRoot?.querySelector('.slot');
     const showPlaceholder = !this.focused && !(slot?.innerText || this.value).length;
+    const isEmpty = this.value === '';
     return html`
       <span
         class=${classMap({
           slot: true,
           changed: this.changed,
+          empty: isEmpty,
           invalid: this.invalid,
           block: !shouldBeInline,
         })}
@@ -561,6 +563,12 @@ export class VeEditableText extends LitElement {
     }
 
     .slot:hover, .slot:focus {
+      box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.50) inset;
+      backdrop-filter: blur(10px) invert(20%);
+      outline-color: #5432fe;
+    }
+
+    .slot.empty {
       box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.50) inset;
       backdrop-filter: blur(10px) invert(20%);
       outline-color: #5432fe;

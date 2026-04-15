@@ -15,6 +15,7 @@ import {dragInProgressStore} from '@typo3/visual-editor/Frontend/stores/drag-sto
 export class VeEditableRichText extends LitElement {
   static properties = {
     changed: {type: Boolean, reflect: true},
+    empty: {type: Boolean, reflect: true},
     value: {type: String, reflect: true},
 
     name: {type: String},
@@ -35,6 +36,7 @@ export class VeEditableRichText extends LitElement {
   constructor() {
     super();
     this.value = this.innerHTML;
+    this.empty = this.value === '';
     this.showEmpty = showEmptyActive.get();
     this.onDataHandlerChange = this.#onDataHandlerChange.bind(this);
     this.onShowEmptyChange = this.#onShowEmptyChange.bind(this);
@@ -58,7 +60,7 @@ export class VeEditableRichText extends LitElement {
   }
 
   async firstUpdated() {
-    this.placeholder = '👀' + (this.placeholder || this.title);
+    this.placeholder = this.name;
     /** @type {HTMLElement} */
     const element = this;
     const wrapper = document.createElement('div');
@@ -71,10 +73,12 @@ export class VeEditableRichText extends LitElement {
     this.editor.editing.view.document.getRoot('main').placeholder = this.placeholder;
     this.editor.model.document.on('change:data', () => {
       this.value = this.editor.getData({ skipListItemIds: true });
+      this.empty = this.value === '';
       dataHandlerStore.setData(this.table, this.uid, this.field, this.value);
       this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
     });
     this.value = this.editor.getData({ skipListItemIds: true });
+    this.empty = this.value === '';
     dataHandlerStore.setInitialData(this.table, this.uid, this.field, this.value);
 
     // reset CSS
@@ -84,6 +88,7 @@ export class VeEditableRichText extends LitElement {
   }
 
   updated(changedProperties) {
+    this.empty = this.value === '';
     const hideEmpty = !this.showEmpty && this.value === '' && !this.matches(':focus-within') && !this.changed;
     if (hideEmpty) {
       this.style.display = 'none';
@@ -105,6 +110,7 @@ export class VeEditableRichText extends LitElement {
     const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? undefined;
     if (storedValue?.trim() !== this.editor?.getData({ skipListItemIds: true })?.trim()) {
       this.value = storedValue ?? this.value;
+      this.empty = this.value === '';
       this.editor?.setData(this.value);
     }
   }
