@@ -9,6 +9,24 @@ test('normalizeValue trims before later validation checks are applied', () => {
   assert.deepEqual(result.reasons, []);
 });
 
+test('normalizeValue keeps leading and trailing whitespace during live input', () => {
+  const result = normalizeValue(' ab ', {eval: ['trim']}, {
+    preserveLeadingAndTrailingWhitespace: true,
+  });
+
+  assert.equal(result.text, ' ab ');
+  assert.deepEqual(result.reasons, []);
+});
+
+test('normalizeValue still applies non-trim eval rules during live input', () => {
+  const result = normalizeValue(' a ', {eval: ['trim', 'upper']}, {
+    preserveLeadingAndTrailingWhitespace: true,
+  });
+
+  assert.equal(result.text, ' A ');
+  assert.deepEqual(result.reasons, []);
+});
+
 test('getValidationIssues uses original text for required validation', () => {
   const issues = getValidationIssues('   ', {eval: ['trim'], required: true});
 

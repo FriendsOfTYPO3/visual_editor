@@ -383,7 +383,9 @@ export class VeEditableText extends LitElement {
       return;
     }
 
-    const {text, reasons} = normalizeValue(edit.insertedText, this.validation);
+    const {text, reasons} = normalizeValue(edit.insertedText, this.validation, {
+      preserveLeadingAndTrailingWhitespace: true,
+    });
     let insertedText = text;
 
     for (const reason of reasons) {
