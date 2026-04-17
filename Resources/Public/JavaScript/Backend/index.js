@@ -5,7 +5,9 @@ import '@typo3/visual-editor/Backend/components/ve-backend-save-button';
 import '@typo3/visual-editor/Backend/components/ve-spotlight-toggle';
 import '@typo3/visual-editor/Backend/components/ve-show-empty-toggle';
 import {pageChanged} from '@typo3/visual-editor/Backend/page-changed';
+import {initializePageTreeSaveState} from '@typo3/visual-editor/Backend/initialize-page-tree-save-state';
 
+initializePageTreeSaveState();
 
 function reloadAllChildFrames() {
   const iframes = document.querySelectorAll('iframe');
