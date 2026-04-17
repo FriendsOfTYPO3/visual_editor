@@ -81,6 +81,13 @@ export class VeContentElement extends LitElement {
       this.isHovered = true;
       setTimeout(calculateAllDebounced);
     });
+    this.addEventListener('mouseover', () => {
+      if (this.isHovered) {
+        return;
+      }
+      this.isHovered = true;
+      setTimeout(calculateAllDebounced);
+    });
     this.addEventListener('mouseleave', () => {
       this.isHovered = false;
       setTimeout(calculateAllDebounced);
@@ -252,11 +259,18 @@ export class VeContentElement extends LitElement {
       z-index: 10;
       pointer-events: none;
 
-      transition: 0.2s, box-shadow 0.2s, background-image 0.2s;
+      transition: 0.2s, box-shadow 0.2s, background-image 0.2s, backdrop-filter 0.2s;
     }
 
     .border.hidden {
-      background: rgba(0, 0, 0, 0.5);
+      background: repeating-linear-gradient(
+        -45deg,
+        rgba(50%,50%,50%, 0.7),
+        rgba(50%,50%,50%, 0.7) 15px,
+        rgba(50%,50%,50%, 0.3) 15px,
+        rgba(50%,50%,50%, 0.3) 60px
+      );
+      backdrop-filter: saturate(0%);
     }
 
     .border.showElementOverlay {
