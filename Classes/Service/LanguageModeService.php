@@ -33,7 +33,7 @@ final readonly class LanguageModeService
 
         if ($this->typo3Version->getMajorVersion() >= 14) {
             $pageLayout = $pageInformation->getPageLayout() ?? throw new InvalidArgumentException('PageLayout is not available in PageInformation', 1772464934);
-            $groupedRecords = $pageLayout->getContentAreas()->getGroupedRecords();
+            $groupedRecords = $pageLayout->getContentAreas()->getGroupedRecords($request);
         } else {
             $groupedRecords = $this->getGroupedRecordsTYPO3v13($pageInformation->getPageRecord(), $request);
         }
