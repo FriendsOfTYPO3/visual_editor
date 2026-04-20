@@ -29,7 +29,7 @@
     "b13/container": "^3.2.3",
     "pluswerk/grumphp-config": "^10.2.6",
     "saschaegerer/phpstan-typo3": "^2.1.1 || ^3.0.1",
-    "ssch/typo3-rector": "^3.13.0",
+    "ssch/typo3-rector": "^3.14.1",
     "typo3fluid/fluid": "^4.6.0 || 4.6.x-dev || ^5"
   },
   "suggest": {
