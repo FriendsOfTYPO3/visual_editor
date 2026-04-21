@@ -14,7 +14,6 @@ export class VeDragHandle extends LitElement {
   constructor() {
     super();
     this.onDragStart = this.#dragStart.bind(this);
-    this.onDragOver = this.#dragOver.bind(this);
     this.onDragEnd = this.#dragEnd.bind(this);
   }
 
@@ -24,14 +23,12 @@ export class VeDragHandle extends LitElement {
     if (this.isActive === 'true') {
       this.setAttribute('draggable', 'true');
       this.addEventListener('dragstart', this.onDragStart);
-      window.addEventListener('dragover', this.onDragOver);
       this.addEventListener('dragend', this.onDragEnd);
     }
   }
 
   disconnectedCallback() {
     this.removeEventListener('dragstart', this.onDragStart);
-    window.removeEventListener('dragover', this.onDragOver);
     this.removeEventListener('dragend', this.onDragEnd);
 
     super.disconnectedCallback();
@@ -57,29 +54,7 @@ export class VeDragHandle extends LitElement {
     event.dataTransfer.setData('text/ve-drag', JSON.stringify(info));
 
     dragInProgressStore.value = info;
-    this.#autoScroll(event.clientX, event.clientY);
-
-    this.velocityScroll = initVelocityScroll();
-  }
-
-  /**
-   * @param {DragEvent} event
-   */
-  #dragOver(event) {
-    const dragInfo = dragInProgressStore.value;
-    if (!dragInfo) {
-      return;
-    }
-    if (dragInfo.table !== this.table) {
-      return;
-    }
-    if (dragInfo.uid !== this.uid) {
-      return;
-    }
-    if (dragInfo.CType !== this.CType) {
-      return;
-    }
-    this.#autoScroll(event.clientX, event.clientY);
+    initVelocityScroll(event);
   }
 
   /**
@@ -87,50 +62,6 @@ export class VeDragHandle extends LitElement {
    */
   #dragEnd(event) {
     dragInProgressStore.value = false;
-    this.velocityScroll?.destroy();
-  }
-
-  #autoScroll(clientX, clientY) {
-    const verticalEdgeOfWindow = window.innerHeight * 0.2;
-    const horizontalEdgeOfWindow = window.innerWidth * 0.2;
-    const maxVerticalScrollStrength = window.innerHeight * 2.5;
-    const maxHorizontalScrollStrength = window.innerWidth * 2.5;
-    // scroll zone progress goes from 0 to 1:
-    // 0 means the cursor just entered the scroll zone,
-    // 1 means the cursor is at the viewport edge
-    const maxProgress = 1;
-    let verticalScrollAmount = 0;
-    let horizontalScrollAmount = 0;
-
-    // from the mouse position, calculate the distance to each viewport edge
-    const distanceToTop = clientY;
-    const distanceToBottom = window.innerHeight - clientY;
-    const distanceToLeft = clientX;
-    const distanceToRight = window.innerWidth - clientX;
-
-    // the closer the cursor is to the viewport edge, the stronger the scroll becomes
-    // We calculate a progress value and square it (** 2) so scrolling accelerates more near the edge
-    if (distanceToBottom < verticalEdgeOfWindow) {
-      const progressInBottomZone = maxProgress - distanceToBottom / verticalEdgeOfWindow;
-      verticalScrollAmount = ((progressInBottomZone ** 2) * maxVerticalScrollStrength);
-    }
-
-    if (distanceToTop < verticalEdgeOfWindow) {
-      const progressInTopZone = maxProgress - distanceToTop / verticalEdgeOfWindow;
-      verticalScrollAmount = -((progressInTopZone ** 2) * maxVerticalScrollStrength);
-    }
-
-    if (distanceToRight < horizontalEdgeOfWindow) {
-      const progressInRightZone = maxProgress - distanceToRight / horizontalEdgeOfWindow;
-      horizontalScrollAmount = ((progressInRightZone ** 2) * maxHorizontalScrollStrength);
-    }
-
-    if (distanceToLeft < horizontalEdgeOfWindow) {
-      const progressInLeftZone = maxProgress - distanceToLeft / horizontalEdgeOfWindow;
-      horizontalScrollAmount = -((progressInLeftZone ** 2) * maxHorizontalScrollStrength);
-    }
-
-    this.velocityScroll?.setVelocity(verticalScrollAmount, horizontalScrollAmount);
   }
 
   createRenderRoot() {
