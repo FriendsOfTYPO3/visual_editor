@@ -19,6 +19,12 @@ parameters:
 			path: Classes/PhpStanRule/NamedArgumentUsageRule.php
 
 		-
+			message: '#^Method TYPO3\\CMS\\VisualEditor\\Service\\DataHandlerService\:\:run\(\) should return list\<string\> but returns array\.$#'
+			identifier: return.type
+			count: 1
+			path: Classes/Service/DataHandlerService.php
+
+		-
 			message: '#^Cannot access offset ''allowed\.'' on TYPO3\\CMS\\Core\\Page\\ContentArea\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
 			count: 1

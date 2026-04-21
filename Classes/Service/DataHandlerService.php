@@ -9,8 +9,6 @@ use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-use function count;
-use function implode;
 use function in_array;
 use function is_array;
 use function is_int;
@@ -25,8 +23,10 @@ final readonly class DataHandlerService
     /**
      * @param array<string, array<int, array<string, bool|int|float|string>>> $data
      * @param array<string, array<int, array<string, mixed>>> $cmd
+     *
+     * @return list<string>
      */
-    public function run(array $data, array $cmd): void
+    public function run(array $data, array $cmd): array
     {
         $this->validateData($data);
         $this->validateCmd($cmd);
@@ -35,11 +35,7 @@ final readonly class DataHandlerService
         $dataHandler->start($data, $cmd);
         $dataHandler->process_datamap();
         $dataHandler->process_cmdmap();
-        if (count($dataHandler->errorLog) > 0) {
-            throw new RuntimeException('Error running DataHandler: ' . implode(', ', $dataHandler->errorLog), 4718411495);
-        }
-
-        unset($dataHandler);
+        return $dataHandler->errorLog;
     }
 
     /**

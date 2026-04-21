@@ -23,6 +23,9 @@
       <trans-unit id="save.changes">
         <source>Save %d changes</source>
       </trans-unit>
+      <trans-unit id="save.failed">
+        <source>Error while saving</source>
+      </trans-unit>
       <trans-unit id="save.fixInvalidField">
         <source>Fix an error</source>
       </trans-unit>
