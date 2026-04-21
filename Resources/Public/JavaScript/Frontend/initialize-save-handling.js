@@ -1,6 +1,7 @@
 import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 import {useDataHandler} from '@typo3/visual-editor/Frontend/use-data-handler';
 import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
+import {InterceptUserActionsGuard} from '@typo3/visual-editor/Frontend/intercept-user-actions-guard';
 
 let saving = false;
 
@@ -58,4 +59,6 @@ export function initializeSaveHandling() {
   onMessage('doSave', () => {
     trySave();
   });
+
+  new InterceptUserActionsGuard(dataHandlerStore);
 }
