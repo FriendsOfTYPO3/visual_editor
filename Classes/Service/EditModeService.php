@@ -22,7 +22,6 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
-use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 
 use function method_exists;
 
@@ -146,7 +145,7 @@ if (window.parent === window && window.veInfo) {
                 ],
                 [
                     'useNonce' => true,
-                ]
+                ],
             );
         }
     }
@@ -227,15 +226,21 @@ if (window.parent === window && window.veInfo) {
 
     private function loadLanguageLabelsInline(): void
     {
-        $file = 'EXT:visual_editor/Resources/Private/Language/locallang.xlf';
-        $languageService = $this->languageServiceFactory->create($this->localizationService->getBackendUserLanguage() ?? 'en');
-        foreach ($languageService->getLabelsFromResource($file) as $key => $value) {
-            $this->pageRenderer->addInlineLanguageLabel($key, $value);
+        $files = [
+            'EXT:backend/Resources/Private/Language/locallang_alt_doc.xlf',
+            'EXT:visual_editor/Resources/Private/Language/locallang.xlf',
+        ];
+        foreach ($files as $file) {
+            $languageService = $this->languageServiceFactory->create($this->localizationService->getBackendUserLanguage() ?? 'en');
+            foreach ($languageService->getLabelsFromResource($file) as $key => $value) {
+                $this->pageRenderer->addInlineLanguageLabel($key, $value);
+            }
         }
     }
 
     /**
      * returns the origins of all configured sites and languages
+     *
      * @return list<string>
      */
     public function getAllowedOrigins(): array

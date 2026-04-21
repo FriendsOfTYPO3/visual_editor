@@ -10,16 +10,6 @@ class DataHandlerStore extends EventTarget {
   #cmdArray = [];
   #invalidFields = {};
 
-  constructor() {
-    super();
-
-    window.addEventListener('beforeunload', (event) => {
-      if (this.changesCount) {
-        event.preventDefault();
-      }
-    });
-  }
-
   get data() {
     return structuredClone(this.#data);
   }
@@ -127,7 +117,10 @@ class DataHandlerStore extends EventTarget {
         }
       }
     }
+    this.reset();
+  }
 
+  reset() {
     this.#data = {};
     this.#cmdArray = [];
     this.#invalidFields = {};
