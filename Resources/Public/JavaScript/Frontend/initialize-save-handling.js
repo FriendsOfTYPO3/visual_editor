@@ -33,9 +33,12 @@ export async function trySave() {
 
   try {
     const updatePageTree = dataHandlerStore.hasChangesIn('pages');
-    await useDataHandler(dataHandlerStore.data, dataHandlerStore.cmdArray);
+    const saveOk = await useDataHandler(dataHandlerStore.data, dataHandlerStore.cmdArray);
     dataHandlerStore.markSaved();
     sendMessage('saveEnded', {updatePageTree});
+    if (!saveOk) {
+      window.location.reload();
+    }
   } finally {
     saving = false;
   }

@@ -149,3 +149,9 @@ parameters:
 			identifier: method.notFound
 			count: 4
 			path: Classes/PhpStanRule/NamedArgumentUsageRule.php
+
+		-
+			message: '#^Method TYPO3\\CMS\\VisualEditor\\Service\\DataHandlerService\:\:run\(\) should return list\<string\> but returns array\.$#'
+			identifier: return.type
+			count: 1
+			path: Classes/Service/DataHandlerService.php

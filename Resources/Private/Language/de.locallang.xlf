@@ -23,6 +23,9 @@
       <trans-unit id="save.changes">
         <target>%d Änderungen speichern</target>
       </trans-unit>
+      <trans-unit id="save.failed">
+        <target>Fehler beim Speichern</target>
+      </trans-unit>
       <trans-unit id="save.fixInvalidField">
         <target>1 Fehler beheben</target>
       </trans-unit>
