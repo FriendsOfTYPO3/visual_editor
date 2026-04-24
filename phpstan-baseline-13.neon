@@ -37,6 +37,12 @@ parameters:
 			path: Classes/Backend/Controller/PageEditController.php
 
 		-
+			message: '#^Call to an undefined method TYPO3\\CMS\\Core\\DataHandling\\PageDoktypeRegistry\:\:isPageViewable\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
 			message: '#^Call to method build\(\) on an unknown class TYPO3\\CMS\\Backend\\Template\\Components\\Buttons\\LanguageSelectorBuilder\.$#'
 			identifier: class.notFound
 			count: 1
@@ -109,6 +115,18 @@ parameters:
 			path: Classes/Middleware/PersistenceMiddleware.php
 
 		-
+			message: '#^Call to an undefined method PhpParser\\Node\\Expr\|PhpParser\\Node\\Identifier\:\:toString\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: Classes/PhpStanRule/NamedArgumentUsageRule.php
+
+		-
+			message: '#^Method TYPO3\\CMS\\VisualEditor\\Service\\DataHandlerService\:\:run\(\) should return list\<string\> but returns array\.$#'
+			identifier: return.type
+			count: 1
+			path: Classes/Service/DataHandlerService.php
+
+		-
 			message: '#^Cannot call method getGroupedRecords\(\) on array\.$#'
 			identifier: method.nonObject
 			count: 1
@@ -143,15 +161,3 @@ parameters:
 			identifier: class.notFound
 			count: 1
 			path: ext_localconf.php
-
-		-
-			message: '#^Call to an undefined method PhpParser\\Node\\Expr\|PhpParser\\Node\\Identifier\:\:toString\(\)\.$#'
-			identifier: method.notFound
-			count: 4
-			path: Classes/PhpStanRule/NamedArgumentUsageRule.php
-
-		-
-			message: '#^Method TYPO3\\CMS\\VisualEditor\\Service\\DataHandlerService\:\:run\(\) should return list\<string\> but returns array\.$#'
-			identifier: return.type
-			count: 1
-			path: Classes/Service/DataHandlerService.php

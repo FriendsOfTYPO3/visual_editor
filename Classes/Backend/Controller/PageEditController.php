@@ -55,6 +55,7 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Versioning\VersionState;
+use TYPO3\CMS\Core\DataHandling\PageDoktypeRegistry;
 
 use function array_map;
 use function array_values;
@@ -97,6 +98,7 @@ final class PageEditController
         private readonly ConnectionPool $connectionPool,
         private readonly AssetCollector $assetCollector,
         private readonly Context $context,
+        private readonly PageDoktypeRegistry $pageDoktypeRegistry,
     ) {
     }
 
@@ -132,6 +134,10 @@ final class PageEditController
 
         if ($record->getRecordType() === '254') {
             throw new InvalidArgumentException('Page record is of type "folder" and cannot be edited with the Visual Editor', 5965019514);
+        }
+
+        if ($this->typo3Version->getMajorVersion() >= 14 && !$this->pageDoktypeRegistry->isPageViewable((int) $record->getRecordType(), $pageUid)) {
+            throw new InvalidArgumentException('Page record is not viewable and cannot be edited with the Visual Editor', 5965019515);
         }
 
         $this->pageRecord = $record;
