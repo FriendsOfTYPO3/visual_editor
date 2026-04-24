@@ -13,6 +13,7 @@ import {initSaveScrollPosition} from '@typo3/visual-editor/Frontend/init-save-sc
 import {initializeCrossOriginNavigations} from '@typo3/visual-editor/Frontend/initialize-cross-origin-navigations';
 import {initializeSaveHandling} from '@typo3/visual-editor/Frontend/initialize-save-handling';
 import {initializeSpotlightHandling} from '@typo3/visual-editor/Frontend/initialize-spotlight-handling';
+import {initializeImageHandling} from '@typo3/visual-editor/Frontend/initialize-image-handling';
 
 if (window.location.hash === '#ve-close') {
   sendMessage('closeModal');
@@ -28,3 +29,4 @@ initializeSpotlightHandling();
 initializeSaveHandling();
 initSaveScrollPosition();
 initializeCrossOriginNavigations();
+initializeImageHandling();
