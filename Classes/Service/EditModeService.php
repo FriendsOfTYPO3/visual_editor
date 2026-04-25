@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TYPO3\CMS\VisualEditor\Service;
 
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UriInterface;
 use RuntimeException;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
@@ -23,6 +24,7 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 
+use function array_merge_recursive;
 use function method_exists;
 
 final readonly class EditModeService
@@ -85,18 +87,9 @@ final readonly class EditModeService
                 throw new RuntimeException('Could not determine current site language', 3305745963);
             }
 
-            $routing = $request->getAttribute('routing');
-            if (!$routing instanceof PageArguments) {
-                throw new RuntimeException('Could not determine current routing context', 1773230232);
-            }
-
             $isExtContainerInstalled = ExtensionManagementUtility::isLoaded('container');
 
-            $backendEditUrl = (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
-                'id' => $pageId,
-                'languages' => [$siteLanguage->getLanguageId()],
-                'params' => $routing->getRouteArguments(),
-            ]);
+            $backendEditUrl = $this->getBackendEditUrl($request);
 
             $newContentUrl = (string)$this->uriBuilder->buildUriFromRoute('new_content_element_wizard', [
                 'id' => $pageId,
@@ -125,7 +118,7 @@ final readonly class EditModeService
                 'editContentContextualUrl' => $editContentContextualUrl ?? null,
                 'allowNewContent' => $this->languageModeService->getAllowNewContent($pageInformation, $siteLanguage, $request),
                 'token' => $this->formProtectionFactory->createForType('backend')->generateToken('visual_editor', 'save'),
-                'routeArguments' => (object)$this->flattenBracketKeys(['params' => $routing->getRouteArguments()]),
+                'routeArguments' => (object)$this->flattenBracketKeys(['params' => $this->getUsedArguments($request)]),
                 'allowedOrigins' => $this->getAllowedOrigins(),
             ];
             $this->assetCollector->addInlineJavaScript(
@@ -257,5 +250,50 @@ if (window.parent === window && window.veInfo) {
         }
 
         return array_keys($allowed);
+    }
+
+    public function getBackendEditUrl(ServerRequestInterface $request): UriInterface
+    {
+        // backend and Frontend Context: determine current page id
+        $pageInformation = $request->getAttribute('frontend.page.information');
+        if (!$pageInformation instanceof PageInformation) {
+            throw new RuntimeException('Could not determine current page information', 9965439961);
+        }
+
+        $pageId = $pageInformation->getId();
+        if (!$pageId) {
+            throw new RuntimeException('Could not determine current page id', 1768983081);
+        }
+
+        $siteLanguage = $request->getAttribute('language');
+        if (!$siteLanguage instanceof SiteLanguage) {
+            throw new RuntimeException('Could not determine current site language', 3305745963);
+        }
+
+        $usedArguments = $this->getUsedArguments($request);
+        return $this->uriBuilder->buildUriFromRoute('web_edit', [
+            'id' => $pageId,
+            'languages' => [$siteLanguage->getLanguageId()],
+            'params' => $usedArguments,
+        ]);
+    }
+
+    /**
+     * @return array<string|array<string|array<mixed>>>
+     */
+    private function getUsedArguments(ServerRequestInterface $request): array
+    {
+        $routing = $request->getAttribute('routing');
+        if (!$routing instanceof PageArguments) {
+            throw new RuntimeException('Could not determine current routing context', 1773230232);
+        }
+
+        $usedArguments = array_merge_recursive(
+            $routing->getArguments(),
+            $routing->getRouteArguments(),
+        );
+        unset($usedArguments['cHash']);
+        unset($usedArguments['editMode']);
+        return $usedArguments;
     }
 }

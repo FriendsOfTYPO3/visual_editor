@@ -124,6 +124,12 @@ parameters:
 			message: '#^Property TYPO3Fluid\\Fluid\\Core\\ViewHelper\\AbstractViewHelper\:\:\$renderingContext \(TYPO3Fluid\\Fluid\\Core\\Rendering\\RenderingContextInterface\) on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.property
 			count: 1
+			path: Classes/ViewHelpers/ImageViewHelper.php
+
+		-
+			message: '#^Property TYPO3Fluid\\Fluid\\Core\\ViewHelper\\AbstractViewHelper\:\:\$renderingContext \(TYPO3Fluid\\Fluid\\Core\\Rendering\\RenderingContextInterface\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
 			path: Classes/ViewHelpers/Mark/ContentAreaViewHelper.php
 
 		-

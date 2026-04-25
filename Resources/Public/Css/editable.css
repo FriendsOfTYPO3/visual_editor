@@ -61,7 +61,53 @@ ve-editable-rich-text[changed] .ck-content {
   font-style: italic;
 }
 
+/**
+ * Hide the preview info box, as it is not relevant for the editor and only distracts from the content.
+ */
+
 #typo3-preview-info {
-  /*  hide the preview info box, as it is not relevant for the editor and only distracts from the content */
   display: none;
+}
+
+
+/**
+ * Image Edit overlay:
+ */
+img[data-veedit] {
+  anchor-name: --ve-image;
+  transition: filter 0.2s ease, outline-color 0.2s ease;
+  outline: 5px solid transparent;
+  outline-offset: -5px;
+  pointer-events: initial;
+
+  &:hover {
+    /*filter: brightness(0.6);*/
+    cursor: pointer;
+    outline-color: #5432fe;
+  }
+}
+
+*:has(> img[data-veedit]) {
+  anchor-scope: --ve-image;
+}
+
+*:has(> img[data-veedit])::after {
+  content: '';
+
+  position: absolute;
+  position-anchor: --ve-image;
+  position-area: center;
+
+  width: clamp(20px, 33%, 100px);
+  aspect-ratio: 1 / 1;
+  filter: drop-shadow( 0 0 0.25rem #000 ) drop-shadow( 0 0 0.5rem #000 ) drop-shadow( 0 0 0.75rem #000 );
+
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  background: center / contain no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g fill="white"><path d="m9.293 3.293-8 8A.997.997 0 0 0 1 12v3h3c.265 0 .52-.105.707-.293l8-8-3.414-3.414zM8.999 5l.5.5-5 5-.5-.5 5-5zM4 14H3v-1H2v-1l1-1 2 2-1 1zM13.707 5.707l1.354-1.354a.5.5 0 0 0 0-.707L12.354.939a.5.5 0 0 0-.707 0l-1.354 1.354 3.414 3.414z"/></g></svg>');
+}
+
+*:has(> img[data-veedit]:hover)::after {
+  opacity: 1;
 }
