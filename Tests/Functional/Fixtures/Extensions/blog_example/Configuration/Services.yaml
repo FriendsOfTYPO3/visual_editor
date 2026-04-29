@@ -1,0 +1,51 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  TYPO3Tests\BlogExample\:
+    resource: '../Classes/*'
+    exclude:
+      - '../Classes/Command/*'
+      - '../Classes/Controller/*'
+      - '../Classes/Domain/*'
+
+  TYPO3Tests\BlogExample\Domain\Repository\AdministratorRepository:
+    public: true
+    calls:
+      - method: injectPersistenceManager
+        arguments:
+          - '@TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface'
+      - method: injectEventDispatcher
+        arguments:
+          - '@Psr\EventDispatcher\EventDispatcherInterface'
+      - method: injectFeatures
+        arguments:
+          - '@TYPO3\CMS\Core\Configuration\Features'
+
+  TYPO3Tests\BlogExample\Domain\Repository\BlogRepository:
+    public: true
+    calls:
+      - method: injectPersistenceManager
+        arguments:
+          - '@TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface'
+      - method: injectEventDispatcher
+        arguments:
+          - '@Psr\EventDispatcher\EventDispatcherInterface'
+      - method: injectFeatures
+        arguments:
+          - '@TYPO3\CMS\Core\Configuration\Features'
+
+  TYPO3Tests\BlogExample\Domain\Repository\PostRepository:
+    public: true
+    calls:
+      - method: injectPersistenceManager
+        arguments:
+          - '@TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface'
+      - method: injectEventDispatcher
+        arguments:
+          - '@Psr\EventDispatcher\EventDispatcherInterface'
+      - method: injectFeatures
+        arguments:
+          - '@TYPO3\CMS\Core\Configuration\Features'

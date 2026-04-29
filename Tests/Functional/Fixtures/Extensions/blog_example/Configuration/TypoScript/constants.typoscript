@@ -1,0 +1,10 @@
+plugin.tx_blogexample {
+	settings {
+		 # cat=plugin.tx_blogexample/a; type=int+; label=Editor FE Usergroup uid:Enter the uid of the FE Usergroup that should be allowed to edit Blogs and Post in the frontend
+		editorUsergroupUid = 1
+	}
+	persistence {
+		 # cat=plugin.tx_blogexample//a; type=int+; label=Default storage PID
+		storagePid =
+	}
+}

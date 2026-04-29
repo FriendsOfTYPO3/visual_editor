@@ -33,13 +33,11 @@ return static function (RectorConfig $rectorConfig): void {
         [
             ...RectorSettings::skip(),
 
-
             StringableForToStringRector::class,
             /**
              * rector should not touch these files
              */
-            //__DIR__ . '/src/Example',
-            //__DIR__ . '/src/Example.php',
+            __DIR__ . '/Tests/Functional/Fixtures/Extensions/blog_example',
             SafeDeclareStrictTypesRector::class => [
                 __DIR__ . '/ext_emconf.php',
             ],
