@@ -24,7 +24,10 @@ export class VeValidationOverlay extends LitElement {
     const uniqueValidationErrors = [...new Set(this.validationErrors)];
 
     return html`
-      <div class="messageOverlay">
+      <div class="messageOverlay"
+           role="status"
+           aria-live="assertive"
+           aria-atomic="true">
         ${uniqueValidationErrors.map((reason) => html`
           <ve-validation-message
             .reason=${reason}

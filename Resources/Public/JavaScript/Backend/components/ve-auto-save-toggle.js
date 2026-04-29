@@ -18,6 +18,11 @@ export class VeAutoSaveToggle extends LitElement {
     this.classList.toggle('btn-primary', this.active);
     this.classList.toggle('active', this.active);
     this.classList.toggle('btn-default', !this.active);
+    this.setAttribute('role', 'switch');
+    this.setAttribute('aria-checked', String(this.active));
+    this.setAttribute('aria-disabled', String(this.hasAttribute('disabled')));
+    this.tabIndex = this.hasAttribute('disabled') ? -1 : 0;
+    this.setAttribute('aria-label', this.label);
   }
 
   firstUpdated(changedProperties) {
@@ -37,6 +42,7 @@ export class VeAutoSaveToggle extends LitElement {
     this.label = this.innerText;
     this.disposeUpdateEditorStateListener = null;
     this.onClick = this.#onClick.bind(this);
+    this.onKeydown = this.#onKeydown.bind(this);
   }
 
   connectedCallback() {
@@ -47,12 +53,14 @@ export class VeAutoSaveToggle extends LitElement {
     }
 
     this.addEventListener('click', this.onClick);
+    this.addEventListener('keydown', this.onKeydown);
   }
 
   disconnectedCallback() {
     this.disposeUpdateEditorStateListener?.();
     this.disposeUpdateEditorStateListener = null;
     this.removeEventListener('click', this.onClick);
+    this.removeEventListener('keydown', this.onKeydown);
 
     super.disconnectedCallback();
   }
@@ -73,6 +81,10 @@ export class VeAutoSaveToggle extends LitElement {
   }
 
   #onClick(e) {
+    if(this.hasAttribute('disabled')){
+      return;
+    }
+
     e.preventDefault();
     this.active = !this.active;
 
@@ -81,6 +93,13 @@ export class VeAutoSaveToggle extends LitElement {
     if (this.active && this.count > 0 && this.invalidCount === 0) {
       sendMessage('doSave');
     }
+  }
+  #onKeydown(e) {
+    if (this.hasAttribute('disabled') || (e.key !== 'Enter' && e.key !== ' ')) {
+      return;
+    }
+    e.preventDefault();
+    this.#onClick(e);
   }
 
   static styles = css`

@@ -25,6 +25,7 @@ export class VeShowEmptyToggle extends LitElement {
     sendMessage('showEmpty', this.active);
     this.onShowEmptyChange = this.#onShowEmptyChange.bind(this);
     this.onClick = this.#onClick.bind(this);
+    this.onKeydown = this.#onKeydown.bind(this);
   }
 
   connectedCallback() {
@@ -32,11 +33,13 @@ export class VeShowEmptyToggle extends LitElement {
 
     showEmptyActive.addEventListener('change', this.onShowEmptyChange);
     this.addEventListener('click', this.onClick);
+    this.addEventListener('keydown', this.onKeydown);
   }
 
   disconnectedCallback() {
     showEmptyActive.removeEventListener('change', this.onShowEmptyChange);
     this.removeEventListener('click', this.onClick);
+    this.removeEventListener('keydown', this.onKeydown);
 
     super.disconnectedCallback();
   }
@@ -45,6 +48,10 @@ export class VeShowEmptyToggle extends LitElement {
     this.classList.toggle('btn-primary', this.active);
     this.classList.toggle('active', this.active);
     this.classList.toggle('btn-default', !this.active);
+    this.setAttribute('role', 'switch');
+    this.setAttribute('aria-checked', String(this.active));
+    this.setAttribute('aria-label', this.label);
+    this.tabIndex = 0;
   }
 
   render() {
@@ -64,6 +71,14 @@ export class VeShowEmptyToggle extends LitElement {
     this.active = !this.active;
     showEmptyActive.set(this.active);
     sendMessage('showEmpty', this.active);
+  }
+
+  #onKeydown(e) {
+    if (e.key !== 'Enter' && e.key !== ' ') {
+      return;
+    }
+    e.preventDefault();
+    this.#onClick(e);
   }
 }
 

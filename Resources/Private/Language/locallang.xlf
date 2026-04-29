@@ -84,6 +84,24 @@
       <trans-unit id="frontend.resetChanges">
         <source>reset changes</source>
       </trans-unit>
+      <trans-unit id="frontend.editContentElement">
+        <source>Edit content element</source>
+      </trans-unit>
+      <trans-unit id="frontend.showContentElement">
+        <source>Show content element</source>
+      </trans-unit>
+      <trans-unit id="frontend.deleteContentElement">
+        <source>Delete content element</source>
+      </trans-unit>
+      <trans-unit id="frontend.addContentElementButton">
+        <source>Add content element</source>
+      </trans-unit>
+      <trans-unit id="frontend.actionBar">
+        <source>Action Bar</source>
+      </trans-unit>
+      <trans-unit id="frontend.editImageButton">
+        <source>Edit Image</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

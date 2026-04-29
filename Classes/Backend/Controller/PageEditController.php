@@ -188,6 +188,11 @@ final class PageEditController
         $view->assignMultiple([
             'pageId' => $this->pageRecord->getUid(),
             'iframeSrc' => $iframeUrl,
+            'iframeTitle' => sprintf(
+                '%s: %s',
+                $this->getLanguageService()->sL('LLL:EXT:visual_editor/Resources/Private/Language/locallang_mod.xlf:edit_page'),
+                (string)$this->pageRecord->get('title'),
+            ),
         ]);
 
         $this->makeButtons($view, $request);

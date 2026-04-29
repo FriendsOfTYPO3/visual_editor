@@ -1,4 +1,5 @@
 import {LitElement} from 'lit';
+import {lll} from '@typo3/core/lit-helper.js';
 import {ClassicEditor as Editor} from '@ckeditor/ckeditor5-editor-classic';
 // import {InlineEditor as Editor} from '@ckeditor/ckeditor5-editor-inline'; // TODO fix issues with inline editor
 import {initCKEditorInstance} from '@typo3/rte-ckeditor/init-ckeditor-instance.js';
@@ -70,6 +71,11 @@ export class VeEditableRichText extends LitElement {
     element.appendChild(wrapper);
 
     this.editor = await initCKEditorInstance(this.options || {}, wrapper, wrapper, Editor);
+    const editableElement = this.editor.ui.getEditableElement();
+    if (editableElement instanceof HTMLElement) {
+      const fieldLabel = this.name || this.title || this.field || this.placeholder;
+      editableElement.setAttribute('aria-label', lll('editable.title', fieldLabel));
+    }
     this.editor.editing.view.document.getRoot('main').placeholder = this.placeholder;
     this.editor.model.document.on('change:data', () => {
       this.value = this.editor.getData({ skipListItemIds: true });

@@ -5,6 +5,7 @@ import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 import {openModal} from '@typo3/visual-editor/Frontend/components/ve-iframe-popup';
 import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
 import {calculateAllDebounced} from '@typo3/visual-editor/Frontend/auto-no-overlap';
+import {getAriaRole} from '@typo3/visual-editor/Frontend/get-aria-role';
 
 /**
  * @extends {HTMLElement}
@@ -92,6 +93,12 @@ export class VeContentElement extends LitElement {
       this.isHovered = false;
       setTimeout(calculateAllDebounced);
     });
+    this.addEventListener('focusin', () => {
+      this.isFocusWithin = true;
+    });
+    this.addEventListener('focusout', () => {
+      this.isFocusWithin = false;
+    });
   }
 
   connectedCallback() {
@@ -159,6 +166,10 @@ export class VeContentElement extends LitElement {
 
     const child = element.firstElementChild;
     element.setAttribute('was', child.tagName.toLowerCase());
+    const role = getAriaRole(child.tagName.toLowerCase());
+    if (role && !element.hasAttribute('role')) {
+      element.setAttribute('role', role);
+    }
     const properties = Object.keys(element.constructor.properties).map(prop => prop.toLowerCase());
     for (const attributeName of child.getAttributeNames()) {
       if (!properties.includes(attributeName.toLowerCase())) {
@@ -174,11 +185,17 @@ export class VeContentElement extends LitElement {
 
   render() {
     const toggleIcon = this.isHidden ? 'actions-toggle-off' : 'actions-toggle-on';
+    const editLabel = lll('frontend.editContentElement');
+    const toggleLabel = lll('frontend.showContentElement');
+    const deleteLabel = lll('frontend.deleteContentElement');
+    const addLabel = lll('frontend.addContentElementButton');
     const actionBar = html`
       <ve-drag-handle
         table="${this.table}" uid="${this.uid}" CType="${this.CType}"
-        class="action-bar${this.isHidden ? ' hidden' : ''}${this.dragInProgress ? ' dragAndDropActive' : ''}${this.isHovered ? ' hovered': ''}"
+        class="action-bar${this.isHidden ? ' hidden' : ''}${this.dragInProgress ? ' dragAndDropActive' : ''}${(this.isHovered || this.isFocusWithin) ? ' hovered': ''}"
         isActive="${(this.canBeMoved && this.hasContentAreaAsParent) ? 'true' : 'false'}"
+        role="region"
+        aria-label="${lll('frontend.actionBar')}"
       >
         <span class="action-bar-headline" title="uid:${this.uid}">
                 ${(this.canBeMoved && this.hasContentAreaAsParent) ? '⠿ ' : ''}${this.elementName}
@@ -191,12 +208,14 @@ export class VeContentElement extends LitElement {
                 url="${this.editContentContextualUrl}"
                 edit-url="${this.editContentUrl}"
                 class="button"
+                title="${editLabel}"
+                aria-label="${editLabel}"
               >
                 <ve-icon name="actions-open"/>
               </typo3-backend-contextual-record-edit-trigger>
             `
             : html`
-              <a class="button" href="${this.editContentUrl}" @click="${this._openEdit}">
+              <a class="button" tabindex="0" type="button" href="${this.editContentUrl}" @click="${this._openEdit}" title="${editLabel}" aria-label="${editLabel}">
                 <ve-icon name="actions-open"/>
               </a>
             `
@@ -204,19 +223,19 @@ export class VeContentElement extends LitElement {
         ${
           this.hiddenFieldName ?
             html`
-              <a class="button" tabindex="0" @click="${this._toggleHidden}">
+              <button class="button" tabindex="0" type="button" role="switch" @click="${this._toggleHidden}" title="${toggleLabel}" aria-label="${toggleLabel}" aria-checked="${!this.isHidden}" >
                 <ve-icon name="${toggleIcon}"/>
-              </a>
+              </button>
             ` : ''
         }
-        <a class="button" tabindex="0" @click="${this._delete}">
+        <button class="button" tabindex="0" type="button" @click="${this._delete}" title="${deleteLabel}" aria-label="${deleteLabel}">
           <ve-icon name="actions-delete"/>
-        </a>
+        </button>
         ${
           window.veInfo.allowNewContent ? html`
-            <a class="button" tabindex="0" @click="${this._addAbove}">
+            <button class="button" tabindex="0" type="button" @click="${this._addAbove}" title="${addLabel}" aria-label="${addLabel}">
               <ve-icon name="actions-document-add"/>
-            </a>
+            </button>
           ` : ''
         }
       </ve-drag-handle>`;
@@ -237,7 +256,7 @@ export class VeContentElement extends LitElement {
             tx_container_parent="${this.tx_container_parent}"
           ></ve-drop-zone>` : ''
       }
-      <div class="border${this.isHidden ? ' hidden' : ''}${this.showElementOverlay ? ' showElementOverlay' : ''}${this.isHovered ? ' hovered': ''}"></div>
+      <div class="border${this.isHidden ? ' hidden' : ''}${this.showElementOverlay ? ' showElementOverlay' : ''}${(this.isHovered || this.isFocusWithin) ? ' hovered': ''}"></div>
     `;
   }
 
@@ -284,7 +303,9 @@ export class VeContentElement extends LitElement {
     }
 
     .action-bar {
-      display: none;
+      display: flex;
+      opacity: 0;
+      pointer-events: none;
       gap: 2px;
       position: absolute;
       bottom: 100%;
@@ -305,8 +326,10 @@ export class VeContentElement extends LitElement {
       cursor: grab;
     }
 
-    .action-bar.hovered {
-      display: flex;
+    .action-bar.hovered,
+    .action-bar:focus-within {
+      opacity: 1;
+      pointer-events: initial;
     }
 
     .action-bar.dragAndDropActive {
@@ -324,13 +347,15 @@ export class VeContentElement extends LitElement {
 
     .button {
       display: inline-flex;
+      align-items: center;
+      justify-content: center;
       color: #d9d9d9;
+      background: transparent;
       border: 1px solid transparent;
       border-radius: 0.2em;
       padding: 0.2em 0.5em;
       text-decoration: none;
       cursor: pointer;
-      height: max-content;
 
       transition: border 0.2s;
     }
@@ -338,6 +363,13 @@ export class VeContentElement extends LitElement {
     .button:hover {
       border-color: #d9d9d9;
       background-color: #212121;
+    }
+
+    .button:focus-visible {
+      border-color: #d9d9d9;
+      background-color: #212121;
+      outline: 2px solid #5432fe;
+      outline-offset: 2px;
     }
   `;
 }

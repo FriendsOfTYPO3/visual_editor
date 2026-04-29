@@ -39,6 +39,11 @@ export class VeIframePopup extends LitElement {
             align-items: center;
             gap: 5px;
         }
+
+        button:focus-visible {
+            outline: 2px solid #5432fe;
+            outline-offset: 2px;
+        }
     `;
 
   constructor() {
@@ -58,7 +63,7 @@ export class VeIframePopup extends LitElement {
 
   render() {
     return html`
-            <button @click="${this._click}" title="${this.title}">
+            <button type="button" @click="${this._click}" title="${this.title}" aria-label="${this.title}">
                 <slot/>
             </button>
         `;

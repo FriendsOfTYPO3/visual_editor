@@ -84,6 +84,24 @@
       <trans-unit id="frontend.resetChanges">
         <target>Änderungen zurücksetzen</target>
       </trans-unit>
+      <trans-unit id="frontend.editContentElement">
+        <target>Inhaltselement bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="frontend.showContentElement">
+        <target>Inhaltselement anzeigen</target>
+      </trans-unit>
+      <trans-unit id="frontend.deleteContentElement">
+        <target>Inhaltselement löschen</target>
+      </trans-unit>
+      <trans-unit id="frontend.addContentElementButton">
+        <target>Inhaltselement hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="frontend.actionBar">
+        <target>Aktionsleiste</target>
+      </trans-unit>
+      <trans-unit id="frontend.editImageButton">
+        <target>Bild bearbeiten</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

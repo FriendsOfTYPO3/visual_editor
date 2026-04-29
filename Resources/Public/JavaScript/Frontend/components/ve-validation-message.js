@@ -47,7 +47,7 @@ export class VeValidationMessage extends LitElement {
 
   render() {
     return html`
-      <div class="validation-bubble bubble ${this.animated ? 'animate' : ''}" aria-live="polite">
+      <div class="validation-bubble bubble ${this.animated ? 'animate' : ''}">
         ${this.reason}
       </div>
     `;

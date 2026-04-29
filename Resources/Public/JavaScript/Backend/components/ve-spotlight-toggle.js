@@ -24,6 +24,7 @@ export class VeSpotlightToggle extends LitElement {
     this.active = spotlightActive.get();
     this.onSpotlightChange = this.#onSpotlightChange.bind(this);
     this.onClick = this.#onClick.bind(this);
+    this.onKeydown = this.#onKeydown.bind(this);
   }
 
   connectedCallback() {
@@ -31,11 +32,13 @@ export class VeSpotlightToggle extends LitElement {
 
     spotlightActive.addEventListener('change', this.onSpotlightChange);
     this.addEventListener('click', this.onClick);
+    this.addEventListener('keydown', this.onKeydown);
   }
 
   disconnectedCallback() {
     spotlightActive.removeEventListener('change', this.onSpotlightChange);
     this.removeEventListener('click', this.onClick);
+    this.removeEventListener('keydown', this.onKeydown);
 
     super.disconnectedCallback();
   }
@@ -44,6 +47,10 @@ export class VeSpotlightToggle extends LitElement {
     this.classList.toggle('btn-primary', this.active);
     this.classList.toggle('active', this.active);
     this.classList.toggle('btn-default', !this.active);
+    this.setAttribute('role', 'switch');
+    this.setAttribute('aria-checked', String(this.active));
+    this.setAttribute('aria-label', this.label);
+    this.tabIndex = 0;
   }
 
   render() {
@@ -62,6 +69,14 @@ export class VeSpotlightToggle extends LitElement {
 
     this.active = !this.active;
     spotlightActive.set(this.active);
+  }
+
+  #onKeydown(e) {
+    if (e.key !== 'Enter' && e.key !== ' ') {
+      return;
+    }
+    e.preventDefault();
+    this.#onClick(e);
   }
 }
 
