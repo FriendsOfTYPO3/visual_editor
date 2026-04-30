@@ -1,6 +1,6 @@
 import {css, html, LitElement} from 'lit';
-import {lll} from '@typo3/core/lit-helper.js';
 import {classMap} from 'lit/directives/class-map.js';
+import {lll} from '@typo3/core/lit-helper.js';
 import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
 import {showEmptyActive} from '@typo3/visual-editor/Shared/local-stores';
 import '@typo3/visual-editor/Frontend/components/ve-icon';
@@ -155,7 +155,7 @@ export class VeEditableText extends LitElement {
       behavior: 'auto',
     });
 
-    const slot = this.shadowRoot?.querySelector('.slot');
+    const slot = this.#getSlot();
     slot?.focus({preventScroll: true});
   }
 
@@ -184,10 +184,12 @@ export class VeEditableText extends LitElement {
         ${buttonControls}
       </div>` : html``;
     const shouldBeInline = this.shouldBeInline();
+    const fieldLabel = this.name || this.title || this.field || this.placeholder;
+    const ariaLabel = lll('editable.title', fieldLabel);
 
     this.classList.toggle('block', !shouldBeInline);
 
-    const slot = this.shadowRoot?.querySelector('.slot');
+    const slot = this.#getSlot();
     const showPlaceholder = !this.focused && !(slot?.innerText || this.value).length;
     const isEmpty = this.value === '';
     return html`
@@ -202,7 +204,11 @@ export class VeEditableText extends LitElement {
         style="--button-count: ${buttonCount};"
         contenteditable="plaintext-only"
         role="textbox"
+        aria-label="${ariaLabel}"
         aria-invalid="${this.invalid ? 'true' : 'false'}"
+        aria-errormessage="${this.validationErrors.join(', ')}"
+        aria-multiline="${this.allowNewlines ? 'true' : 'false'}"
+        aria-required="${this.isRequired() ? 'true' : 'false'}"
         spellcheck="true"
         data-placeholder="${showPlaceholder ? (this.placeholder || '\u200B'/* placeholder keeps firefox from breaking out*/) : ''}"
         @focus="${() => {
@@ -340,7 +346,7 @@ export class VeEditableText extends LitElement {
     this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
     this.valueInitial = dataHandlerStore.initialData[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
     const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
-    const slot = this.shadowRoot?.querySelector('.slot');
+    const slot = this.#getSlot();
     const isFocused = this.matches(':focus-within');
     if (!isFocused && storedValue?.trim() !== slot?.innerText?.trim()) {
       this.skipNextValueNormalization = true;
@@ -353,14 +359,18 @@ export class VeEditableText extends LitElement {
    * @param {string} value
    */
   #setSlotText(value) {
-    const element = this.shadowRoot?.querySelector('.slot');
+    const element = this.#getSlot();
     if (element) {
       element.innerText = value;
     }
   }
 
   #getSlotText() {
-    return this.shadowRoot?.querySelector('.slot')?.innerText.replace(/\n$/, '') ?? '';
+    return this.#getSlot()?.innerText.replace(/\n$/, '') ?? '';
+  }
+
+  #getSlot() {
+    return this.shadowRoot?.querySelector('.slot');
   }
 
   /**
@@ -486,8 +496,7 @@ export class VeEditableText extends LitElement {
     let normalizedValue = normalizeValue(value, this.validation).text;
 
     const min = Number(this.validation?.min || 0);
-    const isRequired = Boolean(this.validation?.required || false);
-    if (normalizedValue.length < min && !isRequired) {
+    if (normalizedValue.length < min && !this.isRequired()) {
       normalizedValue = '';
     }
 
@@ -498,6 +507,10 @@ export class VeEditableText extends LitElement {
 
     dataHandlerStore.setData(this.table, this.uid, this.field, normalizedValue);
     return normalizedValue;
+  }
+
+  isRequired() {
+    return Boolean(this.validation?.required || false);
   }
 
   /**

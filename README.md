@@ -9,6 +9,7 @@ This extension provides visual editing features for content elements in TYPO3 CM
 - 🧲 Drag-and-drop repositioning of content elements (➕ adding and 🗑️ deleting elements)
 - ⚡ Real-time preview of changes without page reloads
 - 😊 User-friendly interface for non-technical editors
+- ♿ Accessibility-aware editing controls for TYPO3 editors
 
 <https://github.com/user-attachments/assets/a4d2a536-40dd-4df8-a980-0b0362654d24>
 
@@ -152,6 +153,14 @@ OR you can use [EXT:multisite_belogin](https://extensions.typo3.org/extension/mu
 Visual Editor uses your regular frontend CSS for the editing view. CSS that is configured only in the TYPO3 RTE configuration (`contentsCss`) is not applied there.
 
 If your project defines custom rich-text styles, add the relevant rules to your frontend CSS so the page output and the editor share the same styling. Projects with custom `lib.parseFunc_RTE` setups may also need matching frontend rules.
+
+## Accessibility
+
+Visual Editor is designed with WCAG 2.2 AA as a goal, but this is not a full compliance claim for every TYPO3 project.
+
+The editor interface includes accessible labels, keyboard-focusable controls, validation announcements, and semantic roles. It has been tested with axe DevTools and NVDA.
+
+Final accessibility depends on the project templates, CSS, semantic HTML, and editor-authored content. Drag-and-drop workflows are pointer-oriented, so projects should verify alternative workflows for their editor needs. Project-level accessibility should be checked in the integrated TYPO3 site.
 
 ## License and Authors: License type, contributors, contact information
 

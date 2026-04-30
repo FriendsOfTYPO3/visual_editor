@@ -21,6 +21,11 @@ export class VeBackendSaveButton extends LitElement {
     this.classList.toggle('btn-default', this.isInteractionDisabled && !this.hasInvalidFields);
     this.classList.toggle('btn-warning', !this.isVisuallyDisabled);
     this.classList.toggle('btn-danger', this.hasInvalidFields);
+    this.setAttribute('role', 'button');
+    this.setAttribute('aria-disabled', String(this.isInteractionDisabled));
+    this.setAttribute('aria-busy', String(this.saving));
+    this.setAttribute('tabindex', this.isInteractionDisabled ? '-1' : '0');
+    this.setAttribute('aria-label', this.getLabel());
   }
 
   constructor() {
@@ -28,7 +33,8 @@ export class VeBackendSaveButton extends LitElement {
     this.count = 0;
     this.invalidCount = 0;
     this.saving = false;
-    this.onClick = this.onClick.bind(this);
+    this.onClick = this.#onClick.bind(this);
+    this.onKeydown = this.#onKeydown.bind(this);
     this.disposeUpdateEditorStateListener = null;
     this.disposeOnSaveListener = null;
     this.disposeSaveEndedListener = null;
@@ -51,6 +57,7 @@ export class VeBackendSaveButton extends LitElement {
     }
 
     this.addEventListener('click', this.onClick);
+    this.addEventListener('keydown', this.onKeydown);
   }
 
   disconnectedCallback() {
@@ -61,11 +68,12 @@ export class VeBackendSaveButton extends LitElement {
     this.disposeSaveEndedListener?.();
     this.disposeSaveEndedListener = null;
     this.removeEventListener('click', this.onClick);
+    this.removeEventListener('keydown', this.onKeydown);
 
     super.disconnectedCallback();
   }
 
-  render() {
+  getLabel() {
     let label = lll('save');
     if (this.count > 0) {
       label = this.count === 1 ? lll('save.change') : lll('save.changes', this.count);
@@ -76,6 +84,11 @@ export class VeBackendSaveButton extends LitElement {
     if (this.saving) {
       label = lll('saving');
     }
+    return label;
+  }
+
+  render() {
+    const label = this.getLabel();
     const icon = this.hasInvalidFields ? 'actions-exclamation-circle-alt' : 'actions-save';
     return html`
       <typo3-backend-icon identifier="${icon}" size="small"></typo3-backend-icon>
@@ -101,11 +114,19 @@ export class VeBackendSaveButton extends LitElement {
     }
   }
 
-  onClick(e) {
+  #onClick(e) {
     e.preventDefault();
     if (this.isInteractionDisabled) {
       return;
     }
+    sendMessage('doSave');
+  }
+
+  #onKeydown(e) {
+    if (this.disabled || (e.key !== 'Enter' && e.key !== ' ')) {
+      return;
+    }
+    e.preventDefault();
     sendMessage('doSave');
   }
 

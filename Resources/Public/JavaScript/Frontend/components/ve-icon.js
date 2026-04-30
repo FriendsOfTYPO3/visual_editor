@@ -36,7 +36,7 @@ export class VeIcon extends LitElement {
   render() {
     const icon = unsafeHTML(this.icons[this.name]) || html`missing icon ${this.name}`;
     return html`
-    <span class="icon" style="width: ${this.width};">${icon}</span>`;
+    <span class="icon" style="width: ${this.width};" aria-hidden="true">${icon}</span>`;
   }
 
   static styles = css`

@@ -1,4 +1,5 @@
 import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
+import {lll} from "@typo3/core/lit-helper.js";
 
 export function initializeImageHandling() {
   const images = document.querySelectorAll('img[data-veedit]');
@@ -7,12 +8,15 @@ export function initializeImageHandling() {
       continue;
     }
 
-    image.addEventListener('click', (e) => {
-      const data = JSON.parse(image.dataset.veedit);
-      if (!data.editUrl) {
-        return;
-      }
+    const data = JSON.parse(image.dataset.veedit);
+    if (!data.editUrl) {
+      return;
+    }
 
+    image.setAttribute('role', 'button');
+    image.setAttribute('tabindex', '0');
+    image.setAttribute('aria-label', lll('frontend.editImageButton'));
+    const listener = (e) => {
       e.preventDefault();
       e.stopImmediatePropagation();
 
@@ -25,6 +29,14 @@ export function initializeImageHandling() {
       tag.setAttribute('url', data.url);
       tag.setAttribute('edit-url', data.editUrl);
       tag.click();
+    };
+    image.addEventListener('click', listener);
+    image.addEventListener('keydown', (e) => {
+      if ((e.key !== 'Enter' && e.key !== ' ')) {
+        return;
+      }
+
+      listener(e);
     });
   }
 }

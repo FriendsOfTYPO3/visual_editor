@@ -1,5 +1,6 @@
 import {css, html, LitElement} from 'lit';
 import {lll} from "@typo3/core/lit-helper.js";
+import {getAriaRole} from '@typo3/visual-editor/Frontend/get-aria-role';
 
 /**
  * @extends {HTMLElement}
@@ -51,6 +52,10 @@ export class VeContentArea extends LitElement {
     }
 
     element.setAttribute('was', parentTagName);
+    const role = getAriaRole(parentTagName);
+    if (role && !element.hasAttribute('role')) {
+      element.setAttribute('role', role);
+    }
     const properties = Object.keys(element.constructor.properties).map(prop => prop.toLowerCase());
     for (const attributeName of parent.getAttributeNames()) {
       if (!properties.includes(attributeName.toLowerCase())) {
@@ -59,7 +64,7 @@ export class VeContentArea extends LitElement {
     }
 
     // move every child into element (keep position before and after the element) and remove parent
-    const oldFirstChild = element.firstChild
+    const oldFirstChild = element.firstChild;
     let isAfterSelf = false;
     for (const child of Array.from(parent.childNodes)) {
       if (child === element) {

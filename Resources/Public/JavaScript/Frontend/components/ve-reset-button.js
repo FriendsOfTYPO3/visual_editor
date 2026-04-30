@@ -15,7 +15,12 @@ export class VeResetButton extends LitElement {
             padding: 0;
             font: inherit;
             cursor: pointer;
-            outline: inherit;
+            border-radius: 0.2em;
+        }
+
+        button:focus-visible {
+            outline: 2px solid #5432fe;
+            outline-offset: 2px;
         }
     `;
 
@@ -26,8 +31,9 @@ export class VeResetButton extends LitElement {
   }
 
   render() {
+    const label = lll('frontend.resetChanges');
     return html`
-      <button @click="${this._click}" title="${lll('frontend.resetChanges')}">
+      <button type="button" @click="${this._click}" title="${label}" aria-label="${label}">
         <ve-icon name="actions-undo" width="100%"/>
       </button>
     `;
