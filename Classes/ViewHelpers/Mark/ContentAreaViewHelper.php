@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\ViewHelpers\Mark;
 
-use Exception;
 use B13\Container\Tca\Registry;
+use Exception;
 use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\Information\Typo3Version;
+use TYPO3\CMS\Core\Page\ContentAreaClosure;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\BackwardsCompatibility\ContentArea;
@@ -64,6 +65,11 @@ final class ContentAreaViewHelper extends AbstractViewHelper
         $renderingContext = $this->renderingContext ?? throw new InvalidArgumentException('$this->renderingContext is not available', 1772464212);
         $request = $renderingContext->getAttribute(ServerRequestInterface::class);
 
+        $renderedContentArea = $this->renderChildren();
+        if (!$this->editModeService->isEditMode($request)) {
+            return $renderedContentArea;
+        }
+
         $this->editModeService->init($request);
 
         $additionalArguments = $this->arguments;
@@ -74,7 +80,7 @@ final class ContentAreaViewHelper extends AbstractViewHelper
 
         $event = $this->eventDispatcher->dispatch(
             new RenderContentAreaEvent(
-                renderedContentArea: $this->renderChildren(),
+                renderedContentArea: $renderedContentArea,
                 contentArea: $this->getContentArea($request, $colPos, $txContainerParent),
                 request: $request,
             ),
@@ -109,8 +115,15 @@ final class ContentAreaViewHelper extends AbstractViewHelper
         /** @var PageInformation $pageInformation */
         $pageInformation = $request->getAttribute('frontend.page.information');
         $pageLayout = $pageInformation->getPageLayout() ?? throw new InvalidArgumentException('PageLayout is not available', 1772464283);
-        foreach ($pageLayout->getContentAreas() as $contentArea) {
+        $contentAreaCollection = $pageLayout->getContentAreas();
+        if ($this->typo3Version->getMajorVersion() >= 14) {
+            $contentAreaCollection = $contentAreaCollection->withRequest($request);
+        }
+
+        foreach ($contentAreaCollection as $contentArea) {
             if ($this->typo3Version->getMajorVersion() >= 14) {
+                $contentArea = $contentArea instanceof ContentAreaClosure ? $contentArea->instantiate($request) : $contentArea;
+
                 $contentAreaColPos = $contentArea->getColPos();
                 $name = $contentArea->getName();
                 /** @var list<string> $allowed */
