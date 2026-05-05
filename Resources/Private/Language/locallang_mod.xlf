@@ -21,6 +21,24 @@
       <trans-unit id="showHidden">
         <source>Show hidden</source>
       </trans-unit>
+      <trans-unit id="viewMode.singleLanguage">
+        <source>Single language</source>
+      </trans-unit>
+      <trans-unit id="viewMode.multiLanguage">
+        <source>Multi language</source>
+      </trans-unit>
+      <trans-unit id="crossOrigin.title">
+        <source>Change backend origin for this language</source>
+      </trans-unit>
+      <trans-unit id="crossOrigin.description">
+        <source>The visual editor can only load and communicate with the page preview when the TYPO3 backend uses the same origin as the site language.</source>
+      </trans-unit>
+      <trans-unit id="crossOrigin.securityNote">
+        <source>This protects browser security boundaries and keeps editor actions like selecting elements, opening modals, and saving changes connected to the correct page.</source>
+      </trans-unit>
+      <trans-unit id="crossOrigin.button">
+        <source>Open backend on the correct origin</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

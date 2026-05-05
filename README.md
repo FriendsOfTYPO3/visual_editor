@@ -13,6 +13,12 @@ This extension provides visual editing features for content elements in TYPO3 CM
 
 <https://github.com/user-attachments/assets/a4d2a536-40dd-4df8-a980-0b0362654d24>
 
+## Compatibility
+
+| Visual Editor | TYPO3   | PHP       | Support / Development                |
+|---------------|---------|-----------|--------------------------------------|
+| 1.x           | 13 - 14 | 8.2 - 8.5 | features, bugfixes, security updates |
+
 ## Installation
 
 1. 📦 `composer require friendsoftypo3/visual-editor` (or install via 🧩 Extension Manager)
@@ -35,6 +41,7 @@ This extension provides visual editing features for content elements in TYPO3 CM
 - 💾 **Saving changes:** use the save button. Autosave is available only when enabled, and the UI says to switch to a workspace if autosave is disabled.
 - 🔦 **Finding editable areas:** use Spotlight to highlight editable text, rich text, images, and content elements.
 - 👻 **Showing empty fields:** use "show empty" when editable but currently empty fields are hard to see.
+- 🌐 **Multi language edits:** available with TYPO3 v14. Use the "Multi language" view to compare translations side by side, edit visible fields in each preview, and save pending changes together.
 - ↔️ **Moving content:** drag content elements by their handle. Hold Ctrl while dropping to copy instead of moving.
 - ✍️ **Editing special text characters:** type `&shy;` for a soft hyphen and `&nbsp;` for a non-breaking space. Entity-like text that starts with `&`, such as `&nbsp;`, is shown with `&amp;` while editing so it stays literal text.
 

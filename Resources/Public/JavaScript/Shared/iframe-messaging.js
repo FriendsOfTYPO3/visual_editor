@@ -10,6 +10,16 @@
  * @property openInMiddleFrame {String}
  * @property localStoreChange {{key: String, value: any}}
  * @property localStoreRequest {String}
+ * @property focusFirstInvalidField {languageId: number}
+ * @property scrollPositionChanged {{positions: Array<{scrollPositionId: string, innerOffsetY: number}>, scrollProgress: number}}
+ * @property syncScrollPosition {{languageId: number, positions: Array<{scrollPositionId: string, innerOffsetY: number}>, scrollProgress: number}}
+ * @property editableFieldFocusChanged {{fieldPositionId: string, focused: boolean}}
+ * @property syncEditableFieldFocus {{languageId: number, fieldPositionId: string, focused: boolean}}
+ * @property contentElementDeleted {{table: string, scrollPositionId: string}}
+ * @property syncContentElementDeleted {{languageId: number, table: string, scrollPositionId: string}}
+ * @property contentElementMoved {{table: string, scrollPositionId: string, mode: 'after', targetScrollPositionId: string}|{table: string, scrollPositionId: string, mode: 'area-start', colPos: number, containerScrollPositionId: string|null}}
+ * @property syncContentElementMoved {{languageId: number, table: string, scrollPositionId: string, mode: 'after', targetScrollPositionId: string}|{languageId: number, table: string, scrollPositionId: string, mode: 'area-start', colPos: number, containerScrollPositionId: string|null}}
+ * @property iframeLoadingStarted {null}
  */
 
 /**
@@ -19,7 +29,7 @@
  * @returns {string}
  */
 function getPeerOrigin() {
-  const editorIframe = document.querySelector('iframe#visual-editor-iframe');
+  const editorIframe = document.querySelector('iframe.visual-editor-iframe'); // TODO handle this
   if (editorIframe) {
     return new URL(editorIframe.src, window.location.href).origin;
   }
@@ -44,14 +54,17 @@ export function sendMessage(command, detail = null, sendTo = 'any') {
   const message = {
     detail,
     command: `ve_${command}`,
+    fromLanguageId: window.veInfo.languageId,
   };
   const peerOrigin = getPeerOrigin();
-  const editorIframe = document.querySelector('iframe#visual-editor-iframe');
-  if (editorIframe) {
+  const editorIframes = document.querySelectorAll('iframe.visual-editor-iframe');
+  if (editorIframes.length) {
     if (sendTo === 'parent') {
       return;
     }
-    editorIframe.contentWindow.postMessage(message, peerOrigin);
+    for (const editorIframe of editorIframes) {
+      editorIframe.contentWindow.postMessage(message, peerOrigin);
+    }
   } else {
     if (sendTo === 'iframe') {
       return;
@@ -69,7 +82,7 @@ let isMessageListenerInitialized = false;
 /**
  * @template {keyof VECommandDetailMap} K
  * @param command {K}
- * @param callback {(detail: VECommandDetailMap[K]) => void}
+ * @param callback {(detail: VECommandDetailMap[K], fromLanguageId: number) => void}
  */
 export function onMessage(command, callback) {
   const listenerKey = `ve_${command}`;
@@ -83,14 +96,16 @@ export function onMessage(command, callback) {
       if (event.origin !== getPeerOrigin()) {
         return;
       }
-      const editorIframe = document.querySelector('iframe#visual-editor-iframe');
-      const expectedSource = editorIframe ? editorIframe.contentWindow : window.parent;
-      if (event.source !== expectedSource) {
-        return;
+      const editorIframes = document.querySelectorAll('iframe.visual-editor-iframe');
+      const iframeFrom = [...editorIframes].find(iframe => iframe.contentWindow === event.source);
+      if (!editorIframes.length) {
+        if (event.source !== window.parent) {
+          return;
+        }
       }
       if (messageListeners[event.data.command]) {
         for (const callback of messageListeners[event.data.command]) {
-          callback(event.data.detail);
+          callback(event.data.detail, parseInt(iframeFrom?.dataset.languageId ?? event.data.fromLanguageId, 10));
         }
       }
     });

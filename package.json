@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "scripts": {
     "lint": "eslint",
     "test": "node --test $(find Resources/Public/JavaScript -name \"*.test.js\" | sort)"

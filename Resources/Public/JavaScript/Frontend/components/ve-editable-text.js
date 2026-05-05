@@ -8,6 +8,7 @@ import '@typo3/visual-editor/Frontend/components/ve-validation-overlay';
 import {getEditValue, insertTextAtSelection} from '@typo3/visual-editor/Frontend/components/ve-editable-text/editing';
 import {getValidationIssues, normalizeValue} from '@typo3/visual-editor/Frontend/components/ve-editable-text/validation';
 import {getCaretOffset, setCaretPosition} from '@typo3/visual-editor/Frontend/caret-helper';
+import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 
 /**
  * @extends {HTMLElement}
@@ -21,6 +22,7 @@ export class VeEditableText extends LitElement {
     table: {type: String},
     uid: {type: Number},
     field: {type: String},
+    fieldPositionId: {type: String},
     valueInitial: {type: String},
     placeholder: {type: String},
     allowNewlines: {type: Boolean},
@@ -29,6 +31,7 @@ export class VeEditableText extends LitElement {
     validationErrors: {type: Array},
     showEmpty: {type: Boolean},
     focused: {type: Boolean},
+    highlighted: {type: Boolean, reflect: true},
     hovered: {type: Boolean},
   };
 
@@ -39,6 +42,7 @@ export class VeEditableText extends LitElement {
     this.validationErrors = [];
     this.showEmpty = showEmptyActive.get();
     this.focused = false;
+    this.highlighted = false;
     this.hovered = false;
     this.shakeTimeout = null;
     this.deniedInputPulseTimeout = null;
@@ -54,6 +58,8 @@ export class VeEditableText extends LitElement {
     this.onContextmenu = this.#onContextmenu.bind(this);
     this.onShowEmptyChange = this.#onShowEmptyChange.bind(this);
     this.onDataHandlerChange = this.#onDataHandlerChange.bind(this);
+    this.onSyncEditableFieldFocus = this.#onSyncEditableFieldFocus.bind(this);
+    this.unsubscribeSyncEditableFieldFocus = null;
   }
 
   connectedCallback() {
@@ -73,6 +79,7 @@ export class VeEditableText extends LitElement {
     this.addEventListener('contextmenu', this.onContextmenu);
     showEmptyActive.addEventListener('change', this.onShowEmptyChange);
     dataHandlerStore.addEventListener('change', this.onDataHandlerChange);
+    this.unsubscribeSyncEditableFieldFocus = onMessage('syncEditableFieldFocus', this.onSyncEditableFieldFocus);
   }
 
   disconnectedCallback() {
@@ -87,6 +94,8 @@ export class VeEditableText extends LitElement {
     this.removeEventListener('contextmenu', this.onContextmenu);
     showEmptyActive.removeEventListener('change', this.onShowEmptyChange);
     dataHandlerStore.removeEventListener('change', this.onDataHandlerChange);
+    this.unsubscribeSyncEditableFieldFocus?.();
+    this.unsubscribeSyncEditableFieldFocus = null;
     if (this.shakeTimeout) {
       clearTimeout(this.shakeTimeout);
       this.shakeTimeout = null;
@@ -202,6 +211,7 @@ export class VeEditableText extends LitElement {
           changed: this.changed,
           empty: isEmpty,
           invalid: this.invalid,
+          highlighted: this.highlighted,
           block: !shouldBeInline,
         })}
         style="--button-count: ${buttonCount};"
@@ -461,6 +471,10 @@ export class VeEditableText extends LitElement {
 
   #handleFocus() {
     this.focused = true;
+    sendMessage('editableFieldFocusChanged', {
+      fieldPositionId: this.fieldPositionId,
+      focused: true,
+    }, 'parent');
 
     // in chromium, we need to wait until we can the caret position
     requestAnimationFrame(() => {
@@ -476,7 +490,22 @@ export class VeEditableText extends LitElement {
 
   #handleBlur() {
     this.focused = false;
+    sendMessage('editableFieldFocusChanged', {
+      fieldPositionId: this.fieldPositionId,
+      focused: false,
+    }, 'parent');
     this.#setSlotText(this.#validateAndStore(this.#editableTextToStoredText(this.#getSlotText())));
+  }
+
+  /**
+   * @param {{languageId: number|string, fieldPositionId: string, focused: boolean}} detail
+   */
+  #onSyncEditableFieldFocus(detail) {
+    if (String(detail.languageId) === String(window.veInfo.languageId)) {
+      return;
+    }
+
+    this.highlighted = detail.focused && detail.fieldPositionId === this.fieldPositionId;
   }
 
   /**
@@ -615,12 +644,9 @@ export class VeEditableText extends LitElement {
       }
     }
 
-    .slot:hover, .slot:focus {
-      box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.50) inset;
-      backdrop-filter: blur(10px) invert(20%);
-      outline-color: #5432fe;
-    }
-
+    .slot:hover,
+    .slot:focus,
+    .slot.highlighted,
     .slot.empty {
       box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.50) inset;
       backdrop-filter: blur(10px) invert(20%);

@@ -1,5 +1,6 @@
 <html
         xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+        xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
         data-namespace-typo3-fluid="true"
 >
 
@@ -10,7 +11,49 @@
 
   <f:render partial="DocHeader" arguments="{docHeader: docHeader}" />
 
-  <iframe id="visual-editor-iframe" src="{iframeSrc}" title="{iframeTitle}" style="border: none; height:100%; width: 100%; background: #fff;"></iframe>
+  <div style="display: grid; grid-template-columns: repeat({f:count(subject: languages)}, 1fr); grid-template-rows: auto 1fr; gap: 2px;">
+
+    <f:if condition="{f:count(subject: languages)} > 1">
+      <f:then>
+        <f:for each="{languages}" as="language" iteration="iterator">
+          <div class="js-replaceable" style="display: flex; gap: 5px; align-items: center; padding: 5px 2px 2px 32px;">
+            <core:icon identifier="{language.flagIdentifier}"/>
+            {language.title}
+            {language.viewButton -> f:format.raw()}
+            {language.editButton -> f:format.raw()}
+            {language.translateButton -> f:format.raw()}
+            <f:comment><!-- TODO handle this nicely-->{language.translateButton -> f:format.raw()}</f:comment>
+          </div>
+        </f:for>
+      </f:then>
+      <f:else>
+        <div></div>
+      </f:else>
+    </f:if>
+    <f:for each="{languages}" as="language" iteration="iterator">
+      <f:if condition="{language.sameOrigin}">
+        <f:then>
+        <iframe class="visual-editor-iframe js-visual-editor-language" src="{language.iframeUrl}" title="{language.iframeTitle}" data-language-id="{language.id}" style="border: none; height:100%; width: 100%; background: #fff;"></iframe>
+        </f:then>
+        <f:else>
+          <div class="js-visual-editor-language" data-language-id="{language.id}" style="align-self: start; margin: 24px; padding: 20px; border: 1px solid var(--typo3-component-border-color, #d7d7d7); border-left: 4px solid var(--typo3-state-info-border-color, #5bc0de); border-radius: 4px; background: var(--typo3-component-bg, #fff); box-shadow: 0 2px 10px rgba(0, 0, 0, .08);">
+            <h2 style="margin: 0 0 12px; font-size: 18px; line-height: 1.3;">
+              <f:translate key="LLL:EXT:visual_editor/Resources/Private/Language/locallang_mod.xlf:crossOrigin.title" />
+            </h2>
+            <p style="margin: 0 0 10px; line-height: 1.5;">
+              <f:translate key="LLL:EXT:visual_editor/Resources/Private/Language/locallang_mod.xlf:crossOrigin.description" />
+            </p>
+            <p style="margin: 0 0 16px; line-height: 1.5; color: var(--typo3-text-color-secondary, #555);">
+              <f:translate key="LLL:EXT:visual_editor/Resources/Private/Language/locallang_mod.xlf:crossOrigin.securityNote" />
+            </p>
+            <a class="btn btn-primary" href="{language.backendUrl}" target="_top">
+              <f:translate key="LLL:EXT:visual_editor/Resources/Private/Language/locallang_mod.xlf:crossOrigin.button" />
+            </a>
+          </div>
+        </f:else>
+      </f:if>
+    </f:for>
+  </div>
 </div>
 
 </html>

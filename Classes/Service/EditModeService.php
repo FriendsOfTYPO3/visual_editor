@@ -20,7 +20,6 @@ use TYPO3\CMS\Core\Routing\PageArguments;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
-use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 
@@ -39,7 +38,7 @@ final readonly class EditModeService
         private LocalizationService $localizationService,
         private FormProtectionFactory $formProtectionFactory,
         private Typo3Version $typo3Version,
-        private SiteFinder $siteFinder,
+        private AllowedOriginService $allowedOriginService,
     ) {
     }
 
@@ -120,7 +119,7 @@ final readonly class EditModeService
                 'allowNewContent' => $this->languageModeService->getAllowNewContent($pageInformation, $siteLanguage, $request),
                 'token' => $this->formProtectionFactory->createForType('backend')->generateToken('visual_editor', 'save'),
                 'routeArguments' => (object)$this->flattenBracketKeys(['params' => $this->getUsedArguments($request)]),
-                'allowedOrigins' => $this->getAllowedOrigins(),
+                'allowedOrigins' => $this->allowedOriginService->getAllowedOrigins(),
             ];
             $this->assetCollector->addInlineJavaScript(
                 'veLangInfo',
@@ -231,27 +230,6 @@ if (window.parent === window && window.veInfo) {
         }
     }
 
-    /**
-     * returns the origins of all configured sites and languages
-     *
-     * @return list<string>
-     */
-    public function getAllowedOrigins(): array
-    {
-        $allowed = [];
-        $sites = $this->siteFinder->getAllSites();
-        foreach ($sites as $site) {
-            $origin = $site->getBase()->withQuery('')->withPath('')->withUserInfo('')->withFragment('');
-            $allowed[(string)$origin] = true;
-            foreach ($site->getLanguages() as $language) {
-                $origin = $language->getBase()->withQuery('')->withPath('')->withUserInfo('')->withFragment('');
-                $allowed[(string)$origin] = true;
-            }
-        }
-
-        return array_keys($allowed);
-    }
-
     public function getBackendEditUrl(ServerRequestInterface $request): UriInterface
     {
         // backend and Frontend Context: determine current page id
@@ -273,7 +251,7 @@ if (window.parent === window && window.veInfo) {
         $usedArguments = $this->getUsedArguments($request);
         return $this->uriBuilder->buildUriFromRoute('web_edit', [
             'id' => $pageId,
-            'languages' => [$siteLanguage->getLanguageId()],
+            // the selected viewMode and languages are saved in be_user->uc
             'params' => $usedArguments,
         ]);
     }

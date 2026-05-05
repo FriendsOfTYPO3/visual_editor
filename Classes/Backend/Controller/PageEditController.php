@@ -20,15 +20,22 @@ use TYPO3\CMS\Backend\Template\Components\Buttons\DropDown\DropDownRadio;
 use TYPO3\CMS\Backend\Template\Components\Buttons\GenericButton;
 use TYPO3\CMS\Backend\Template\Components\Buttons\LanguageSelectorBuilder;
 use TYPO3\CMS\Backend\Template\Components\Buttons\LanguageSelectorMode;
+use TYPO3\CMS\Backend\Template\Components\ComponentFactory;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Backend\View\BackendLayout\ContentFetcher;
+use TYPO3\CMS\Backend\View\BackendLayoutView;
+use TYPO3\CMS\Backend\View\Drawing\DrawingConfiguration;
+use TYPO3\CMS\Backend\View\PageLayoutContext;
+use TYPO3\CMS\Backend\View\PageViewMode;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\WorkspaceRestriction;
+use TYPO3\CMS\Core\DataHandling\PageDoktypeRegistry;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Http\HtmlResponse;
@@ -44,27 +51,29 @@ use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchema;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
-use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Directive;
-use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Mutation;
-use TYPO3\CMS\Core\Security\ContentSecurityPolicy\MutationCollection;
-use TYPO3\CMS\Core\Security\ContentSecurityPolicy\MutationMode;
-use TYPO3\CMS\Core\Security\ContentSecurityPolicy\PolicyRegistry;
-use TYPO3\CMS\Core\Security\ContentSecurityPolicy\UriValue;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Versioning\VersionState;
-use TYPO3\CMS\Core\DataHandling\PageDoktypeRegistry;
+use TYPO3\CMS\VisualEditor\Backend\View\PageEditViewMode;
+use TYPO3\CMS\VisualEditor\Service\AllowedOriginService;
 
+use function array_column;
+use function array_filter;
+use function array_key_exists;
+use function array_key_first;
 use function array_map;
+use function array_unique;
 use function array_values;
 use function assert;
 use function count;
 use function in_array;
 use function is_array;
+use function json_encode;
 use function sprintf;
 
+use const JSON_THROW_ON_ERROR;
 use const JSON_UNESCAPED_SLASHES;
 
 /**
@@ -93,12 +102,13 @@ final class PageEditController
         private readonly RecordFactory $recordFactory,
         private readonly TcaSchemaFactory $tcaSchemaFactory,
         private readonly PackageManager $packageManager,
-        private readonly PolicyRegistry $policyRegistry,
         private readonly Typo3Version $typo3Version,
         private readonly ConnectionPool $connectionPool,
         private readonly AssetCollector $assetCollector,
         private readonly Context $context,
         private readonly PageDoktypeRegistry $pageDoktypeRegistry,
+        private readonly AllowedOriginService $allowedOriginService,
+        private readonly BackendLayoutView $backendLayoutView,
     ) {
     }
 
@@ -118,6 +128,7 @@ final class PageEditController
         $this->availableLanguages = $site->getAvailableLanguages($backendUser, false, $pageUid);
         $languages = $this->moduleData->get('languages') ?? [0];
         $this->selectedLanguages = array_values(array_map(fn($languageUid): SiteLanguage => $site->getLanguageById((int)$languageUid), $languages));
+        sort($this->selectedLanguages);
         $this->pageRenderer->addInlineLanguageLabelFile('EXT:visual_editor/Resources/Private/Language/locallang.xlf');
         $this->schema = $this->tcaSchemaFactory->get('pages');
 
@@ -136,18 +147,35 @@ final class PageEditController
             throw new InvalidArgumentException('Page record is of type "folder" and cannot be edited with the Visual Editor', 5965019514);
         }
 
-        if ($this->typo3Version->getMajorVersion() >= 14 && !$this->pageDoktypeRegistry->isPageViewable((int) $record->getRecordType(), $pageUid)) {
+        if ($this->typo3Version->getMajorVersion() >= 14 && !$this->pageDoktypeRegistry->isPageViewable((int)$record->getRecordType(), $pageUid)) {
             throw new InvalidArgumentException('Page record is not viewable and cannot be edited with the Visual Editor', 5965019515);
         }
 
         $this->pageRecord = $record;
 
-        $localizedPageRecord = $this->getLocalizedPageRecord($this->selectedLanguages[0]->getLanguageId());
+        foreach ($this->selectedLanguages as $key => $language) {
+            if ($language->getLanguageId() === 0) {
+                continue;
+            }
 
-        if (!$localizedPageRecord) {
-            // if no translation is found for the selected langauge, we reset the langauge to the default language
+            $localizedPageRecord = $this->getLocalizedPageRecord($language->getLanguageId());
+            if ($localizedPageRecord === null) {
+                // if no translation is found for that language, we remove it from the list.
+                unset($this->selectedLanguages[$key]);
+            }
+        }
+
+        // TODO filter out by origin, and only allow the first origin (no cross origin)
+
+        $this->selectedLanguages = array_values($this->selectedLanguages);
+
+        if (!$this->selectedLanguages) {
+            // if no selectedLanguages are left, we set the langauge to the default language
             $this->selectedLanguages = [$site->getDefaultLanguage()];
         }
+
+        $this->applyViewModeToSelectedLanguages($site);
+        $this->updateModuleData();
     }
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
@@ -183,11 +211,52 @@ final class PageEditController
             $view->getDocHeaderComponent()->setPageBreadcrumb($this->pageRecord->getRawRecord()->toArray());
         }
 
-        $siteLanguage = $this->selectedLanguages[0];
-        $iframeUrl = $this->iframeUrl($request, $siteLanguage);
+        $langauges = [];
+        foreach ($this->selectedLanguages as $siteLanguage) {
+            $buttonBar = GeneralUtility::makeInstance(ButtonBar::class);
+            $iframeUrl = $this->iframeUrl($request, $siteLanguage);
+            $isSameOrigin = $this->isSameOrigin($iframeUrl, $request);
+            $langauges[] = [
+                'id' => $siteLanguage->getLanguageId(),
+                'flagIdentifier' => $siteLanguage->getFlagIdentifier(),
+                'title' => $siteLanguage->getTitle(),
+                'sameOrigin' => $isSameOrigin,
+                'iframeUrl' => $iframeUrl,
+                'backendUrl' => $request->getUri()->withHost($iframeUrl->getHost())->withScheme($iframeUrl->getScheme())->withPort($iframeUrl->getPort()),
+                'iframeTitle' => sprintf(
+                    '%s: %s',
+                    $this->getLanguageService()->sL('LLL:EXT:visual_editor/Resources/Private/Language/locallang_mod.xlf:edit_page'),
+                    (string)$this->pageRecord->get('title'),
+                ),
+                'viewButton' => $this->makeViewButton($buttonBar, $request, $siteLanguage)?->render(),
+                'editButton' => $this->makeEditButton($buttonBar, $request, $siteLanguage)?->render(),
+                'translateButton' => $this->makeTranslateButton($siteLanguage, $request)?->render(),
+            ];
+        }
+
+        if (array_sum(array_column($langauges, 'sameOrigin')) === 0) {
+            $this->forceSameOrigin($langauges[0]['iframeUrl']);
+        }
+
+        $allowedOrigin = $this->allowedOriginService->getAllowedOrigins();
+        $veInfo = [
+            'allowedOrigins' => $allowedOrigin,
+        ];
+
+        $this->assetCollector->addInlineJavaScript(
+            'veLangInfo',
+            'window.TYPO3 = window.TYPO3 || {};window.veInfo = ' . json_encode($veInfo, JSON_THROW_ON_ERROR) . ';',
+            [
+                'type' => 'text/javascript',
+            ],
+            [
+                'useNonce' => true,
+            ],
+        );
+
         $view->assignMultiple([
             'pageId' => $this->pageRecord->getUid(),
-            'iframeSrc' => $iframeUrl,
+            'languages' => $langauges,
             'iframeTitle' => sprintf(
                 '%s: %s',
                 $this->getLanguageService()->sL('LLL:EXT:visual_editor/Resources/Private/Language/locallang_mod.xlf:edit_page'),
@@ -196,16 +265,56 @@ final class PageEditController
         ]);
 
         $this->makeButtons($view, $request);
+        $this->makeViewModeSelection($view, $request);
         $this->makeLanguageMenu($view, $request);
+//        foreach($iframeUrls as $iframeUrl) {
+//            if ($iframeUrl->getScheme() !== '' && $iframeUrl->getHost() !== '') {
+//                // temporarily(!) extend the CSP `frame-src` directive with the URL to be shown in the `<iframe>`
+//                $mutation = new Mutation(MutationMode::Extend, Directive::FrameSrc, UriValue::fromUri($iframeUrl->withQuery('')));
+//                $this->policyRegistry->appendMutationCollection(new MutationCollection($mutation));
+//            }
+//        }
 
+        return $view->renderResponse('PageEdit')
+            // disable cache to force new context for each iframe, otherwise the iframes will sometimes keep their location.
+            ->withHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->withHeader('Pragma', 'no-cache')
+            ->withHeader('Expires', '0');
+    }
 
-        if ($iframeUrl->getScheme() !== '' && $iframeUrl->getHost() !== '') {
-            // temporarily(!) extend the CSP `frame-src` directive with the URL to be shown in the `<iframe>`
-            $mutation = new Mutation(MutationMode::Extend, Directive::FrameSrc, UriValue::fromUri($iframeUrl->withQuery('')));
-            $this->policyRegistry->appendMutationCollection(new MutationCollection($mutation));
+    private function updateModuleData(): void
+    {
+        $viewMode = PageEditViewMode::tryFrom((int)$this->moduleData->get('viewMode')) ?? PageEditViewMode::SingleLanguage;
+        $this->moduleData->set('viewMode', $viewMode->value);
+        $this->moduleData->set('languages', array_map(fn(SiteLanguage $siteLanguage): int => $siteLanguage->getLanguageId(), $this->selectedLanguages));
+        $this->getBackendUser()->pushModuleData($this->moduleData->getModuleIdentifier(), $this->moduleData->toArray());
+    }
+
+    private function applyViewModeToSelectedLanguages(Site $site): void
+    {
+        $viewMode = PageEditViewMode::tryFrom((int)$this->moduleData->get('viewMode')) ?? PageEditViewMode::SingleLanguage;
+        if ($viewMode === PageEditViewMode::MultiLanguage) {
+            $nonDefaultLanguages = array_values(array_filter(
+                $this->selectedLanguages,
+                static fn(SiteLanguage $siteLanguage): bool => $siteLanguage->getLanguageId() > 0,
+            ));
+            $this->selectedLanguages = [$site->getDefaultLanguage(), ...$nonDefaultLanguages];
+            return;
         }
 
-        return $view->renderResponse('PageEdit');
+        if (count($this->selectedLanguages) <= 1) {
+            return;
+        }
+
+        $nonDefaultLanguages = array_values(array_filter(
+            $this->selectedLanguages,
+            static fn(SiteLanguage $siteLanguage): bool => $siteLanguage->getLanguageId() > 0,
+        ));
+        $this->selectedLanguages = [
+            count($nonDefaultLanguages) === 1
+                ? $nonDefaultLanguages[0]
+                : $site->getDefaultLanguage(),
+        ];
     }
 
     private function iframeUrl(ServerRequestInterface $request, SiteLanguage $siteLanguage): UriInterface
@@ -235,33 +344,7 @@ final class PageEditController
             throw new InvalidArgumentException('Could not generate preview URI for page ' . $this->pageRecord->getUid(), 4148517490);
         }
 
-        if (
-            ($uri->getScheme() === '' && $uri->getHost() === '')
-            || (
-                $uri->getScheme() === $request->getUri()->getScheme()
-                && $uri->getHost() === $request->getUri()->getHost()
-                && $uri->getPort() === $request->getUri()->getPort()
-            )
-        ) {
-            // if same origin, we can return the Uri
-            return $uri;
-        }
-
-        // redirect to the correct backend origin:
-        $backendUrl = $this->uriBuilder
-            ->buildUriFromRoute(
-                'web_edit',
-                [
-                    'id' => $this->pageRecord->getUid(),
-                    'languages' => array_map(fn(SiteLanguage $siteLanguage): int => $siteLanguage->getLanguageId(), $this->selectedLanguages),
-                ],
-                UriBuilder::ABSOLUTE_URL,
-            )
-            ->withScheme($uri->getScheme())
-            ->withHost($uri->getHost())
-            ->withPort($uri->getPort());
-        $html = '<script>window.top.location.href = ' . json_encode((string)$backendUrl, JSON_UNESCAPED_SLASHES) . ';</script>';
-        throw new ImmediateResponseException(new HtmlResponse($html, 406), 3234807219);
+        return $uri;
     }
 
     private function makeButtons(ModuleTemplate $view, ServerRequestInterface $request): void
@@ -298,14 +381,16 @@ final class PageEditController
             $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 3);
         }
 
-        // View
-        if ($button = $this->makeViewButton($buttonBar, $request)) {
-            $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 4);
-        }
+        if (count($this->selectedLanguages) === 1) {
+            // View
+            if ($button = $this->makeViewButton($buttonBar, $request, $this->selectedLanguages[0])) {
+                $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 4);
+            }
 
-        // Edit Page Properties
-        if ($button = $this->makeEditButton($buttonBar, $request)) {
-            $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 4);
+            // Edit Page Properties
+            if ($button = $this->makeEditButton($buttonBar, $request, $this->selectedLanguages[0])) {
+                $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 4);
+            }
         }
 
         // Clear Cache
@@ -353,7 +438,7 @@ final class PageEditController
     /**
      * View Button
      */
-    private function makeViewButton(ButtonBar $buttonBar, ServerRequestInterface $request): ?ButtonInterface
+    private function makeViewButton(ButtonBar $buttonBar, ServerRequestInterface $request, SiteLanguage $language): ?ButtonInterface
     {
         if (
             $this->pageRecord->getVersionInfo()?->getState() === VersionState::DELETE_PLACEHOLDER
@@ -368,7 +453,7 @@ final class PageEditController
 
         $previewDataAttributes = $previewUriBuilder
             ->withRootLine(BackendUtility::BEgetRootLine($this->pageRecord->getUid()))
-            ->withLanguage($this->selectedLanguages[0]->getLanguageId())
+            ->withLanguage($language->getLanguageId())
             ->withAdditionalQueryParameters($request->getQueryParams()['params'] ?? [])
             ->buildDispatcherDataAttributes();
 
@@ -424,16 +509,16 @@ final class PageEditController
     /**
      * Edit Button
      */
-    private function makeEditButton(ButtonBar $buttonBar, ServerRequestInterface $request): ?ButtonInterface
+    private function makeEditButton(ButtonBar $buttonBar, ServerRequestInterface $request, SiteLanguage $language): ?ButtonInterface
     {
-        $primaryLanguageId = $this->selectedLanguages[0]->getLanguageId();
+        $primaryLanguageId = $language->getLanguageId();
         if (!$this->isPageEditable($primaryLanguageId)) {
             return null;
         }
 
         $pageUid = $this->pageRecord->getUid();
-        if ($this->selectedLanguages[0]->getLanguageId() > 0) {
-            $localizedPageRecord = $this->getLocalizedPageRecord($this->selectedLanguages[0]->getLanguageId());
+        if ($language->getLanguageId() > 0) {
+            $localizedPageRecord = $this->getLocalizedPageRecord($language->getLanguageId());
             $pageUid = (int)($localizedPageRecord['uid'] ?? $pageUid);
         }
 
@@ -467,6 +552,67 @@ final class PageEditController
             ])
             ->setLabel($this->getLanguageService()->sL('LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:editPageProperties'))
             ->setIcon($this->iconFactory->getIcon('actions-page-open', IconSize::SMALL));
+    }
+
+    /**
+     * Translate Button
+     */
+    private function makeTranslateButton(SiteLanguage $language, ServerRequestInterface $request): ?ButtonInterface
+    {
+        if ($this->typo3Version->getMajorVersion() <= 13) {
+            return null;
+        }
+
+        if ($language->getLanguageId() <= 0 || !$this->hasUntranslatedContentForLanguage($language, $request)) {
+            return null;
+        }
+
+        return GeneralUtility::makeInstance(GenericButton::class)
+            ->setTag('typo3-backend-localization-button')
+            ->setAttributes([
+                'record-type' => 'pages',
+                'record-uid' => (string)$this->pageRecord->getUid(),
+                'target-language' => (string)$language->getLanguageId(),
+            ])
+            ->setLabel($this->getLanguageService()->sL('LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:localize.wizard.button.translate'))
+            ->setIcon($this->iconFactory->getIcon('actions-localize', IconSize::SMALL))
+            ->setTitle($this->getLanguageService()->sL('LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:newPageContent_translate'));
+    }
+
+    private function hasUntranslatedContentForLanguage(SiteLanguage $language, ServerRequestInterface $request): bool
+    {
+        if ($this->typo3Version->getMajorVersion() <= 13) {
+            return false;
+        }
+
+        if (!$this->getBackendUser()->check('tables_modify', 'tt_content')) {
+            return false;
+        }
+
+        $pageContext = $request->getAttribute('pageContext');
+        if (!$pageContext instanceof PageContext) {
+            throw new InvalidArgumentException('PageContext is missing from request attributes', 1782284431);
+        }
+
+        $backendLayout = $this->backendLayoutView->getBackendLayoutForPage($pageContext->pageId);
+        $viewMode = PageEditViewMode::tryFrom((int)$this->moduleData->get('viewMode')) === PageEditViewMode::MultiLanguage
+            ? PageViewMode::LanguageComparisonView
+            : PageViewMode::LayoutView;
+        $drawingConfiguration = DrawingConfiguration::create($backendLayout, $pageContext->pageTsConfig, $viewMode);
+        $drawingConfiguration->setSelectedLanguageIds(
+            array_map(
+                static fn(SiteLanguage $siteLanguage): int => $siteLanguage->getLanguageId(),
+                $this->selectedLanguages,
+            ),
+        );
+
+        $pageLayoutContext = new PageLayoutContext($pageContext, $backendLayout, $drawingConfiguration, $request);
+        // TODO use DI if v14 is the minimum requirement
+        $contentFetcher = GeneralUtility::makeInstance(ContentFetcher::class);
+        $contentElements = $contentFetcher->getFlatContentRecords($pageLayoutContext, $language->getLanguageId());
+        $translationData = $contentFetcher->getTranslationData($pageLayoutContext, $contentElements, $language->getLanguageId());
+
+        return !empty($translationData['untranslatedRecordUids']);
     }
 
     private function makeClearCacheButton(): ButtonInterface
@@ -533,15 +679,107 @@ final class PageEditController
 
         // TODO use DI if v14 is the minimum requirement
         $languageSelectorBuilder = GeneralUtility::makeInstance(LanguageSelectorBuilder::class);
+        $viewMode = PageEditViewMode::tryFrom((int)$this->moduleData->get('viewMode')) ?? PageEditViewMode::SingleLanguage;
+        $isMultiLanguageMode = $viewMode === PageEditViewMode::MultiLanguage;
         $languageSelector = $languageSelectorBuilder->build(
             $pageContext,
-            LanguageSelectorMode::SINGLE_SELECT,
+            $isMultiLanguageMode ? LanguageSelectorMode::MULTI_SELECT : LanguageSelectorMode::SINGLE_SELECT,
             fn(array $languageIds): string => (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
                 'id' => $pageContext->pageId,
+                'viewMode' => $viewMode->value,
                 'languages' => $languageIds,
             ]),
+            $isMultiLanguageMode && $pageContext->languageInformation->existingTranslations !== [],
         );
         $view->getDocHeaderComponent()->setLanguageSelector($languageSelector);
+    }
+
+    private function makeViewModeSelection(ModuleTemplate $view, ServerRequestInterface $request): void
+    {
+        if ($this->typo3Version->getMajorVersion() <= 13) {
+            return;
+        }
+
+        $pageContext = $request->getAttribute('pageContext');
+        if (!$pageContext instanceof PageContext) {
+            throw new InvalidArgumentException('PageContext is missing from request attributes', 1772441095);
+        }
+
+        $languageService = $this->getLanguageService();
+        $modes = [
+            PageEditViewMode::SingleLanguage->value => $languageService->sL(PageEditViewMode::SingleLanguage->getLabel()),
+        ];
+        if ($pageContext->languageInformation->existingTranslations !== []) {
+            $modes[PageEditViewMode::MultiLanguage->value] = $languageService->sL(PageEditViewMode::MultiLanguage->getLabel());
+        }
+
+        if (count($modes) <= 1) {
+            $onlyMode = (int)array_key_first($modes);
+            if ((int)$this->moduleData->get('viewMode') !== $onlyMode) {
+                $this->moduleData->set('viewMode', $onlyMode);
+                $this->updateModuleData();
+            }
+        }
+
+        $selectedMode = (int)$this->moduleData->get('viewMode');
+        if (!array_key_exists($selectedMode, $modes)) {
+            $this->moduleData->set('viewMode', (int)array_key_first($modes));
+            $this->updateModuleData();
+            $selectedMode = (int)array_key_first($modes);
+        }
+
+        // TODO use DI if TYPO3 v14 is the minimum requirement
+        $componentFactory = GeneralUtility::makeInstance(ComponentFactory::class);
+        $actionMenu = $componentFactory->createMenu();
+        $actionMenu->setIdentifier('actionMenu');
+        $actionMenu->setLabel(
+            $languageService->sL('LLL:EXT:backend/Resources/Private/Language/locallang.xlf:pagelayout.moduleMenu.dropdown.label'),
+        );
+
+        foreach ($modes as $modeValue => $label) {
+            $menuItem = $componentFactory
+                ->createMenuItem()
+                ->setTitle($label)
+                ->setHref((string)$this->uriBuilder->buildUriFromRoute('web_edit', $this->buildViewModeSwitchParams($pageContext, $modeValue)));
+
+            if ($selectedMode === $modeValue) {
+                $menuItem->setActive(true);
+            }
+
+            $actionMenu->addMenuItem($menuItem);
+        }
+
+        $view->getDocHeaderComponent()->getMenuRegistry()->addMenu($actionMenu);
+    }
+
+    /**
+     * @return array{id: int, viewMode: int, languages?: list<int>}
+     */
+    private function buildViewModeSwitchParams(PageContext $pageContext, int $targetModeValue): array
+    {
+        $params = [
+            'id' => $pageContext->pageId,
+            'viewMode' => $targetModeValue,
+        ];
+        $targetMode = PageEditViewMode::tryFrom($targetModeValue);
+
+        if ($targetMode === PageEditViewMode::SingleLanguage && $pageContext->hasMultipleLanguagesSelected()) {
+            $nonDefaultLanguages = array_values(array_filter(
+                $pageContext->selectedLanguageIds,
+                static fn(int $languageId): bool => $languageId > 0,
+            ));
+            $params['languages'] = [
+                count($nonDefaultLanguages) === 1
+                    ? $nonDefaultLanguages[0]
+                    : 0,
+            ];
+        }
+
+        if ($targetMode === PageEditViewMode::MultiLanguage) {
+            $params['languages'] = array_values(array_unique([0, ...$pageContext->selectedLanguageIds]));
+        }
+
+        return $params;
     }
 
     private function getLanguageService(): LanguageService
@@ -575,6 +813,7 @@ final class PageEditController
         $button = $buttonBar->makeButton(GenericButton::class);
         assert($button instanceof GenericButton);
         $workspace = (string)$this->getBackendUser()->workspace;
+
         return $button
             ->setTag('ve-auto-save-toggle')
             ->setAttributes([
@@ -740,5 +979,35 @@ final class PageEditController
         }
 
         return $languageDropDownButton;
+    }
+
+    private function forceSameOrigin(UriInterface $iframeUrl): never
+    {
+        // redirect to the correct backend origin:
+        $backendUrl = $this->uriBuilder
+            ->buildUriFromRoute(
+                'web_edit',
+                [
+                    'id' => $this->pageRecord->getUid(),
+                    'languages' => array_map(fn(SiteLanguage $siteLanguage): int => $siteLanguage->getLanguageId(), $this->selectedLanguages),
+                ],
+                UriBuilder::ABSOLUTE_URL,
+            )
+            ->withScheme($iframeUrl->getScheme())
+            ->withHost($iframeUrl->getHost())
+            ->withPort($iframeUrl->getPort());
+        $html = '<script>window.top.location.href = ' . json_encode((string)$backendUrl, JSON_UNESCAPED_SLASHES) . ';</script>';
+        throw new ImmediateResponseException(new HtmlResponse($html, 406), 3234807219);
+    }
+
+    private function isSameOrigin(UriInterface $uri, ServerRequestInterface $request): bool
+    {
+        if ($uri->getScheme() === '' && $uri->getHost() === '') {
+            return true;
+        }
+
+        return $uri->getScheme() === $request->getUri()->getScheme()
+        && $uri->getHost() === $request->getUri()->getHost()
+        && $uri->getPort() === $request->getUri()->getPort();
     }
 }

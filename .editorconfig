@@ -21,6 +21,9 @@ ij_smart_tabs = false
 ij_visual_guides = 120,160
 ij_wrap_on_typing = false
 
+[*.md]
+trim_trailing_whitespace = false
+
 [*.css]
 ij_css_align_closing_brace_with_properties = false
 ij_css_blank_lines_around_nested_selector = 1

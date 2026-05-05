@@ -21,6 +21,24 @@
       <trans-unit id="showHidden">
         <target>Ausgeblendete zeigen</target>
       </trans-unit>
+      <trans-unit id="viewMode.singleLanguage">
+        <target>Einzelsprache</target>
+      </trans-unit>
+      <trans-unit id="viewMode.multiLanguage">
+        <target>Mehrsprachig</target>
+      </trans-unit>
+      <trans-unit id="crossOrigin.title">
+        <target>Backend-Ursprung für diese Sprache wechseln</target>
+      </trans-unit>
+      <trans-unit id="crossOrigin.description">
+        <target>Der Visual Editor kann die Seitenvorschau nur laden und mit ihr kommunizieren, wenn das TYPO3-Backend denselben Ursprung wie die Seiten-Sprache verwendet.</target>
+      </trans-unit>
+      <trans-unit id="crossOrigin.securityNote">
+        <target>Das schützt die Sicherheitsgrenzen des Browsers und stellt sicher, dass Editor-Aktionen wie Elementauswahl, Modale und Speichern mit der richtigen Seite verbunden bleiben.</target>
+      </trans-unit>
+      <trans-unit id="crossOrigin.button">
+        <target>Backend mit korrektem Ursprung öffnen</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

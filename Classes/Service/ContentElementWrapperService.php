@@ -76,6 +76,7 @@ final readonly class ContentElementWrapperService
         $uid = $record->getComputedProperties()->getLocalizedUid() ?: $record->getComputedProperties()->getVersionedUid() ?: $record->getUid();
         $tag->addAttribute('id', $table . ':' . $uid);
         $tag->addAttribute('uid', (string)$uid);
+        $tag->addAttribute('scrollPositionId', $table . ':' . $record->getUid());
         $tag->addAttribute('pid', (string)$record->getPid());
         $tag->addAttribute('colPos', $record->get('colPos'));
         $tag->addAttribute('hiddenFieldName', $hiddenFieldName);

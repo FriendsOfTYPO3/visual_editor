@@ -9,11 +9,12 @@ import '@typo3/visual-editor/Frontend/components/ve-icon';
 import '@typo3/visual-editor/Frontend/components/ve-error';
 import '@typo3/visual-editor/Frontend/components/ve-iframe-popup';
 import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
-import {initSaveScrollPosition} from '@typo3/visual-editor/Frontend/init-save-scroll-position';
 import {initializeNavigationInterception} from '@typo3/visual-editor/Frontend/initialize-navigation-interception';
 import {initializeSaveHandling} from '@typo3/visual-editor/Frontend/initialize-save-handling';
 import {initializeSpotlightHandling} from '@typo3/visual-editor/Frontend/initialize-spotlight-handling';
 import {initializeImageHandling} from '@typo3/visual-editor/Frontend/initialize-image-handling';
+import {initializeScrollPositionSyncAndSave} from '@typo3/visual-editor/Frontend/scroll-position-sync';
+import {initializeIframeLoadingSignal} from '@typo3/visual-editor/Frontend/initialize-iframe-loading-signal';
 
 if (window.location.hash === '#ve-close') {
   sendMessage('closeModal');
@@ -26,7 +27,8 @@ if (window.veInfo) {
 }
 
 initializeSpotlightHandling();
+initializeIframeLoadingSignal();
 initializeSaveHandling();
-initSaveScrollPosition();
 initializeNavigationInterception();
 initializeImageHandling();
+initializeScrollPositionSyncAndSave();

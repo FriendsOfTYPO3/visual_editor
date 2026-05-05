@@ -32,8 +32,10 @@ export function initializeSaveHandling() {
   new InterceptUserActionsGuard(dataHandlerStore);
 }
 
-onMessage('focusFirstInvalidField', () => {
-  focusFirstInvalidField();
+onMessage('focusFirstInvalidField', ({languageId}) => {
+  if (languageId === window.veInfo.langaugeId) {
+    focusFirstInvalidField();
+  }
 });
 
 onMessage('saveEnded', () => {

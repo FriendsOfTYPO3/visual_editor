@@ -14,12 +14,8 @@
 /**
   * Highlight the editable area on hover and focus:
  */
-.ck-content:hover, .ck-content:focus {
-  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.50) inset !important;
-  backdrop-filter: blur(10px) invert(20%) !important;
-  outline: 0.25rem solid #5432fe !important;
-}
-
+.ck-content:hover, .ck-content:focus,
+ve-editable-rich-text[highlighted] .ck-content,
 ve-editable-rich-text[empty] .ck-content {
   box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.50) inset !important;
   backdrop-filter: blur(10px) invert(20%) !important;
