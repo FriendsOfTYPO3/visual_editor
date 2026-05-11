@@ -677,9 +677,12 @@ final class PageEditController
             ->setLabel($languageService->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.language'))
             ->setShowLabelText(true);
 
-        $pageTranslations = BackendUtility::getExistingPageTranslations($this->pageRecord->getUid());
         $languageField = $this->schema->getCapability(TcaSchemaCapability::Language)->getLanguageField()->getName();
+
+        // @extensionScannerIgnoreLine will be removed after TYPO3 v13 support is dropped
+        $pageTranslations = BackendUtility::getExistingPageTranslations($this->pageRecord->getUid());
         $translationLanguageUids = array_map(fn(array $pageTranslation): int => (int)$pageTranslation[$languageField], $pageTranslations);
+
         $translationLanguageUids[] = 0;
 
         foreach ($this->availableLanguages as $language) {

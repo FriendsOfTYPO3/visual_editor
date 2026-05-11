@@ -13,6 +13,12 @@ parameters:
 			path: Classes/Backend/Controller/PageEditController.php
 
 		-
+			message: '#^Call to an undefined method TYPO3\\CMS\\Backend\\Domain\\Repository\\Localization\\LocalizationRepository\:\:getPageTranslations\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
 			message: '#^Call to an undefined method TYPO3\\CMS\\Backend\\Template\\Components\\DocHeaderComponent\:\:disableAutomaticReloadButton\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -67,10 +73,46 @@ parameters:
 			path: Classes/Backend/Controller/PageEditController.php
 
 		-
+			message: '#^Comparison operation "\<\=" between int\<min, 13\> and 13 is always true\.$#'
+			identifier: smallerOrEqual.alwaysTrue
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
 			message: '#^Property TYPO3\\CMS\\VisualEditor\\Backend\\Controller\\PageEditController\:\:\$moduleData \(TYPO3\\CMS\\Backend\\Module\\ModuleData\) does not accept TYPO3\\CMS\\Backend\\Module\\ModuleData\|null\.$#'
 			identifier: assign.propertyType
 			count: 1
 			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Call to method createPublicResource\(\) on an unknown class TYPO3\\CMS\\Core\\SystemResource\\SystemResourceFactory\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Core/RichtText/RichTextConfigurationService.php
+
+		-
+			message: '#^Call to method generateUri\(\) on an unknown class TYPO3\\CMS\\Core\\SystemResource\\Publishing\\SystemResourcePublisherInterface\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Core/RichtText/RichTextConfigurationService.php
+
+		-
+			message: '#^Class TYPO3\\CMS\\Core\\SystemResource\\Publishing\\SystemResourcePublisherInterface not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Core/RichtText/RichTextConfigurationService.php
+
+		-
+			message: '#^Class TYPO3\\CMS\\Core\\SystemResource\\SystemResourceFactory not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Core/RichtText/RichTextConfigurationService.php
+
+		-
+			message: '#^Instantiated class TYPO3\\CMS\\Core\\SystemResource\\Publishing\\UriGenerationOptions not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Core/RichtText/RichTextConfigurationService.php
 
 		-
 			message: '#^Call to method getContentArea\(\) on an unknown class TYPO3\\CMS\\Fluid\\Event\\ModifyRenderedContentAreaEvent\.$#'
