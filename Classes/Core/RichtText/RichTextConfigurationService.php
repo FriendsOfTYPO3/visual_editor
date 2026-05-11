@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\Core\RichtText;
 
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
+use TYPO3\CMS\Core\Http\ServerRequestFactory;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Localization\Locales;
+use TYPO3\CMS\Core\SystemResource\Publishing\SystemResourcePublisherInterface;
+use TYPO3\CMS\Core\SystemResource\Publishing\UriGenerationOptions;
+use TYPO3\CMS\Core\SystemResource\SystemResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\RteCKEditor\Form\Element\Event\AfterGetExternalPluginsEvent;
@@ -31,6 +37,7 @@ readonly class RichTextConfigurationService
         private EventDispatcher $eventDispatcher,
         private UriBuilder $uriBuilder,
         private Locales $locales,
+        private Typo3Version $typo3Version,
     ) {
     }
 
@@ -225,13 +232,29 @@ readonly class RichTextConfigurationService
      */
     protected function resolveUrlPath(string $value): string
     {
-        if (str_contains($value, '?')) {
-            return PathUtility::getPublicResourceWebPath($value);
+        if ($this->typo3Version->getMajorVersion() < 14) {
+            if (str_contains($value, '?')) {
+                // @extensionScannerIgnoreLine
+                return PathUtility::getPublicResourceWebPath($value);
+            }
+
+            $value = GeneralUtility::getFileAbsFileName($value);
+            // @extensionScannerIgnoreLine
+            $value = GeneralUtility::createVersionNumberedFilename($value);
+            return PathUtility::getAbsoluteWebPath($value);
         }
 
-        $value = GeneralUtility::getFileAbsFileName($value);
-        $value = GeneralUtility::createVersionNumberedFilename($value);
-        return PathUtility::getAbsoluteWebPath($value);
+        return $this->resolveUrlPathV14($value, $GLOBALS['TYPO3_REQUEST'] ?? ServerRequestFactory::fromGlobals());
+    }
+
+    public function resolveUrlPathV14(string $resourceIdentifier, ServerRequestInterface $request): string
+    {
+        // TODO use DI if TYPO3 14 is the minimum requirement
+        $systemResourceFactory = GeneralUtility::makeInstance(SystemResourceFactory::class);
+        $systemResourcePublisherInterface = GeneralUtility::makeInstance(SystemResourcePublisherInterface::class);
+
+        $resource = $systemResourceFactory->createPublicResource($resourceIdentifier);
+        return (string)$systemResourcePublisherInterface->generateUri($resource, $request, new UriGenerationOptions(absoluteUri: true));
     }
 
     protected function getBackendUser(): BackendUserAuthentication

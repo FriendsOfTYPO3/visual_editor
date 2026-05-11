@@ -15,7 +15,8 @@ ExtensionUtility::configurePlugin(
     [
         BlogController::class => ['list', 'details', 'testSingle', 'testForm', 'testForward', 'testForwardTarget', 'testRelatedObject'],
     ],
-    pluginType: ExtensionUtility::PLUGIN_TYPE_CONTENT_ELEMENT,
+    [],
+    ExtensionUtility::PLUGIN_TYPE_CONTENT_ELEMENT,
 );
 ExtensionUtility::configurePlugin(
     'BlogExample',
@@ -23,7 +24,8 @@ ExtensionUtility::configurePlugin(
     [
         ContentController::class => ['list'],
     ],
-    pluginType: ExtensionUtility::PLUGIN_TYPE_CONTENT_ELEMENT,
+    [],
+    ExtensionUtility::PLUGIN_TYPE_CONTENT_ELEMENT,
 );
 ExtensionUtility::configurePlugin(
     'BlogExample',
@@ -34,5 +36,5 @@ ExtensionUtility::configurePlugin(
     [
         BlogPostEditingController::class => ['list', 'view', 'edit', 'persist', 'new', 'create'],
     ],
-    pluginType: ExtensionUtility::PLUGIN_TYPE_CONTENT_ELEMENT,
+    ExtensionUtility::PLUGIN_TYPE_CONTENT_ELEMENT,
 );
