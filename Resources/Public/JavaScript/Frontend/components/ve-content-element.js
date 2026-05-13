@@ -6,6 +6,7 @@ import {openModal} from '@typo3/visual-editor/Frontend/components/ve-iframe-popu
 import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
 import {calculateAllDebounced} from '@typo3/visual-editor/Frontend/auto-no-overlap';
 import {getAriaRole} from '@typo3/visual-editor/Frontend/get-aria-role';
+import {getAddAboveUidPid} from '@typo3/visual-editor/Frontend/components/add-above-target';
 
 /**
  * @extends {HTMLElement}
@@ -69,7 +70,7 @@ export class VeContentElement extends LitElement {
   _addAbove() {
     const newContentUrl = window.veInfo.newContentUrl
       .replace('__COL_POS__', this.colPos)
-      .replace('__UID_PID__', -this.uid)
+      .replace('__UID_PID__', getAddAboveUidPid(this))
       .replace('__TX_CONTAINER_PARENT__', this.tx_container_parent);
 
     openModal(newContentUrl, lll('frontend.addContentElement') + ' ' + this.parentElement.columnName, 'large', 'ajax');
