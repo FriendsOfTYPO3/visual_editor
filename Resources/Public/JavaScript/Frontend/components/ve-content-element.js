@@ -27,6 +27,7 @@ export class VeContentElement extends LitElement {
     canBeMoved: {type: Boolean},
 
     isHovered: {type: Boolean, state: true, attribute: false},
+    isFocusWithin: {type: Boolean, state: true, attribute: false},
     dragInProgress: {type: Boolean, state: true, attribute: false},
     showElementOverlay: {type: Boolean, attribute: false},
   };
@@ -79,6 +80,7 @@ export class VeContentElement extends LitElement {
   constructor() {
     super();
     this.onDragInProgressChange = this.#onDragInProgressChange.bind(this);
+    this.isFocusWithin = false;
     this.addEventListener('mouseenter', () => {
       this.isHovered = true;
       setTimeout(calculateAllDebounced);
