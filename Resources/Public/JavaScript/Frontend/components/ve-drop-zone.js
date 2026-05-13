@@ -1,12 +1,19 @@
 import {css, html, LitElement} from 'lit';
 import {lll} from "@typo3/core/lit-helper.js";
 import {classMap} from 'lit/directives/class-map.js';
+import {styleMap} from 'lit/directives/style-map.js';
 import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 import {useDataHandler} from '@typo3/visual-editor/Frontend/use-data-handler';
 import {dragInProgressStore} from '@typo3/visual-editor/Frontend/stores/drag-store';
 import {flipInsertBefore} from '@typo3/visual-editor/Frontend/flip-insert-before';
 import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
 import {autoNoOverlap, calculateAllDebounced} from '@typo3/visual-editor/Frontend/auto-no-overlap';
+import {
+  DROP_ZONE_LABEL_FIT_DEFAULTS,
+  fitDropZoneLabel
+} from '@typo3/visual-editor/Frontend/components/ve-drop-zone/label-fitting';
+
+const DROP_ZONE_LABEL_EDGE_LEEWAY = 5;
 
 /**
  * @extends {HTMLElement}
@@ -25,6 +32,7 @@ export class VeDropZone extends LitElement {
     show: {type: Boolean, state: true, attribute: false},
     isDragHovering: {type: Boolean, state: true, attribute: false},
     error: {type: String, state: true, attribute: false},
+    labelFit: {type: Object, state: true, attribute: false},
   };
 
   get uid() {
@@ -98,6 +106,12 @@ export class VeDropZone extends LitElement {
   constructor() {
     super();
     this.isDragHovering = false;
+    this.labelFit = {
+      variant: 'full',
+      fontSize: DROP_ZONE_LABEL_FIT_DEFAULTS.maxFontSize,
+      lineCount: 1,
+      hidden: false,
+    };
     this.onDragInProgressChange = this.#onDragInProgressChange.bind(this);
   }
 
@@ -110,12 +124,29 @@ export class VeDropZone extends LitElement {
   disconnectedCallback() {
     dragInProgressStore.removeEventListener('change', this.onDragInProgressChange);
     this.dragOverTimeout && clearTimeout(this.dragOverTimeout);
+    this.resizeObserver?.disconnect();
 
     super.disconnectedCallback();
   }
 
   firstUpdated(changedProperties) {
-    autoNoOverlap(this.shadowRoot.querySelector('.dropArea'), 've-drop-zone');
+    const dropArea = this.shadowRoot.querySelector('.dropArea');
+    autoNoOverlap(dropArea, 've-drop-zone');
+    this.resizeObserver = new ResizeObserver(() => this.#updateLabelFit());
+    this.resizeObserver.observe(dropArea);
+    this.#updateLabelFit();
+  }
+
+  updated(changedProperties) {
+    if (
+      changedProperties.has('show')
+      || changedProperties.has('target')
+      || changedProperties.has('colPos')
+      || changedProperties.has('columnName')
+      || changedProperties.has('tx_container_parent')
+    ) {
+      requestAnimationFrame(() => this.#updateLabelFit());
+    }
   }
 
   /**
@@ -228,6 +259,38 @@ export class VeDropZone extends LitElement {
     this.show = newValue;
   }
 
+  #updateLabelFit() {
+    const dropArea = this.shadowRoot?.querySelector('.dropArea');
+    if (!dropArea) {
+      return;
+    }
+
+    const dropAreaRect = dropArea.getBoundingClientRect();
+    if (dropAreaRect.width <= 0 || dropAreaRect.height <= 0) {
+      return;
+    }
+
+    const icon = this.shadowRoot.querySelector('ve-icon');
+    const iconWidth = icon?.getBoundingClientRect().width || 0;
+    const gap = parseFloat(getComputedStyle(dropArea).columnGap) || 0;
+    const availableWidth = Math.max(0, dropAreaRect.width - iconWidth - gap - DROP_ZONE_LABEL_EDGE_LEEWAY * 2);
+    const variants = this.getLabelVariants();
+    const nextFit = fitDropZoneLabel(variants, {
+      availableWidth,
+      availableHeight: dropAreaRect.height,
+      measureText: (text, fontSize) => this.measureLabelText(text, fontSize),
+    });
+
+    if (
+      nextFit.variant !== this.labelFit.variant
+      || nextFit.fontSize !== this.labelFit.fontSize
+      || nextFit.lineCount !== this.labelFit.lineCount
+      || nextFit.hidden !== this.labelFit.hidden
+    ) {
+      this.labelFit = nextFit;
+    }
+  }
+
   render() {
     if (this.error) {
       return html`
@@ -245,20 +308,12 @@ export class VeDropZone extends LitElement {
       firstParent.showElementOverlay = this.isDragHovering;
     }
 
-    // Text for debugging purposes only
-    let text = html``;
-    if (this.target < 0) {
-      const name = this.getComponentName(this.target * -1);
-      text = html`${text} <small>${lll('frontend.after')}</small> <b>${name}</b>`; // TODO label
-    }
-    if (this.tx_container_parent || this.colPos > 99) {
-      // EXT:container + EXT:flux support
-      const uidOfParent = this.tx_container_parent || parseInt(this.colPos / 100);
-      const nameOfParent = this.getComponentName(uidOfParent);
-      text = html`${text} <small>${lll('frontend.in')}</small> <b>${nameOfParent}</b>`; // TODO label
-    }
-    const columnName = this.columnName || (this.colPos % 100);
-    text = html`${text} <small>${lll('frontend.inColumn')}</small> <b>${columnName}</b>`; // TODO label
+    const labelParts = this.getVisibleLabelParts();
+    const labelStyles = {
+      'font-size': `${this.labelFit.fontSize}px`,
+      'line-height': `${DROP_ZONE_LABEL_FIT_DEFAULTS.lineHeight}`,
+      '-webkit-line-clamp': this.labelFit.lineCount,
+    };
 
     return html`
       <div class=${classMap(classes)}
@@ -268,7 +323,14 @@ export class VeDropZone extends LitElement {
            @drop="${this._drop}"
       >
         <ve-icon name="apps-pagetree-drag-move-into" width="2em"></ve-icon>
-        <span>${text}</span>
+        ${this.labelFit.hidden ? '' : html`
+          <span
+            class="labelText ${this.labelFit.lineCount === 1 ? 'singleLine' : 'multiLine'}"
+            style=${styleMap(labelStyles)}
+          >
+            ${labelParts.map((part, index) => html`${index > 0 ? ' ' : ''}${part.type === 'value' ? html`<b>${part.text}</b>` : html`<small>${part.text}</small>`}`)}
+          </span>
+        `}
       </div>
     `;
   }
@@ -328,6 +390,24 @@ export class VeDropZone extends LitElement {
         bottom: calc(100% + var(--auto-no-overlap-padding, 0px));
       }
     }
+
+    .labelText {
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+
+    .labelText.singleLine {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .labelText.multiLine {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+    }
   `;
 
   /**
@@ -359,6 +439,70 @@ export class VeDropZone extends LitElement {
       return 'element not found';
     }
     return element.getAttribute('elementName');
+  }
+
+  /**
+   * @return {{type: string, text: string}|[{type: string, text: string},{type: string, text: string},{type: string, text: string},{type: string, text: string}]|[{type: string, text: string},{type: string, text: string}]|DropZoneLabelPart[]|*|*[]}
+   */
+  getVisibleLabelParts() {
+    const variants = this.getLabelVariants();
+    return variants.find(variant => variant.name === this.labelFit.variant)?.parts || [];
+  }
+
+  /**
+   * @return {[{name: string, parts: *[]},{name: string, parts: *[]},{name: string, parts: [{type: string, text: *},{type: string, text: string}]}]}
+   */
+  getLabelVariants() {
+    const afterParts = [];
+    const containerParts = [];
+
+    if (this.target < 0) {
+      afterParts.push(
+        {type: 'label', text: lll('frontend.after')},
+        {type: 'value', text: this.getComponentName(this.target * -1)}
+      );
+    }
+    if (this.tx_container_parent || this.colPos > 99) {
+      // EXT:container + EXT:flux support
+      const uidOfParent = this.tx_container_parent || parseInt(this.colPos / 100);
+      containerParts.push(
+        {type: 'label', text: lll('frontend.in')},
+        {type: 'value', text: this.getComponentName(uidOfParent)}
+      );
+    }
+
+    const columnName = this.columnName || (this.colPos % 100);
+    const columnParts = [
+      {type: 'label', text: lll('frontend.inColumn')},
+      {type: 'value', text: String(columnName)},
+    ];
+
+    return [
+      {
+        name: 'full',
+        parts: [...afterParts, ...containerParts, ...columnParts],
+      },
+      {
+        name: 'without-container',
+        parts: [...afterParts, ...columnParts],
+      },
+      {
+        name: 'column',
+        parts: columnParts,
+      },
+    ];
+  }
+
+  /**
+   * @param text {String}
+   * @param fontSize {number}
+   * @return {number}
+   */
+  measureLabelText(text, fontSize) {
+    this.textMeasureCanvas ??= document.createElement('canvas');
+    const context = this.textMeasureCanvas.getContext('2d');
+    context.font = `${fontSize}px sans-serif`;
+    return context.measureText(text).width;
   }
 }
 
