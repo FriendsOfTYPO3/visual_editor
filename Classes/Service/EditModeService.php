@@ -47,7 +47,7 @@ final readonly class EditModeService
     {
         $queryParams = $request->getQueryParams();
 
-        if (!($queryParams['editMode'] ?? false)) {
+        if (!isset($queryParams['editMode'])) {
             return false;
         }
 
@@ -89,7 +89,7 @@ final readonly class EditModeService
 
             $isExtContainerInstalled = ExtensionManagementUtility::isLoaded('container');
 
-            $backendEditUrl = $this->getBackendEditUrl($request);
+            $backendEditUrl = (string)$this->getBackendEditUrl($request);
 
             $newContentUrl = (string)$this->uriBuilder->buildUriFromRoute('new_content_element_wizard', [
                 'id' => $pageId,
