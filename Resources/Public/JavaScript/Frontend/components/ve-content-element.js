@@ -201,7 +201,7 @@ export class VeContentElement extends LitElement {
         aria-label="${lll('frontend.actionBar')}"
       >
         <span class="action-bar-headline" title="uid:${this.uid}">
-                ${(this.canBeMoved && this.hasContentAreaAsParent) ? '⠿ ' : ''}${this.elementName}
+                ${(this.canBeMoved && this.hasContentAreaAsParent) ? '⠿ ' : ''}${window.veInfo.showIdWithTitle ? `[${this.uid}] ` : ''}${this.elementName}
               </span>
         <!-- TODO extract button bar as separate component -->
         ${
