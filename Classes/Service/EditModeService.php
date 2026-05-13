@@ -112,6 +112,7 @@ final readonly class EditModeService
             $veInfo = [
                 'pageId' => $pageId,
                 'languageId' => $siteLanguage->getLanguageId(),
+                'showIdWithTitle' => !empty($this->getBeUser()->getTSConfig()['options.']['pageTree.']['showPageIdWithTitle']),
                 'backendEditUrl' => $backendEditUrl,
                 'newContentUrl' => $newContentUrl,
                 'editContentUrl' => $editContentUrl,
@@ -182,8 +183,7 @@ if (window.parent === window && window.veInfo) {
         }
 
         // user access check
-        /** @var BackendUserAuthentication $beUser */
-        $beUser = $GLOBALS['BE_USER'];
+        $beUser = $this->getBeUser();
         if ($record instanceof Record || method_exists($record, 'getLanguageId')) {
             $languageId = $record->getLanguageId();
             // it is not that bad if we can not check the language access, on save there might be an error message. (better than always throwing an error.
@@ -295,5 +295,15 @@ if (window.parent === window && window.veInfo) {
         unset($usedArguments['cHash']);
         unset($usedArguments['editMode']);
         return $usedArguments;
+    }
+
+    private function getBeUser(): BackendUserAuthentication
+    {
+        $beUser = $GLOBALS['BE_USER'];
+        if (!$beUser instanceof BackendUserAuthentication) {
+            throw new RuntimeException('Could not determine backend user authentication', 3305745964);
+        }
+
+        return $beUser;
     }
 }
