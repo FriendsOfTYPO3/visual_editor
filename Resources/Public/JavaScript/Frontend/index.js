@@ -10,7 +10,7 @@ import '@typo3/visual-editor/Frontend/components/ve-error';
 import '@typo3/visual-editor/Frontend/components/ve-iframe-popup';
 import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 import {initSaveScrollPosition} from '@typo3/visual-editor/Frontend/init-save-scroll-position';
-import {initializeCrossOriginNavigations} from '@typo3/visual-editor/Frontend/initialize-cross-origin-navigations';
+import {initializeNavigationInterception} from '@typo3/visual-editor/Frontend/initialize-navigation-interception';
 import {initializeSaveHandling} from '@typo3/visual-editor/Frontend/initialize-save-handling';
 import {initializeSpotlightHandling} from '@typo3/visual-editor/Frontend/initialize-spotlight-handling';
 import {initializeImageHandling} from '@typo3/visual-editor/Frontend/initialize-image-handling';
@@ -28,5 +28,5 @@ if (window.veInfo) {
 initializeSpotlightHandling();
 initializeSaveHandling();
 initSaveScrollPosition();
-initializeCrossOriginNavigations();
+initializeNavigationInterception();
 initializeImageHandling();

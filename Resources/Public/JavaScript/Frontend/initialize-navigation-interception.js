@@ -20,7 +20,7 @@ async function resolveCrossOriginBackendUrl(url) {
   return data.url;
 }
 
-export function initializeCrossOriginNavigations() {
+export function initializeNavigationInterception() {
 
   navigation.addEventListener("navigate", (event) => {
     const newUrl = new URL(event.destination.url);
@@ -41,6 +41,14 @@ export function initializeCrossOriginNavigations() {
 
       // open in new Tab and force switch to
       window.open(event.destination.url, '_blank').focus();
+    }
+
+    // we automatically add the editMode parameter if the origin is one of the TYPO3 origins:
+    // that way we ensure that the page is opened in edit mode even if the link was not generated via TYPO3 API's
+    if (!newUrl.searchParams.has('editMode') && window.veInfo.allowedOrigins.includes(newUrl.origin)) {
+      newUrl.searchParams.set('editMode', '1');
+      event.preventDefault();
+      window.location = newUrl.toString();
     }
   });
 }
