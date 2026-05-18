@@ -78,6 +78,9 @@ readonly class PersistenceMiddleware implements MiddlewareInterface
             throw new RuntimeException('Unknown data operations: ' . implode(', ', array_keys($input)) . ' only data and cmdArray are allowed', 8110225095);
         }
 
+        // Required by DefaultSanitizerBuilder when processing RTE fields via DataHandler;
+        // this middleware short-circuits before the FE RequestHandler which normally sets this global.
+        $GLOBALS['TYPO3_REQUEST'] = $request;
         $errorLog = $this->dataHandlerService->run($data, []);
 
         foreach ($cmdArray as $cmd) {
