@@ -324,6 +324,11 @@ final class TextViewHelper extends AbstractViewHelper
         unset($config['height']); // height is set by the content itself and css
         $config['debug'] = false; // for now we disable debug mode
 
+        // load required JavaScript modules:
+        foreach ($config['importModules'] as $importModule) {
+            $this->assetCollector->addJavaScriptModule($importModule['module']);
+        }
+
         $this->assetCollector->addJavaScriptModule('@typo3/ckeditor5/translations/' . $config['language']['ui'] . '.js');
         return [json_encode($config, JSON_THROW_ON_ERROR), $richtextConfiguration['proc.'] ?? []];
     }
