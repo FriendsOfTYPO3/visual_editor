@@ -31,8 +31,8 @@
     "pluswerk/grumphp-config": "^10.2.7",
     "saschaegerer/phpstan-typo3": "^2.1.1 || ^3.0.1",
     "ssch/typo3-rector": "^3.14.1",
-    "typo3/cms-install": "^13.4.28 || ^14.3.0",
-    "typo3/cms-workspaces": "^13.4.28 || ^14.3.0",
+    "typo3/cms-install": "^13.4.28 || ^14.3.2",
+    "typo3/cms-workspaces": "^13.4.28 || ^14.3.2",
     "typo3/testing-framework": "^9.5.0",
     "typo3fluid/fluid": "^4.6.1 || ^5.3.1"
   },
