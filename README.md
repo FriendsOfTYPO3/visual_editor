@@ -69,6 +69,20 @@ If you do not have a Record object yet, you can create one with the `record-tran
 lib.contentElement.dataProcessing.1768551979 = record-transformation
 ````
 
+#### Fluid components
+When you use Fluid components, render the editable text outside the component and pass the rendered value into the component.
+This keeps the component decoupled from records and TCA fields, and lets callers pass either a plain string or the result of `f:render.text`.
+
+````html
+<my:component.card header="{record -> f:render.text(field: 'header')}" />
+````
+
+Inside the component, accept the argument as a string or stringable value:
+
+````html
+<f:argument name="header" type="string|Stringable" />
+````
+
 ### ContentArea
 
 #### ViewHelper `f:render.contentArea` (v14)
@@ -102,7 +116,7 @@ search for:
   ````html
   before:
   <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{colPos: '3'}"/>
-  
+
   after:
   <f:mark.contentArea colPos="3">
     <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{colPos: '3'}"/>
@@ -126,7 +140,7 @@ search for:
   ````html
   before:
   <v:content.render column="0"/>
-  
+
   after:
   <f:mark.contentArea colPos="0">
     <v:content.render column="0"/>
@@ -136,7 +150,7 @@ search for:
   ````html
   before:
   <flux:content.render area="column0"/>
-  
+
   after:
   <f:mark.contentArea colPos="{data.uid}00">
     <flux:content.render area="column0"/>
