@@ -143,6 +143,12 @@ search for:
   </f:mark.contentArea>
   ````
 
+## Known limitations
+
+- Wrapped content elements rendered with `f:render.contentArea` and `recordAs` are not currently supported for drag-and-drop. In this setup, drag handles may disappear. Move the wrapping markup into the content element rendering instead of wrapping elements at the `contentArea` level.
+- Headless and non-Fluid setups are not first-class integration targets. Visual Editor relies heavily on Fluid ViewHelpers that wrap output in web components and load the required JavaScript, so robust headless integration would need a public API.
+- Cross-domain headless setups are further limited because backend-module frame messaging does not work reliably across domains due to TYPO3 core limitations. General multi-domain setups are effectively excluded for this approach.
+
 ## Multi Site/Domain Setup
 
 You need to be Logged in to every Domain separately to use the Visual Editor.
