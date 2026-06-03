@@ -29,6 +29,14 @@ This extension provides visual editing features for content elements in TYPO3 CM
 - [Example Commit](https://github.com/TYPO3/typo3/commit/a99a339634b7caed123576b6ca2bb49dfb5d8cbf) How to integrate `f:render.contentArea`
 - [Slack Channel](https://typo3.slack.com/archives/C0ALHJR23U4) ask questions
 
+## For editors
+
+- 🔗 **Opening editable links:** when editable text is inside a link, left click starts editing the text. To open the link instead, use the middle mouse button or Ctrl/Cmd + click.
+- 💾 **Saving changes:** use the save button. Autosave is available only when enabled, and the UI says to switch to a workspace if autosave is disabled.
+- 🔦 **Finding editable areas:** use Spotlight to highlight editable text, rich text, images, and content elements.
+- 👻 **Showing empty fields:** use "show empty" when editable but currently empty fields are hard to see.
+- ↔️ **Moving content:** drag content elements by their handle. Hold Ctrl while dropping to copy instead of moving.
+
 ## Template Integration
 
 `visual_editor` uses ViewHelpers in Fluid templates to mark the areas that should be editable.
