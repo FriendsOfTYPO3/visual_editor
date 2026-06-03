@@ -105,9 +105,10 @@ export class VeEditableText extends LitElement {
   firstUpdated(changedProperties) {
     this.placeholder = this.name;
     this.skipNextValueNormalization = true;
-    this.#setSlotText(this.valueInitial);
-    dataHandlerStore.setInitialData(this.table, this.uid, this.field, this.valueInitial);
-    this.#applyValidationState(this.valueInitial);
+    const normalizedInitialValue = this.#htmlEntitiesToText(this.valueInitial);
+    this.#setSlotText(normalizedInitialValue);
+    dataHandlerStore.setInitialData(this.table, this.uid, this.field, normalizedInitialValue);
+    this.#applyValidationState(normalizedInitialValue);
   }
 
   updated(changedProperties) {
@@ -134,11 +135,11 @@ export class VeEditableText extends LitElement {
   }
 
   onReset = () => {
-    this.value = this.valueInitial;
-    this.#setSlotText(this.valueInitial);
+    this.value = this.#htmlEntitiesToText(this.valueInitial);
+    this.#setSlotText(this.value);
     this.skipNextValueNormalization = true;
-    this.#applyValidationState(this.valueInitial);
-    dataHandlerStore.setData(this.table, this.uid, this.field, this.valueInitial);
+    this.#applyValidationState(this.value);
+    dataHandlerStore.setData(this.table, this.uid, this.field, this.value);
   };
 
   /**
@@ -350,7 +351,7 @@ export class VeEditableText extends LitElement {
     const isFocused = this.matches(':focus-within');
     if (!isFocused && storedValue?.trim() !== slot?.innerText?.trim()) {
       this.skipNextValueNormalization = true;
-      this.value = storedValue ?? this.value;
+      this.value = this.#htmlEntitiesToText(storedValue ?? this.value);
       this.#setSlotText(this.value);
     }
   }
@@ -371,6 +372,18 @@ export class VeEditableText extends LitElement {
 
   #getSlot() {
     return this.shadowRoot?.querySelector('.slot');
+  }
+
+  #htmlEntitiesToText(value) {
+    return String(value ?? '')
+      .replace(/&shy;/gi, '\u00ad')
+      .replace(/&nbsp;/gi, '\u00a0');
+  }
+
+  #textToHtmlEntities(value) {
+    return String(value ?? '')
+      .replace(/\u00ad/g, '&shy;')
+      .replace(/\u00a0/g, '&nbsp;');
   }
 
   /**
@@ -432,11 +445,12 @@ export class VeEditableText extends LitElement {
 
   #handleFocus() {
     this.focused = true;
+    this.#setSlotText(this.#textToHtmlEntities(this.value));
   }
 
   #handleBlur() {
     this.focused = false;
-    this.#setSlotText(this.#validateAndStore(this.#getSlotText()));
+    this.#setSlotText(this.#htmlEntitiesToText(this.#validateAndStore(this.#getSlotText())));
   }
 
   /**
@@ -490,10 +504,10 @@ export class VeEditableText extends LitElement {
    * @returns {string}
    */
   #validateAndStore(value) {
-    this.value = value;
-    this.#applyValidationState(value);
+    const normalizedText = this.#htmlEntitiesToText(value);
+    this.#applyValidationState(normalizedText);
 
-    let normalizedValue = normalizeValue(value, this.validation).text;
+    let normalizedValue = normalizeValue(normalizedText, this.validation).text;
 
     const min = Number(this.validation?.min || 0);
     if (normalizedValue.length < min && !this.isRequired()) {
@@ -505,6 +519,7 @@ export class VeEditableText extends LitElement {
       normalizedValue = normalizedValue.slice(0, max);
     }
 
+    this.value = normalizedValue;
     dataHandlerStore.setData(this.table, this.uid, this.field, normalizedValue);
     return normalizedValue;
   }
