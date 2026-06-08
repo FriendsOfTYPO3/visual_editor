@@ -105,10 +105,10 @@ export class VeEditableText extends LitElement {
   firstUpdated(changedProperties) {
     this.placeholder = this.name;
     this.skipNextValueNormalization = true;
-    const normalizedInitialValue = this.#htmlEntitiesToText(this.valueInitial);
-    this.#setSlotText(normalizedInitialValue);
-    dataHandlerStore.setInitialData(this.table, this.uid, this.field, normalizedInitialValue);
-    this.#applyValidationState(normalizedInitialValue);
+    const initialValue = String(this.valueInitial ?? '');
+    this.#setSlotText(initialValue);
+    dataHandlerStore.setInitialData(this.table, this.uid, this.field, initialValue);
+    this.#applyValidationState(initialValue);
   }
 
   updated(changedProperties) {
@@ -135,7 +135,7 @@ export class VeEditableText extends LitElement {
   }
 
   onReset = () => {
-    this.value = this.#htmlEntitiesToText(this.valueInitial);
+    this.value = String(this.valueInitial ?? '');
     this.#setSlotText(this.value);
     this.skipNextValueNormalization = true;
     this.#applyValidationState(this.value);
@@ -349,10 +349,11 @@ export class VeEditableText extends LitElement {
     const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
     const slot = this.#getSlot();
     const isFocused = this.matches(':focus-within');
-    if (!isFocused && storedValue?.trim() !== slot?.innerText?.trim()) {
+    const slotText = String(storedValue ?? this.value);
+    if (!isFocused && slotText.trim() !== slot?.innerText?.trim()) {
       this.skipNextValueNormalization = true;
-      this.value = this.#htmlEntitiesToText(storedValue ?? this.value);
-      this.#setSlotText(this.value);
+      this.value = String(storedValue ?? this.value);
+      this.#setSlotText(slotText);
     }
   }
 
@@ -362,7 +363,7 @@ export class VeEditableText extends LitElement {
   #setSlotText(value) {
     const element = this.#getSlot();
     if (element) {
-      element.innerText = value;
+      element.textContent = value;
     }
   }
 
@@ -374,16 +375,18 @@ export class VeEditableText extends LitElement {
     return this.shadowRoot?.querySelector('.slot');
   }
 
-  #htmlEntitiesToText(value) {
+  #storedTextToEditableText(value) {
     return String(value ?? '')
-      .replace(/&shy;/gi, '\u00ad')
-      .replace(/&nbsp;/gi, '\u00a0');
-  }
-
-  #textToHtmlEntities(value) {
-    return String(value ?? '')
+      .replace(/&/g, '&amp;')
       .replace(/\u00ad/g, '&shy;')
       .replace(/\u00a0/g, '&nbsp;');
+  }
+
+  #editableTextToStoredText(value) {
+    return String(value ?? '')
+      .replace(/&shy;/gi, '\u00ad')
+      .replace(/&nbsp;/gi, '\u00a0')
+      .replace(/&amp;/gi, '&');
   }
 
   /**
@@ -435,22 +438,23 @@ export class VeEditableText extends LitElement {
     if (insertedText !== edit.insertedText) {
       event.preventDefault();
       insertTextAtSelection(element, insertedText);
-      this.#validateAndStore(this.#getSlotText());
+      this.#storeSlotText(this.#getSlotText());
     }
   }
 
   #handleInput() {
-    this.#validateAndStore(this.#getSlotText());
+    this.#storeSlotText(this.#getSlotText());
   }
 
   #handleFocus() {
     this.focused = true;
-    this.#setSlotText(this.#textToHtmlEntities(this.value));
+    this.#setSlotText(this.#storedTextToEditableText(this.value));
   }
 
   #handleBlur() {
     this.focused = false;
-    this.#setSlotText(this.#htmlEntitiesToText(this.#validateAndStore(this.#getSlotText())));
+    this.#storeSlotText(this.#getSlotText());
+    this.#setSlotText(this.value);
   }
 
   /**
@@ -503,8 +507,12 @@ export class VeEditableText extends LitElement {
    * @param {string} value
    * @returns {string}
    */
+  #storeSlotText(value) {
+    return this.#validateAndStore(this.#editableTextToStoredText(value));
+  }
+
   #validateAndStore(value) {
-    const normalizedText = this.#htmlEntitiesToText(value);
+    const normalizedText = String(value ?? '');
     this.#applyValidationState(normalizedText);
 
     let normalizedValue = normalizeValue(normalizedText, this.validation).text;
