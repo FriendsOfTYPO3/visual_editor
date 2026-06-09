@@ -18,6 +18,9 @@
       <trans-unit id="showEmpty">
         <target>Leere zeigen</target>
       </trans-unit>
+      <trans-unit id="showHidden">
+        <target>Ausgeblendete zeigen</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

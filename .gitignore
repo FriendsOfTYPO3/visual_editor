@@ -6,3 +6,5 @@
 /public/
 /phpstan-baseline.neon
 /.codex
+/.claude
+*.local.md
