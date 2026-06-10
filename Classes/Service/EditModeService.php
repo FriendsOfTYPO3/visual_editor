@@ -24,7 +24,7 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 
-use function array_merge_recursive;
+use function array_replace_recursive;
 use function method_exists;
 
 final readonly class EditModeService
@@ -281,14 +281,14 @@ if (window.parent === window && window.veInfo) {
     /**
      * @return array<string|array<string|array<mixed>>>
      */
-    private function getUsedArguments(ServerRequestInterface $request): array
+    public function getUsedArguments(ServerRequestInterface $request): array
     {
         $routing = $request->getAttribute('routing');
         if (!$routing instanceof PageArguments) {
             throw new RuntimeException('Could not determine current routing context', 1773230232);
         }
 
-        $usedArguments = array_merge_recursive(
+        $usedArguments = array_replace_recursive(
             $routing->getArguments(),
             $routing->getRouteArguments(),
         );
