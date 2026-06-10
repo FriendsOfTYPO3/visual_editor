@@ -36,6 +36,7 @@ This extension provides visual editing features for content elements in TYPO3 CM
 - 🔦 **Finding editable areas:** use Spotlight to highlight editable text, rich text, images, and content elements.
 - 👻 **Showing empty fields:** use "show empty" when editable but currently empty fields are hard to see.
 - ↔️ **Moving content:** drag content elements by their handle. Hold Ctrl while dropping to copy instead of moving.
+- ✍️ **Editing special text characters:** type `&shy;` for a soft hyphen and `&nbsp;` for a non-breaking space. Entity-like text that starts with `&`, such as `&nbsp;`, is shown with `&amp;` while editing so it stays literal text.
 
 ## Template Integration
 
@@ -75,6 +76,16 @@ If you do not have a Record object yet, you can create one with the `record-tran
 ````ts
 // add record dataProcessor for all content elements
 lib.contentElement.dataProcessing.1768551979 = record-transformation
+````
+
+#### Editable text entities
+For plain editable text fields, Visual Editor makes some otherwise hard-to-see characters explicit while the field is focused.
+Soft hyphens are shown as `&shy;`, and non-breaking spaces are shown as `&nbsp;`.
+Plain ampersands stay visible as `&`, but ampersands that start an entity-like sequence, such as `&nbsp;`, `&#160;`, or `&#xA0;`, are shown as `&amp;` while editing so the sequence stays literal text.
+When the editor changes or leaves the field, these values are converted back before validation and storage.
+
+````html
+<h1>{record -> f:render.text(field: 'header')}</h1>
 ````
 
 #### Fluid components

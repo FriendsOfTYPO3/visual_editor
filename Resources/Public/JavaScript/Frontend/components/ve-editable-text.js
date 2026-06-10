@@ -374,6 +374,28 @@ export class VeEditableText extends LitElement {
   }
 
   /**
+   * @param {string} value
+   * @return {string}
+   */
+  #storedTextToEditableText(value) {
+    return value
+      .replace(/&(?=#\d+;|#x[0-9a-fA-F]+;|[a-zA-Z][a-zA-Z0-9]+;)/g, '&amp;')
+      .replace(/\u00ad/g, '&shy;')
+      .replace(/\u00a0/g, '&nbsp;');
+  }
+
+  /**
+   * @param {string} value
+   * @return {string}
+   */
+  #editableTextToStoredText(value) {
+    return value
+      .replace(/&shy;/gi, '\u00ad')
+      .replace(/&nbsp;/gi, '\u00a0')
+      .replace(/&amp;/gi, '&');
+  }
+
+  /**
    * @param {HTMLElement} element
    * @param {InputEvent} event
    */
@@ -422,21 +444,22 @@ export class VeEditableText extends LitElement {
     if (insertedText !== edit.insertedText) {
       event.preventDefault();
       insertTextAtSelection(element, insertedText);
-      this.#validateAndStore(this.#getSlotText());
+      this.#validateAndStore(this.#editableTextToStoredText(this.#getSlotText()));
     }
   }
 
   #handleInput() {
-    this.#validateAndStore(this.#getSlotText());
+    this.#validateAndStore(this.#editableTextToStoredText(this.#getSlotText()));
   }
 
   #handleFocus() {
     this.focused = true;
+    this.#setSlotText(this.#storedTextToEditableText(this.value));
   }
 
   #handleBlur() {
     this.focused = false;
-    this.#setSlotText(this.#validateAndStore(this.#getSlotText()));
+    this.#setSlotText(this.#validateAndStore(this.#editableTextToStoredText(this.#getSlotText())));
   }
 
   /**
