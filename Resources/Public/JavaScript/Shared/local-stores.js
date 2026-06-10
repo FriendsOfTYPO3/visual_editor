@@ -49,3 +49,4 @@ function localStore(key, defaultValue) {
 export const spotlightActive = localStore('ve-spotlight-active', false);
 export const autoSaveActive = localStore('ve-autosave-active', true);
 export const showEmptyActive = localStore('ve-show-empty-active', false);
+export const showHiddenActive = localStore('ve-show-hidden-active', true);

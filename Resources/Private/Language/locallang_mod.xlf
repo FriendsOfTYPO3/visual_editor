@@ -18,6 +18,9 @@
       <trans-unit id="showEmpty">
         <source>Show empty</source>
       </trans-unit>
+      <trans-unit id="showHidden">
+        <source>Show hidden</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

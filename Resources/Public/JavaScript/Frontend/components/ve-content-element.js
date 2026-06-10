@@ -7,6 +7,8 @@ import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handle
 import {calculateAllDebounced} from '@typo3/visual-editor/Frontend/auto-no-overlap';
 import {getAriaRole} from '@typo3/visual-editor/Frontend/get-aria-role';
 import {getAddAboveUidPid} from '@typo3/visual-editor/Frontend/components/add-above-target';
+import {shouldHideContentElement} from '@typo3/visual-editor/Frontend/components/should-hide-content-element';
+import {showHiddenActive} from '@typo3/visual-editor/Shared/local-stores';
 
 /**
  * @extends {HTMLElement}
@@ -26,6 +28,7 @@ export class VeContentElement extends LitElement {
     canModifyRecord: {type: Boolean},
     canBeMoved: {type: Boolean},
 
+    showHidden: {type: Boolean, state: true, attribute: false},
     isHovered: {type: Boolean, state: true, attribute: false},
     isFocusWithin: {type: Boolean, state: true, attribute: false},
     dragInProgress: {type: Boolean, state: true, attribute: false},
@@ -80,6 +83,8 @@ export class VeContentElement extends LitElement {
   constructor() {
     super();
     this.onDragInProgressChange = this.#onDragInProgressChange.bind(this);
+    this.onShowHiddenChange = this.#onShowHiddenChange.bind(this);
+    this.showHidden = showHiddenActive.get();
     this.isFocusWithin = false;
     this.addEventListener('mouseenter', () => {
       this.isHovered = true;
@@ -108,6 +113,7 @@ export class VeContentElement extends LitElement {
     super.connectedCallback();
 
     dragInProgressStore.addEventListener('change', this.onDragInProgressChange);
+    showHiddenActive.addEventListener('change', this.onShowHiddenChange);
 
     if (this.parentElement.tagName.toLowerCase() !== 've-content-area') {
       let message = 'parent of ve-content-element must be ve-content-area, found ' + this.parentElement.tagName.toLowerCase();
@@ -118,8 +124,13 @@ export class VeContentElement extends LitElement {
 
   disconnectedCallback() {
     dragInProgressStore.removeEventListener('change', this.onDragInProgressChange);
+    showHiddenActive.removeEventListener('change', this.onShowHiddenChange);
 
     super.disconnectedCallback();
+  }
+
+  #onShowHiddenChange() {
+    this.showHidden = showHiddenActive.get();
   }
 
   #onDragInProgressChange() {
@@ -134,6 +145,19 @@ export class VeContentElement extends LitElement {
 
   get hasContentAreaAsParent() {
     return this.parentElement.tagName.toLowerCase() === 've-content-area';
+  }
+
+  /**
+   * Whether this element should be visually hidden because the editor turned off
+   * "Show hidden".
+   * @return {boolean}
+   */
+  get hideBecauseHidden() {
+    return shouldHideContentElement({
+      showHidden: this.showHidden,
+      isHidden: this.isHidden,
+      hasUnsavedHiddenChange: !!this.hiddenFieldName && dataHandlerStore.hasChangedData(this.table, this.uid, this.hiddenFieldName),
+    });
   }
 
   /**
@@ -184,6 +208,14 @@ export class VeContentElement extends LitElement {
       element.appendChild(child.firstChild);
     }
     child.remove();
+  }
+
+  /**
+   * @param changedProperties {Map<PropertyKey, unknown>}
+   */
+  updated(changedProperties) {
+    // hide the whole element when "Show hidden" is off and this element is hidden
+    this.style.display = this.hideBecauseHidden ? 'none' : '';
   }
 
   render() {

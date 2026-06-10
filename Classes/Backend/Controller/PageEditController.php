@@ -293,6 +293,11 @@ final class PageEditController
             $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 3);
         }
 
+        // Show Hidden Toggle
+        if ($button = $this->makeShowHiddenToggleButton($buttonBar)) {
+            $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 3);
+        }
+
         // View
         if ($button = $this->makeViewButton($buttonBar, $request)) {
             $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 4);
@@ -657,6 +662,29 @@ final class PageEditController
             ->setTag('ve-show-empty-toggle')
             ->setLabel($this->getLanguageService()->sL('LLL:EXT:visual_editor/Resources/Private/Language/locallang_mod.xlf:showEmpty'))
             ->setIcon($this->iconFactory->getIcon('actions-hyphen', IconSize::SMALL))
+            ->setShowLabelText(true);
+    }
+
+    private function makeShowHiddenToggleButton(ButtonBar $buttonBar): ?ButtonInterface
+    {
+        if (
+            $this->pageRecord->getVersionInfo()?->getState() === VersionState::DELETE_PLACEHOLDER
+        ) {
+            return null;
+        }
+
+        $previewUriBuilder = PreviewUriBuilder::create($this->pageRecord->getRawRecord()->toArray());
+        if (!$previewUriBuilder->isPreviewable()) {
+            return null;
+        }
+
+
+        $button = $buttonBar->makeButton(GenericButton::class);
+        assert($button instanceof GenericButton);
+        return $button
+            ->setTag('ve-show-hidden-toggle')
+            ->setLabel($this->getLanguageService()->sL('LLL:EXT:visual_editor/Resources/Private/Language/locallang_mod.xlf:showHidden'))
+            ->setIcon($this->iconFactory->getIcon('actions-toggle-on', IconSize::SMALL))
             ->setShowLabelText(true);
     }
 
