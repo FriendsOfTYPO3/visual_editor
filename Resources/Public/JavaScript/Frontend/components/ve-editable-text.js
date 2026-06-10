@@ -105,10 +105,9 @@ export class VeEditableText extends LitElement {
   firstUpdated(changedProperties) {
     this.placeholder = this.name;
     this.skipNextValueNormalization = true;
-    const initialValue = String(this.valueInitial ?? '');
-    this.#setSlotText(initialValue);
-    dataHandlerStore.setInitialData(this.table, this.uid, this.field, initialValue);
-    this.#applyValidationState(initialValue);
+    this.#setSlotText(this.valueInitial);
+    dataHandlerStore.setInitialData(this.table, this.uid, this.field, this.valueInitial);
+    this.#applyValidationState(this.valueInitial);
   }
 
   updated(changedProperties) {
@@ -135,11 +134,11 @@ export class VeEditableText extends LitElement {
   }
 
   onReset = () => {
-    this.value = String(this.valueInitial ?? '');
-    this.#setSlotText(this.value);
+    this.value = this.valueInitial;
+    this.#setSlotText(this.valueInitial);
     this.skipNextValueNormalization = true;
-    this.#applyValidationState(this.value);
-    dataHandlerStore.setData(this.table, this.uid, this.field, this.value);
+    this.#applyValidationState(this.valueInitial);
+    dataHandlerStore.setData(this.table, this.uid, this.field, this.valueInitial);
   };
 
   /**
@@ -349,11 +348,10 @@ export class VeEditableText extends LitElement {
     const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
     const slot = this.#getSlot();
     const isFocused = this.matches(':focus-within');
-    const slotText = String(storedValue ?? this.value);
-    if (!isFocused && slotText.trim() !== slot?.innerText?.trim()) {
+    if (!isFocused && storedValue?.trim() !== slot?.innerText?.trim()) {
       this.skipNextValueNormalization = true;
-      this.value = String(storedValue ?? this.value);
-      this.#setSlotText(slotText);
+      this.value = storedValue ?? this.value;
+      this.#setSlotText(this.value);
     }
   }
 
@@ -363,7 +361,7 @@ export class VeEditableText extends LitElement {
   #setSlotText(value) {
     const element = this.#getSlot();
     if (element) {
-      element.textContent = value;
+      element.innerText = value;
     }
   }
 
@@ -375,15 +373,23 @@ export class VeEditableText extends LitElement {
     return this.shadowRoot?.querySelector('.slot');
   }
 
+  /**
+   * @param {string} value
+   * @return {string}
+   */
   #storedTextToEditableText(value) {
-    return String(value ?? '')
+    return value
       .replace(/&/g, '&amp;')
       .replace(/\u00ad/g, '&shy;')
       .replace(/\u00a0/g, '&nbsp;');
   }
 
+  /**
+   * @param {string} value
+   * @return {string}
+   */
   #editableTextToStoredText(value) {
-    return String(value ?? '')
+    return value
       .replace(/&shy;/gi, '\u00ad')
       .replace(/&nbsp;/gi, '\u00a0')
       .replace(/&amp;/gi, '&');
@@ -438,12 +444,12 @@ export class VeEditableText extends LitElement {
     if (insertedText !== edit.insertedText) {
       event.preventDefault();
       insertTextAtSelection(element, insertedText);
-      this.#storeSlotText(this.#getSlotText());
+      this.#validateAndStore(this.#editableTextToStoredText(this.#getSlotText()));
     }
   }
 
   #handleInput() {
-    this.#storeSlotText(this.#getSlotText());
+    this.#validateAndStore(this.#editableTextToStoredText(this.#getSlotText()));
   }
 
   #handleFocus() {
@@ -453,8 +459,7 @@ export class VeEditableText extends LitElement {
 
   #handleBlur() {
     this.focused = false;
-    this.#storeSlotText(this.#getSlotText());
-    this.#setSlotText(this.value);
+    this.#setSlotText(this.#validateAndStore(this.#editableTextToStoredText(this.#getSlotText())));
   }
 
   /**
@@ -507,15 +512,11 @@ export class VeEditableText extends LitElement {
    * @param {string} value
    * @returns {string}
    */
-  #storeSlotText(value) {
-    return this.#validateAndStore(this.#editableTextToStoredText(value));
-  }
-
   #validateAndStore(value) {
-    const normalizedText = String(value ?? '');
-    this.#applyValidationState(normalizedText);
+    this.value = value;
+    this.#applyValidationState(value);
 
-    let normalizedValue = normalizeValue(normalizedText, this.validation).text;
+    let normalizedValue = normalizeValue(value, this.validation).text;
 
     const min = Number(this.validation?.min || 0);
     if (normalizedValue.length < min && !this.isRequired()) {
@@ -527,7 +528,6 @@ export class VeEditableText extends LitElement {
       normalizedValue = normalizedValue.slice(0, max);
     }
 
-    this.value = normalizedValue;
     dataHandlerStore.setData(this.table, this.uid, this.field, normalizedValue);
     return normalizedValue;
   }
