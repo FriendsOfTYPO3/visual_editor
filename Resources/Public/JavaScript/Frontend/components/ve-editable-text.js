@@ -379,7 +379,7 @@ export class VeEditableText extends LitElement {
    */
   #storedTextToEditableText(value) {
     return value
-      .replace(/&/g, '&amp;')
+      .replace(/&(?=#\d+;|#x[0-9a-fA-F]+;|[a-zA-Z][a-zA-Z0-9]+;)/g, '&amp;')
       .replace(/\u00ad/g, '&shy;')
       .replace(/\u00a0/g, '&nbsp;');
   }
