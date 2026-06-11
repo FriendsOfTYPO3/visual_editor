@@ -3,10 +3,9 @@
  * @property openModal {{ src: String, title: String, size: 'medium' | 'large' | 'full', type: 'iframe' | 'ajax' }}
  * @property closeModal {null}
  * @property reloadFrames {null}
- * @property updateEditorState {{count: number, invalidCount: number}}
+ * @property updateEditorState {{data: Object, cmdArray: Object[], invalidFields: Object, count: number, invalidCount: number}}
  * @property doSave {null}
- * @property onSave {null}
- * @property saveEnded {{updatePageTree: boolean}}
+ * @property saveEnded {null}
  * @property pageChanged {{pageId: number, languageId: number}}
  * @property openInMiddleFrame {String}
  * @property localStoreChange {{key: String, value: any}}

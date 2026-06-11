@@ -2,16 +2,12 @@ import {css, html, LitElement} from 'lit';
 import {lll} from "@typo3/core/lit-helper.js";
 import {classMap} from 'lit/directives/class-map.js';
 import {styleMap} from 'lit/directives/style-map.js';
-import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
-import {useDataHandler} from '@typo3/visual-editor/Frontend/use-data-handler';
+import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 import {dragInProgressStore} from '@typo3/visual-editor/Frontend/stores/drag-store';
 import {flipInsertBefore} from '@typo3/visual-editor/Frontend/flip-insert-before';
 import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
 import {autoNoOverlap, calculateAllDebounced} from '@typo3/visual-editor/Frontend/auto-no-overlap';
-import {
-  DROP_ZONE_LABEL_FIT_DEFAULTS,
-  fitDropZoneLabel
-} from '@typo3/visual-editor/Frontend/components/ve-drop-zone/label-fitting';
+import {DROP_ZONE_LABEL_FIT_DEFAULTS, fitDropZoneLabel} from '@typo3/visual-editor/Frontend/components/ve-drop-zone/label-fitting';
 
 const DROP_ZONE_LABEL_EDGE_LEEWAY = 5;
 
@@ -201,7 +197,7 @@ export class VeDropZone extends LitElement {
           Number.isInteger(this.tx_container_parent)
             ? {tx_container_parent: this.tx_container_parent}
             : {}
-        )
+        ),
       },
     };
 
@@ -216,9 +212,12 @@ export class VeDropZone extends LitElement {
       }
 
       dataHandlerStore.addCmd(data.table, data.uid, 'copy', actionData);
-      await useDataHandler(dataHandlerStore.data, dataHandlerStore.cmdArray);
-      dataHandlerStore.markSaved();
-      sendMessage('reloadFrames');
+
+      sendMessage('doSave');
+      const unsubscribe = onMessage('saveEnded', () => {
+        unsubscribe();
+        sendMessage('reloadFrames');
+      });
       return;
     }
 
@@ -459,7 +458,7 @@ export class VeDropZone extends LitElement {
     if (this.target < 0) {
       afterParts.push(
         {type: 'label', text: lll('frontend.after')},
-        {type: 'value', text: this.getComponentName(this.target * -1)}
+        {type: 'value', text: this.getComponentName(this.target * -1)},
       );
     }
     if (this.tx_container_parent || this.colPos > 99) {
@@ -467,7 +466,7 @@ export class VeDropZone extends LitElement {
       const uidOfParent = this.tx_container_parent || parseInt(this.colPos / 100);
       containerParts.push(
         {type: 'label', text: lll('frontend.in')},
-        {type: 'value', text: this.getComponentName(uidOfParent)}
+        {type: 'value', text: this.getComponentName(uidOfParent)},
       );
     }
 

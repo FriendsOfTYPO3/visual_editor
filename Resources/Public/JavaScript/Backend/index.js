@@ -7,15 +7,9 @@ import '@typo3/visual-editor/Backend/components/ve-show-empty-toggle';
 import '@typo3/visual-editor/Backend/components/ve-show-hidden-toggle';
 import {pageChanged} from '@typo3/visual-editor/Backend/page-changed';
 import {initializePageTreeSaveState} from '@typo3/visual-editor/Backend/initialize-page-tree-save-state';
+import {reloadAllChildFrames} from '@typo3/visual-editor/Backend/reload-all-child-frames';
 
 initializePageTreeSaveState();
-
-function reloadAllChildFrames() {
-  const iframes = document.querySelectorAll('iframe');
-  iframes.forEach((iframe) => {
-    iframe.contentWindow.location.reload();
-  });
-}
 
 /**
  * @param src {string}

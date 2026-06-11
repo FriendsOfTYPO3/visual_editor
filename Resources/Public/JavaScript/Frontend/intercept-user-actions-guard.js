@@ -1,7 +1,7 @@
 import {lll} from "@typo3/core/lit-helper.js";
 import Modal from '@typo3/backend/modal.js';
 import Severity from '@typo3/backend/severity.js';
-import {trySave} from '@typo3/visual-editor/Frontend/initialize-save-handling';
+import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 
 
 export class InterceptUserActionsGuard {
@@ -60,8 +60,11 @@ export class InterceptUserActionsGuard {
           btnClass: 'btn-primary',
           trigger: async (_e, modal) => {
             modal.hideModal();
-            await trySave();
-            resolve();
+            sendMessage('doSave');
+            const unsubscribe = onMessage('saveEnded', () => {
+              unsubscribe();
+              resolve();
+            });
           },
         });
       }

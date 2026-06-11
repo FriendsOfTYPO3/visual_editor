@@ -1,6 +1,7 @@
 import {css, html, LitElement} from 'lit';
 import {onMessageDebounced, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 import {autoSaveActive} from '@typo3/visual-editor/Shared/local-stores';
+import {VeBackendSaveButton} from '@typo3/visual-editor/Backend/components/ve-backend-save-button';
 
 
 /**
@@ -76,7 +77,7 @@ export class VeAutoSaveToggle extends LitElement {
     this.count = count;
     this.invalidCount = invalidCount;
     if (this.active && this.count > 0 && this.invalidCount === 0) {
-      sendMessage('doSave');
+      this.triggerDoSave();
     }
   }
 
@@ -91,9 +92,18 @@ export class VeAutoSaveToggle extends LitElement {
     autoSaveActive.set(this.active);
 
     if (this.active && this.count > 0 && this.invalidCount === 0) {
-      sendMessage('doSave');
+      this.triggerDoSave();
     }
   }
+
+  triggerDoSave() {
+    const element = document.querySelector('ve-backend-save-button');
+    if (!(element instanceof VeBackendSaveButton)) {
+      throw new Error('ve-backend-save-button is missing, could not autosave');
+    }
+    element.doSave();
+  }
+
   #onKeydown(e) {
     if (this.hasAttribute('disabled') || (e.key !== 'Enter' && e.key !== ' ')) {
       return;

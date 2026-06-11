@@ -148,13 +148,13 @@ parameters:
 			message: '#^Class TYPO3\\CMS\\Backend\\Middleware\\JavaScriptLabelImportMapEntryResolver not found\.$#'
 			identifier: class.notFound
 			count: 1
-			path: Classes/Middleware/PersistenceMiddleware.php
+			path: Classes/Middleware/EditModeMiddleware.php
 
 		-
 			message: '#^Class TYPO3\\CMS\\Core\\Page\\Event\\ResolveVirtualJavaScriptImportEvent not found\.$#'
 			identifier: class.notFound
 			count: 1
-			path: Classes/Middleware/PersistenceMiddleware.php
+			path: Classes/Middleware/EditModeMiddleware.php
 
 		-
 			message: '#^Call to an undefined method PhpParser\\Node\\Expr\|PhpParser\\Node\\Identifier\:\:toString\(\)\.$#'
