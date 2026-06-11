@@ -360,7 +360,8 @@ export class VeEditableText extends LitElement {
    */
   #setSlotText(value) {
     const element = this.#getSlot();
-    if (element) {
+    // only change if something changes, otherwise the cursor position would reset on call
+    if (element && element.innerText !== value) {
       element.innerText = value;
     }
   }
