@@ -6,14 +6,13 @@ import {lll} from "@typo3/core/lit-helper.js";
  * @typedef {Record<string, Record<number, Record<'move'|'copy'|'delete', any>>>} Cmd
  * @param {Data} data
  * @param {Cmd[]} cmdArray
- * @returns {Promise<boolean>} returns false if something broke
+ * @returns {Promise<boolean>}
  */
 export async function useDataHandler(data = {}, cmdArray = []) {
-  const response = await fetch(window.location.href, {
+  const response = await fetch(TYPO3.settings.ajaxUrls.visual_editor_save, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Request-Token': window.veInfo.token,
     },
     body: JSON.stringify({data, cmdArray}, null, 2),
   });
@@ -24,7 +23,6 @@ export async function useDataHandler(data = {}, cmdArray = []) {
 
   let body = await response.text();
 
-  // if response has json parse it and check if errorLog is included:
   if (response.headers.get('Content-Type')?.includes('application/json')) {
     const data = JSON.parse(body);
     if (data.errorLog) {

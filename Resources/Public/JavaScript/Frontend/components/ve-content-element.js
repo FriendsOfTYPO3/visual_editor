@@ -374,6 +374,7 @@ export class VeContentElement extends LitElement {
     .action-bar.hidden {
       display: flex;
       opacity: 0.5;
+      pointer-events: initial;
     }
 
     .action-bar-headline {

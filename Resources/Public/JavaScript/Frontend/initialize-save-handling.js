@@ -1,12 +1,12 @@
 import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
-import {useDataHandler} from '@typo3/visual-editor/Frontend/use-data-handler';
 import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
 import {InterceptUserActionsGuard} from '@typo3/visual-editor/Frontend/intercept-user-actions-guard';
 
-let saving = false;
-
 export function syncEditorState() {
   sendMessage('updateEditorState', {
+    data: dataHandlerStore.data,
+    cmdArray: dataHandlerStore.cmdArray,
+    invalidFields: dataHandlerStore.invalidFields,
     count: dataHandlerStore.changesCount,
     invalidCount: dataHandlerStore.invalidCount,
   });
@@ -14,35 +14,6 @@ export function syncEditorState() {
 
 export function focusFirstInvalidField() {
   document.querySelector('ve-editable-text[invalid]')?.focusEditable?.();
-}
-
-export async function trySave() {
-  const count = dataHandlerStore.changesCount;
-  const invalidCount = dataHandlerStore.invalidCount;
-  if (invalidCount > 0) {
-    syncEditorState();
-    focusFirstInvalidField();
-    return;
-  }
-
-  if (saving || count === 0) {
-    return;
-  }
-
-  saving = true;
-  sendMessage('onSave');
-
-  try {
-    const updatePageTree = dataHandlerStore.hasChangesIn('pages');
-    const saveOk = await useDataHandler(dataHandlerStore.data, dataHandlerStore.cmdArray);
-    dataHandlerStore.markSaved();
-    sendMessage('saveEnded', {updatePageTree});
-    if (!saveOk) {
-      window.location.reload();
-    }
-  } finally {
-    saving = false;
-  }
 }
 
 export function initializeSaveHandling() {
@@ -54,11 +25,18 @@ export function initializeSaveHandling() {
     }
 
     event.preventDefault();
-    trySave();
-  });
-  onMessage('doSave', () => {
-    trySave();
+    syncEditorState();
+    sendMessage('doSave');
   });
 
   new InterceptUserActionsGuard(dataHandlerStore);
 }
+
+
+onMessage('focusFirstInvalidField', () => {
+  focusFirstInvalidField();
+});
+
+onMessage('saveEnded', () => {
+  dataHandlerStore.markSaved();
+});

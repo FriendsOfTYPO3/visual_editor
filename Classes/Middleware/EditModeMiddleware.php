@@ -8,7 +8,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use RuntimeException;
 use TYPO3\CMS\Backend\Middleware\JavaScriptLabelImportMapEntryResolver;
 use TYPO3\CMS\Backend\Routing\Router;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
@@ -17,33 +16,23 @@ use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\VisibilityAspect;
 use TYPO3\CMS\Core\Error\Http\UnauthorizedException;
 use TYPO3\CMS\Core\EventDispatcher\ListenerProvider;
-use TYPO3\CMS\Core\FormProtection\FormProtectionFactory;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ImmediateResponseException;
-use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Page\Event\ResolveVirtualJavaScriptImportEvent;
 use TYPO3\CMS\Core\Page\PageRenderer;
-use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
-use TYPO3\CMS\Frontend\Page\PageInformation;
-use TYPO3\CMS\VisualEditor\Service\DataHandlerService;
 
-use function array_keys;
-use function implode;
-use function json_decode;
 use function substr;
 
-readonly class PersistenceMiddleware implements MiddlewareInterface
+readonly class EditModeMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private Context $context,
-        private DataHandlerService $dataHandlerService,
         private UriBuilder $uriBuilder,
         private ViewFactoryInterface $viewFactory,
-        private FormProtectionFactory $formProtectionFactory,
         private Typo3Version $typo3Version,
         private ListenerProvider $listenerProvider,
         private PageRenderer $pageRenderer,
@@ -52,54 +41,19 @@ readonly class PersistenceMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        return match ($this->whatToDo($request)) {
-            MiddlewareAction::Edit => $this->handleEdit($request, $handler),
-            MiddlewareAction::Save => $this->saveStuff($request),
-            MiddlewareAction::None => $handler->handle($request),
-        };
+        if ($this->shouldInitEditMode($request)) {
+            return $this->handleEdit($request, $handler);
+        }
+
+        return $handler->handle($request);
     }
 
-    private function saveStuff(ServerRequestInterface $request): ResponseInterface
-    {
-        $token = $request->getHeaderLine('X-Request-Token');
-        if (!$token || !$this->formProtectionFactory->createForType('backend')->validateToken($token, 'visual_editor', 'save')) {
-            throw new UnauthorizedException('Invalid or missing request token', 8148623595);
-        }
-
-        $input = $request->getParsedBody() ??
-            json_decode($request->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
-
-        $data = $input['data'] ?? [];
-        unset($input['data']);
-        $cmdArray = $input['cmdArray'] ?? [];
-        unset($input['cmdArray']);
-
-        if (!empty($input)) {
-            throw new RuntimeException('Unknown data operations: ' . implode(', ', array_keys($input)) . ' only data and cmdArray are allowed', 8110225095);
-        }
-
-        // Required by DefaultSanitizerBuilder when processing RTE fields via DataHandler;
-        // this middleware short-circuits before the FE RequestHandler which normally sets this global.
-        $GLOBALS['TYPO3_REQUEST'] = $request;
-        $errorLog = $this->dataHandlerService->run($data, []);
-
-        foreach ($cmdArray as $cmd) {
-            $errorLog = [...$errorLog, ...$this->dataHandlerService->run([], $cmd)];
-        }
-
-        if ($errorLog) {
-            return new JsonResponse(['success' => false, 'errorLog' => $errorLog], 500);
-        }
-
-        return new JsonResponse(['success' => true]);
-    }
-
-    private function whatToDo(ServerRequestInterface $request): MiddlewareAction
+    private function shouldInitEditMode(ServerRequestInterface $request): bool
     {
         // parameter editMode must be set
         $params = $request->getQueryParams();
         if (!isset($params['editMode'])) {
-            return MiddlewareAction::None;
+            return false;
         }
 
         // backend user required
@@ -123,42 +77,7 @@ readonly class PersistenceMiddleware implements MiddlewareInterface
             throw new UnauthorizedException('No $GLOBALS[\'BE_USER\'] available', 8725323237);
         }
 
-        // only do something on POST requests
-        if ($request->getMethod() !== 'POST') {
-            return MiddlewareAction::Edit;
-        }
-
-        // only allow application/json content type
-        if ($request->getHeaderLine('Content-Type') !== 'application/json') {
-            throw new UnauthorizedException('Content-Type must be application/json to save stuff with visual_editor', 5015404100);
-        }
-
-        if ($user->isAdmin()) {
-            return MiddlewareAction::Save;
-        }
-
-        // check permissions of user on page
-        $pageInformation = $this->getPageInformation($request);
-
-        if (!$beUser->isInWebMount($pageInformation->getId())) {
-            throw new UnauthorizedException('No permission to access this page', 1610177162);
-        }
-
-        if (!$beUser->doesUserHaveAccess($pageInformation->getPageRecord(), Permission::CONTENT_EDIT)) {
-            throw new UnauthorizedException('No permission to edit content on this page', 7668402611);
-        }
-
-        return MiddlewareAction::Save;
-    }
-
-    private function getPageInformation(ServerRequestInterface $request): PageInformation
-    {
-        $frontendPageInformation = $request->getAttribute('frontend.page.information');
-        if (!$frontendPageInformation instanceof PageInformation) {
-            throw new RuntimeException('No frontend page information available', 7005099635);
-        }
-
-        return $frontendPageInformation;
+        return true;
     }
 
     private function handleEdit(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface

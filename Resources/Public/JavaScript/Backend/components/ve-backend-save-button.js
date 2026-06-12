@@ -1,7 +1,12 @@
 import {css, html, LitElement} from 'lit';
 import {lll} from "@typo3/core/lit-helper.js";
 import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
+import {useDataHandler} from '@typo3/visual-editor/Backend/use-data-handler';
+import {reloadAllChildFrames} from '@typo3/visual-editor/Backend/reload-all-child-frames';
 
+/**
+ * @type {{data: Object, cmdArray: Object[], invalidFields: Object, count: number, invalidCount: number}}
+ */
 let lastInfo = null;
 
 /**
@@ -36,8 +41,7 @@ export class VeBackendSaveButton extends LitElement {
     this.onClick = this.#onClick.bind(this);
     this.onKeydown = this.#onKeydown.bind(this);
     this.disposeUpdateEditorStateListener = null;
-    this.disposeOnSaveListener = null;
-    this.disposeSaveEndedListener = null;
+    this.disposeDoSaveListener = null;
     if (lastInfo) {
       this.onUpdateEditorState(lastInfo);
     }
@@ -49,11 +53,8 @@ export class VeBackendSaveButton extends LitElement {
     if (!this.disposeUpdateEditorStateListener) {
       this.disposeUpdateEditorStateListener = onMessage('updateEditorState', this.onUpdateEditorState.bind(this));
     }
-    if (!this.disposeOnSaveListener) {
-      this.disposeOnSaveListener = onMessage('onSave', this.onSaveMessage.bind(this));
-    }
-    if (!this.disposeSaveEndedListener) {
-      this.disposeSaveEndedListener = onMessage('saveEnded', this.onSaveEndedMessage.bind(this));
+    if (!this.disposeDoSaveListener) {
+      this.disposeDoSaveListener = onMessage('doSave', this.doSave.bind(this));
     }
 
     this.addEventListener('click', this.onClick);
@@ -63,10 +64,8 @@ export class VeBackendSaveButton extends LitElement {
   disconnectedCallback() {
     this.disposeUpdateEditorStateListener?.();
     this.disposeUpdateEditorStateListener = null;
-    this.disposeOnSaveListener?.();
-    this.disposeOnSaveListener = null;
-    this.disposeSaveEndedListener?.();
-    this.disposeSaveEndedListener = null;
+    this.disposeDoSaveListener?.();
+    this.disposeDoSaveListener = null;
     this.removeEventListener('click', this.onClick);
     this.removeEventListener('keydown', this.onKeydown);
 
@@ -102,12 +101,42 @@ export class VeBackendSaveButton extends LitElement {
     this.invalidCount = info.invalidCount;
   }
 
-  onSaveMessage() {
-    this.saving = true;
-  }
+  async doSave() {
+    if (this.isInteractionDisabled) {
+      return;
+    }
 
-  onSaveEndedMessage({updatePageTree}) {
-    this.saving = false;
+    const count = lastInfo.count;
+    const invalidCount = lastInfo.invalidCount;
+    if (invalidCount > 0) {
+      sendMessage('focusFirstInvalidField');
+      return;
+    }
+
+    if (this.saving) {
+      // already saving currently.
+      return;
+    }
+
+    if (count === 0) {
+      // nothing to save.
+      return;
+    }
+
+    const updatePageTree = 'pages' in lastInfo.data;
+
+    try {
+      this.saving = true;
+      const saveOk = await useDataHandler(lastInfo.data, lastInfo.cmdArray);
+      requestAnimationFrame(() => {
+        sendMessage('saveEnded');
+      })
+      if (!saveOk) {
+        reloadAllChildFrames();
+      }
+    } finally {
+      this.saving = false;
+    }
 
     if (updatePageTree) {
       top.document.dispatchEvent(new CustomEvent('typo3:pagetree:refresh'));
@@ -116,10 +145,7 @@ export class VeBackendSaveButton extends LitElement {
 
   #onClick(e) {
     e.preventDefault();
-    if (this.isInteractionDisabled) {
-      return;
-    }
-    sendMessage('doSave');
+    this.doSave();
   }
 
   #onKeydown(e) {
@@ -127,7 +153,7 @@ export class VeBackendSaveButton extends LitElement {
       return;
     }
     e.preventDefault();
-    sendMessage('doSave');
+    this.doSave();
   }
 
   get hasChanges() {
