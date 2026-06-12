@@ -7,6 +7,7 @@ import '@typo3/visual-editor/Frontend/components/ve-icon';
 import '@typo3/visual-editor/Frontend/components/ve-validation-overlay';
 import {getEditValue, insertTextAtSelection} from '@typo3/visual-editor/Frontend/components/ve-editable-text/editing';
 import {getValidationIssues, normalizeValue} from '@typo3/visual-editor/Frontend/components/ve-editable-text/validation';
+import {getCaretOffset, setCaretPosition} from '@typo3/visual-editor/Frontend/caret-helper';
 
 /**
  * @extends {HTMLElement}
@@ -357,13 +358,16 @@ export class VeEditableText extends LitElement {
 
   /**
    * @param {string} value
+   * @return {boolean}
    */
   #setSlotText(value) {
     const element = this.#getSlot();
     // only change if something changes, otherwise the cursor position would reset on call
     if (element && element.innerText !== value) {
       element.innerText = value;
+      return true;
     }
+    return false;
   }
 
   #getSlotText() {
@@ -453,9 +457,20 @@ export class VeEditableText extends LitElement {
     this.#validateAndStore(this.#editableTextToStoredText(this.#getSlotText()));
   }
 
+
   #handleFocus() {
     this.focused = true;
-    this.#setSlotText(this.#storedTextToEditableText(this.value));
+
+    // in chromium, we need to wait until we can the caret position
+    requestAnimationFrame(() => {
+      const element = this.#getSlot();
+      const caret = getCaretOffset(element);
+      const newCaretPosition = this.#storedTextToEditableText(this.value.slice(0, caret)).length;
+
+      if (this.#setSlotText(this.#storedTextToEditableText(this.value))) {
+        setCaretPosition(element, newCaretPosition);
+      }
+    });
   }
 
   #handleBlur() {
