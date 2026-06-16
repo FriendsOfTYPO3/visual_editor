@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "scripts": {
+    "lint": "eslint",
+    "test": "node --test $(find Resources/Public/JavaScript -name \"*.test.js\" | sort)"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "3.3.5",
+    "@eslint/js": "9.39.4",
+    "@stylistic/eslint-plugin": "5.10.0",
+    "eslint": "9.39.4",
+    "eslint-plugin-lit": "2.3.1",
+    "eslint-plugin-wc": "3.1.0",
+    "globals": "17.6.0"
+  }
+}
