@@ -58,7 +58,6 @@ function updateUrlOfWindow(windowObject, pageId, languageId, routeArguments) {
   return newUrl;
 }
 
-
 let abortController = new AbortController();
 
 /**

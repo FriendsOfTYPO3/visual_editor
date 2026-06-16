@@ -1,5 +1,5 @@
 import {css, html, LitElement} from 'lit';
-import {lll} from "@typo3/core/lit-helper.js";
+import {lll} from '@typo3/core/lit-helper.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {styleMap} from 'lit/directives/style-map.js';
 import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
@@ -64,11 +64,10 @@ export class VeDropZone extends LitElement {
       return false;
     }
 
-
     const firstParent = findFirstParent(['ve-content-element', 've-content-area'], this);
     if (!firstParent) {
       this.error = 'ERROR: Cannot find parent <ve-content-element> or <ve-content-area> for drop zone';
-      throw new Error(message);
+      throw new Error(this.error);
     }
 
     switch (firstParent.tagName.toLowerCase()) {
@@ -194,8 +193,8 @@ export class VeDropZone extends LitElement {
       update: {
         colPos: this.colPos,
         ...(
-          Number.isInteger(this.tx_container_parent)
-            ? {tx_container_parent: this.tx_container_parent}
+          Number.isInteger(this.tx_container_parent) ?
+            {tx_container_parent: this.tx_container_parent}
             : {}
         ),
       },
@@ -222,7 +221,6 @@ export class VeDropZone extends LitElement {
     }
 
     dataHandlerStore.addCmd(data.table, data.uid, 'move', actionData);
-
 
     this.isDragHovering = false; // reset
 
@@ -293,7 +291,7 @@ export class VeDropZone extends LitElement {
   render() {
     if (this.error) {
       return html`
-        <ve-error text="${this.error}"/>`;
+        <ve-error text="${this.error}"></ve-error>`;
     }
     const classes = {
       dropArea: true,
@@ -322,7 +320,9 @@ export class VeDropZone extends LitElement {
            @drop="${this._drop}"
       >
         <ve-icon name="apps-pagetree-drag-move-into" width="2em"></ve-icon>
-        ${this.labelFit.hidden ? '' : html`
+        ${this.labelFit.hidden ?
+          ''
+          : html`
           <span
             class="labelText ${this.labelFit.lineCount === 1 ? 'singleLine' : 'multiLine'}"
             style=${styleMap(labelStyles)}

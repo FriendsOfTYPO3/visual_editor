@@ -1,5 +1,5 @@
 import {css, html, LitElement} from 'lit';
-import {lll} from "@typo3/core/lit-helper.js";
+import {lll} from '@typo3/core/lit-helper.js';
 import {getAriaRole} from '@typo3/visual-editor/Frontend/get-aria-role';
 
 /**

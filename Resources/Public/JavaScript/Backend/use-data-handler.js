@@ -1,5 +1,5 @@
 import Notification from '@typo3/backend/notification.js';
-import {lll} from "@typo3/core/lit-helper.js";
+import {lll} from '@typo3/core/lit-helper.js';
 
 /**
  * @typedef {Record<string, Record<number, Record<string, boolean|number|string>>>} Data
@@ -31,7 +31,7 @@ export async function useDataHandler(data = {}, cmdArray = []) {
       }
       return false;
     }
-    const pre = document.createElement("PRE");
+    const pre = document.createElement('PRE');
     pre.innerText = JSON.stringify(data, null, 2);
     body = pre.outerHTML;
   }

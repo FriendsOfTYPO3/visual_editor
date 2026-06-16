@@ -1,8 +1,7 @@
-import {lll} from "@typo3/core/lit-helper.js";
+import {lll} from '@typo3/core/lit-helper.js';
 import Modal from '@typo3/backend/modal.js';
 import Severity from '@typo3/backend/severity.js';
 import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
-
 
 export class InterceptUserActionsGuard {
   constructor(dataHandlerStore) {

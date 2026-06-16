@@ -6,8 +6,8 @@ function getSelection(element) {
   const root = element.getRootNode();
 
   // in chromium, you need to use the shadowRoot instead of window ＞︿＜
-  return typeof root.getSelection === "function"
-    ? root.getSelection()
+  return typeof root.getSelection === 'function' ?
+    root.getSelection()
     : window.getSelection();
 }
 

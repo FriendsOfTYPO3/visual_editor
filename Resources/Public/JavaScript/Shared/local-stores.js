@@ -18,11 +18,11 @@ class LocalStore extends EventTarget {
         this.dispatchEvent(new Event('change'));
       }
     });
-    onMessage('localStoreRequest', (requestedKey => {
+    onMessage('localStoreRequest', (requestedKey) => {
       if (requestedKey === this.key) {
         sendMessage('localStoreChange', {key: this.key, value: this.get()}, 'iframe');
       }
-    }));
+    });
     sendMessage('localStoreRequest', this.key, 'parent'); // parent might have a different value (set in another origin)
   }
 
@@ -33,7 +33,7 @@ class LocalStore extends EventTarget {
   set(value) {
     localStorage.setItem(this.key, JSON.stringify(value));
     this.dispatchEvent(new Event('change')); // for current window/tab
-    sendMessage('localStoreChange', {key:this.key, value}); // for parent/iframe
+    sendMessage('localStoreChange', {key: this.key, value}); // for parent/iframe
   }
 }
 

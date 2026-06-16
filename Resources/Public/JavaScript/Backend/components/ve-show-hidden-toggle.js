@@ -7,8 +7,8 @@ import {showHiddenActive} from '@typo3/visual-editor/Shared/local-stores';
  */
 export class VeShowHiddenToggle extends LitElement {
   static properties = {
-    active: {type: Boolean, reflect: true,},
-    label: {type: String,},
+    active: {type: Boolean, reflect: true},
+    label: {type: String},
   };
 
   createRenderRoot() {
@@ -20,7 +20,6 @@ export class VeShowHiddenToggle extends LitElement {
     super();
 
     this.label = this.innerText;
-    this.innerHTML = '';
     this.active = showHiddenActive.get();
     sendMessage('showHidden', this.active);
     this.onShowHiddenChange = this.#onShowHiddenChange.bind(this);
@@ -30,6 +29,7 @@ export class VeShowHiddenToggle extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    this.innerHTML = '';
 
     showHiddenActive.addEventListener('change', this.onShowHiddenChange);
     this.addEventListener('click', this.onClick);

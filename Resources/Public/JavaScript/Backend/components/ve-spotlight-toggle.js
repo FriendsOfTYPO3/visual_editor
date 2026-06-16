@@ -1,14 +1,13 @@
 import {html, LitElement} from 'lit';
 import {spotlightActive} from '@typo3/visual-editor/Shared/local-stores';
 
-
 /**
  * @extends {HTMLElement}
  */
 export class VeSpotlightToggle extends LitElement {
   static properties = {
-    active: {type: Boolean, reflect: true,},
-    label: {type: String,},
+    active: {type: Boolean, reflect: true},
+    label: {type: String},
   };
 
   createRenderRoot() {
@@ -20,7 +19,6 @@ export class VeSpotlightToggle extends LitElement {
     super();
 
     this.label = this.innerText;
-    this.innerHTML = '';
     this.active = spotlightActive.get();
     this.onSpotlightChange = this.#onSpotlightChange.bind(this);
     this.onClick = this.#onClick.bind(this);
@@ -29,6 +27,7 @@ export class VeSpotlightToggle extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    this.innerHTML = '';
 
     spotlightActive.addEventListener('change', this.onSpotlightChange);
     this.addEventListener('click', this.onClick);

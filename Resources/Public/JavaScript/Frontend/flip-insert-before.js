@@ -14,9 +14,9 @@ export function flipInsertBefore(parent, node, child) {
   }
 
   const prefersReducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    typeof window !== 'undefined'
+    && window.matchMedia
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Respect prefers-reduced-motion: just move, no animation.
   if (prefersReducedMotion) {

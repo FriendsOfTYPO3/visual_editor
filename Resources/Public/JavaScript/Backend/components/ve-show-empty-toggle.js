@@ -7,8 +7,8 @@ import {showEmptyActive} from '@typo3/visual-editor/Shared/local-stores';
  */
 export class VeShowEmptyToggle extends LitElement {
   static properties = {
-    active: {type: Boolean, reflect: true,},
-    label: {type: String,},
+    active: {type: Boolean, reflect: true},
+    label: {type: String},
   };
 
   createRenderRoot() {
@@ -20,7 +20,6 @@ export class VeShowEmptyToggle extends LitElement {
     super();
 
     this.label = this.innerText;
-    this.innerHTML = '';
     this.active = showEmptyActive.get();
     sendMessage('showEmpty', this.active);
     this.onShowEmptyChange = this.#onShowEmptyChange.bind(this);
@@ -30,6 +29,7 @@ export class VeShowEmptyToggle extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    this.innerHTML = '';
 
     showEmptyActive.addEventListener('change', this.onShowEmptyChange);
     this.addEventListener('click', this.onClick);

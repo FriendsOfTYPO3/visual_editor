@@ -3,7 +3,7 @@
 // Outside the holes: NOT click-through (blocked). Inside the holes: click-through.
 // Fixes overlapping holes by union-merging rectangles before building the evenodd path.
 
-const SVG_NS = "http://www.w3.org/2000/svg";
+const SVG_NS = 'http://www.w3.org/2000/svg';
 
 let styleEl = null;
 let overlaySvgEl = null;
@@ -50,7 +50,7 @@ function ensureStyle() {
 }
 `;
 
-  styleEl = document.createElement("style");
+  styleEl = document.createElement('style');
   styleEl.appendChild(document.createTextNode(css));
   document.head.appendChild(styleEl);
 }
@@ -58,16 +58,16 @@ function ensureStyle() {
 function ensureOverlay() {
   if (overlaySvgEl && overlayPathEl) return;
 
-  overlaySvgEl = document.createElementNS(SVG_NS, "svg");
-  overlaySvgEl.setAttribute("id", "spotlightOverlay");
-  overlaySvgEl.setAttribute("class", "spotlight-overlay-svg");
-  overlaySvgEl.setAttribute("aria-hidden", "true");
-  overlaySvgEl.setAttribute("focusable", "false");
+  overlaySvgEl = document.createElementNS(SVG_NS, 'svg');
+  overlaySvgEl.setAttribute('id', 'spotlightOverlay');
+  overlaySvgEl.setAttribute('class', 'spotlight-overlay-svg');
+  overlaySvgEl.setAttribute('aria-hidden', 'true');
+  overlaySvgEl.setAttribute('focusable', 'false');
 
-  overlayPathEl = document.createElementNS(SVG_NS, "path");
-  overlayPathEl.setAttribute("class", "spotlight-overlay-path");
-  overlayPathEl.setAttribute("fill", "rgba(0,0,0,0.8)");
-  overlayPathEl.setAttribute("fill-rule", "evenodd"); // outer rect minus holes
+  overlayPathEl = document.createElementNS(SVG_NS, 'path');
+  overlayPathEl.setAttribute('class', 'spotlight-overlay-path');
+  overlayPathEl.setAttribute('fill', 'rgba(0,0,0,0.8)');
+  overlayPathEl.setAttribute('fill-rule', 'evenodd'); // outer rect minus holes
 
   overlaySvgEl.appendChild(overlayPathEl);
   document.body.appendChild(overlaySvgEl);
@@ -86,10 +86,10 @@ function updateViewport() {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
 
-  overlaySvgEl.setAttribute("width", String(vw));
-  overlaySvgEl.setAttribute("height", String(vh));
-  overlaySvgEl.setAttribute("viewBox", `0 0 ${vw} ${vh}`);
-  overlaySvgEl.setAttribute("preserveAspectRatio", "none");
+  overlaySvgEl.setAttribute('width', String(vw));
+  overlaySvgEl.setAttribute('height', String(vh));
+  overlaySvgEl.setAttribute('viewBox', `0 0 ${vw} ${vh}`);
+  overlaySvgEl.setAttribute('preserveAspectRatio', 'none');
 }
 
 function buildOverlayPathD(holes) {
@@ -124,7 +124,7 @@ function clampRectToViewport(r) {
   const w = Math.max(0, x2 - x1);
   const h = Math.max(0, y2 - y1);
 
-  return { x: x1, y: y1, w, h };
+  return {x: x1, y: y1, w, h};
 }
 
 /**
@@ -214,7 +214,7 @@ function unionRects(rects) {
         // extend horizontally; allow tiny rounding differences (0.5px tolerance)
         prev.w += dx;
       } else {
-        const nr = { x: xL, y: y1, w: dx, h: dy };
+        const nr = {x: xL, y: y1, w: dx, h: dy};
         mergedRects.push(nr);
         activeByKey.set(key, nr);
       }
@@ -258,9 +258,9 @@ function isTargetVisible(element) {
   let visibleSummaryOwner = null;
 
   while (current) {
-    if (current instanceof HTMLElement && current.tagName === "SUMMARY") {
-      visibleSummaryOwner = current.parentElement instanceof HTMLDetailsElement
-        ? current.parentElement
+    if (current instanceof HTMLElement && current.tagName === 'SUMMARY') {
+      visibleSummaryOwner = current.parentElement instanceof HTMLDetailsElement ?
+        current.parentElement
         : null;
     }
 
@@ -293,7 +293,7 @@ function computeHolesFromTargets() {
     const w = rect.width + HOLE_PADDING_INLINE * 2;
     const h = rect.height + HOLE_PADDING_BLOCK * 2;
 
-    holes.push({ x, y, w, h });
+    holes.push({x, y, w, h});
   }
 
   // Critical fix: union overlapping rectangles
@@ -307,12 +307,12 @@ function updateOverlayPath() {
   updateViewport();
 
   if (!isActive || !currentTargets.length) {
-    overlayPathEl.setAttribute("d", buildOverlayPathD([]));
+    overlayPathEl.setAttribute('d', buildOverlayPathD([]));
     return;
   }
 
   const holes = computeHolesFromTargets();
-  overlayPathEl.setAttribute("d", buildOverlayPathD(holes));
+  overlayPathEl.setAttribute('d', buildOverlayPathD(holes));
 }
 
 function onWindowChanged() {
@@ -333,7 +333,7 @@ function addListeners() {
       subtree: true,
       childList: true,
       attributes: true,
-      attributeFilter: ["class", "style"],
+      attributeFilter: ['class', 'style'],
     });
 
     if (el.shadowRoot) {
@@ -341,14 +341,14 @@ function addListeners() {
         subtree: true,
         childList: true,
         attributes: true,
-        attributeFilter: ["class", "style"],
+        attributeFilter: ['class', 'style'],
       });
     }
   });
 
-  document.addEventListener("toggle", onWindowChanged, { capture: true });
-  window.addEventListener("resize", onWindowChanged);
-  window.addEventListener("scroll", onWindowChanged, { passive: true });
+  document.addEventListener('toggle', onWindowChanged, {capture: true});
+  window.addEventListener('resize', onWindowChanged);
+  window.addEventListener('scroll', onWindowChanged, {passive: true});
 }
 
 function removeListeners() {
@@ -358,9 +358,9 @@ function removeListeners() {
   resizeObserver.disconnect();
   mutationObserver.disconnect();
 
-  document.removeEventListener("toggle", onWindowChanged, { capture: true });
-  window.removeEventListener("resize", onWindowChanged);
-  window.removeEventListener("scroll", onWindowChanged);
+  document.removeEventListener('toggle', onWindowChanged, {capture: true});
+  window.removeEventListener('resize', onWindowChanged);
+  window.removeEventListener('scroll', onWindowChanged);
 }
 
 /**
@@ -373,9 +373,9 @@ function removeListeners() {
 function selectElements(selectorToHighlight) {
   function traverse(root) {
     let result = [];
-    root.querySelectorAll("*").forEach((child) => {
+    root.querySelectorAll('*').forEach((child) => {
       const pos = window.getComputedStyle(child).position;
-      if (pos === "absolute" || pos === "fixed") {
+      if (pos === 'absolute' || pos === 'fixed') {
         result.push(child);
       }
       if (child.shadowRoot) {
@@ -419,7 +419,7 @@ export function highlight(selectorToHighlight) {
   }
 
   isActive = true;
-  overlaySvgEl.classList.add("spotlight-overlay-svg--active");
+  overlaySvgEl.classList.add('spotlight-overlay-svg--active');
 
   addListeners();
   updateOverlayPath();
@@ -434,7 +434,7 @@ export function reset() {
   currentSelectorToHighlight = null;
 
   if (overlaySvgEl) {
-    overlaySvgEl.classList.remove("spotlight-overlay-svg--active");
+    overlaySvgEl.classList.remove('spotlight-overlay-svg--active');
   }
 
   removeListeners();

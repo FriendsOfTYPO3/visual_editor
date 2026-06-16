@@ -17,7 +17,6 @@ export function initVelocityScroll(event) {
 
   let lastFrameTime = Date.now();
   const interval = () => {
-
     const fps = 1000 / (Date.now() - lastFrameTime);
     lastFrameTime = Date.now();
 
@@ -42,10 +41,10 @@ export function initVelocityScroll(event) {
     if (active) {
       requestAnimationFrame(interval);
     }
-  }
+  };
   interval();
 
-  const autoScroll = event => {
+  const autoScroll = (event) => {
     const verticalEdgeOfWindow = window.innerHeight * 0.2;
     const horizontalEdgeOfWindow = window.innerWidth * 0.2;
     const maxVerticalScrollStrength = window.innerHeight * 2.5;
@@ -92,7 +91,6 @@ export function initVelocityScroll(event) {
   window.addEventListener('dragover', autoScroll);
 
   event.target.addEventListener('dragend', () => {
-
     window.removeEventListener('dragover', autoScroll);
 
     scrollSpeedVertical = 0;

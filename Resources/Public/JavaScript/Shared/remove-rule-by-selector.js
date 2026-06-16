@@ -11,7 +11,7 @@ export function removeRuleBySelector(selector, root = document) {
   for (const sheet of root.styleSheets) {
     try {
       removed += pruneInSheet(sheet, selector);
-    } catch (err) {
+    } catch {
       // Cross-origin stylesheets throw SecurityError when reading cssRules — skip them
     }
   }
@@ -35,20 +35,20 @@ function pruneInSheet(sheetOrGroup, selector) {
 
     if (rule instanceof CSSStyleRule || 'selectorText' in rule) {
       // Rule with one or more comma-separated selectors
-      const selectors = rule.selectorText.split(",").map(s => s.trim());
+      const selectors = rule.selectorText.split(',').map(s => s.trim());
       if (selectors.includes(selector)) {
         if (selectors.length === 1) {
-          sheetOrGroup.deleteRule(i);            // remove the whole rule
+          sheetOrGroup.deleteRule(i); // remove the whole rule
         } else {
           // If the rule is a group (e.g. ".a, .b { ... }"), keep others
-          const remaining = selectors.filter(s => s !== selector).join(", ");
-          const decls = rule.style.cssText;      // preserve declarations
+          const remaining = selectors.filter(s => s !== selector).join(', ');
+          const decls = rule.style.cssText; // preserve declarations
           sheetOrGroup.deleteRule(i);
           sheetOrGroup.insertRule(`${remaining} { ${decls} }`, i);
         }
         count++;
       }
-    } else if ("cssRules" in rule) {
+    } else if ('cssRules' in rule) {
       // e.g., CSSMediaRule, CSSSupportsRule
       count += pruneInSheet(rule, selector);
     }
