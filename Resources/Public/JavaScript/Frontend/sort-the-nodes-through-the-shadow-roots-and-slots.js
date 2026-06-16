@@ -14,12 +14,12 @@
  */
 export function sortTheNodesThroughTheShadowRootsAndSlots(nodes) {
   // filter out none visible nodes:
-  const list = nodes.filter(node => {
+  const list = nodes.filter((node) => {
     const style = window.getComputedStyle(node);
     return style.display !== 'none' && style.visibility !== 'hidden' && parseFloat(style.opacity) !== 0;
-  })
+  });
 
-  const indexed = list.map((node, index) => ({ node, index }));
+  const indexed = list.map((node, index) => ({node, index}));
 
   // Cache composed-ancestor chains + composed-children lists for this call.
   const chainCache = new WeakMap();
@@ -30,7 +30,7 @@ export function sortTheNodesThroughTheShadowRootsAndSlots(nodes) {
     return cmp !== 0 ? cmp : a.index - b.index; // stable tie-breaker
   });
 
-  return indexed.map((x) => x.node);
+  return indexed.map(x => x.node);
 }
 
 function compareComposedPosition(a, b, chainCache, childrenCache) {
@@ -92,7 +92,7 @@ function getComposedChain(node, chainCache) {
   const seen = new Set();
   let cur = node;
 
-  while (cur && typeof cur === "object" && !seen.has(cur)) {
+  while (cur && typeof cur === 'object' && !seen.has(cur)) {
     chain.push(cur);
     seen.add(cur);
     cur = getComposedParent(cur);
@@ -126,7 +126,7 @@ function getComposedChildren(node, childrenCache) {
 
   // Slot: its “composed children” are its assigned nodes (flattened), or fallback content.
   if (node instanceof HTMLSlotElement) {
-    const assigned = node.assignedNodes({ flatten: true });
+    const assigned = node.assignedNodes({flatten: true});
     out = assigned.length ? assigned : Array.from(node.childNodes);
     childrenCache.set(node, out);
     return out;
@@ -153,11 +153,11 @@ function getComposedChildren(node, childrenCache) {
         const assigned = new Set();
         // Collect nodes assigned into *any* slot in this shadow root (flattened).
         // Those are represented under their slots, not as direct children of the host.
-        const slots = sr.querySelectorAll("slot");
+        const slots = sr.querySelectorAll('slot');
         for (const s of slots) {
-          for (const n of s.assignedNodes({ flatten: true })) assigned.add(n);
+          for (const n of s.assignedNodes({flatten: true})) assigned.add(n);
         }
-        const unassignedLight = lightKids.filter((n) => !assigned.has(n));
+        const unassignedLight = lightKids.filter(n => !assigned.has(n));
         out = shadowKids.concat(unassignedLight);
       } else {
         out = shadowKids;
@@ -183,7 +183,7 @@ function fallbackDomOrder(a, b) {
   // compareDocumentPosition works within a single DOM tree; across shadow boundaries
   // it can report disconnected. Still useful as a fallback.
   try {
-    if (typeof a.compareDocumentPosition === "function") {
+    if (typeof a.compareDocumentPosition === 'function') {
       const pos = a.compareDocumentPosition(b);
       if (pos & Node.DOCUMENT_POSITION_FOLLOWING) return -1;
       if (pos & Node.DOCUMENT_POSITION_PRECEDING) return 1;

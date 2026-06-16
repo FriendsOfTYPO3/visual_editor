@@ -34,10 +34,10 @@ function findConcealedElements(element, htmlElements) {
   for (const htmlElement of htmlElements) {
     const htmlElementRect = htmlElement.getBoundingClientRect();
     const isConcealed = !(
-      elementRect.right < htmlElementRect.left ||
-      elementRect.left > htmlElementRect.right ||
-      elementRect.bottom < htmlElementRect.top ||
-      elementRect.top > htmlElementRect.bottom
+      elementRect.right < htmlElementRect.left
+      || elementRect.left > htmlElementRect.right
+      || elementRect.bottom < htmlElementRect.top
+      || elementRect.top > htmlElementRect.bottom
     );
     if (isConcealed) {
       concealedElements.push(htmlElement);
@@ -108,7 +108,7 @@ export const calculateAllDebounced = () => {
       calculate(globalLists[group], group);
     }
   }, 50);
-}
+};
 
 // on window resize, recalculate
 window.addEventListener('resize', calculateAllDebounced);

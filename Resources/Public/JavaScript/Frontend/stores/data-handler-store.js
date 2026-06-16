@@ -4,7 +4,6 @@ import {getObjectLeafCount} from '../../Shared/get-object-leaf-count.js';
  * @method addEventListener(type: 'change', listener: (event: CustomEvent<{scope: 'field'|'table'|'global', kind: 'data'|'initial'|'invalid'|'cmd'|'saved', table?: string, uid?: number, field?: string}>) => void): void
  */
 class DataHandlerStore extends EventTarget {
-
   #data = {};
   #initialData = {};
   #cmdArray = [];
@@ -182,10 +181,10 @@ class DataHandlerStore extends EventTarget {
    * @return {boolean}
    */
   hasChangesIn(table) {
-    if(this.#data[table] !== undefined){
+    if (this.#data[table] !== undefined) {
       return true;
     }
-    return this.#cmdArray.findIndex((cmd) => cmd[table] !== undefined) !== -1;
+    return this.#cmdArray.findIndex(cmd => cmd[table] !== undefined) !== -1;
   }
 
   #dispatchChange(detail) {
@@ -207,4 +206,4 @@ class DataHandlerStore extends EventTarget {
   }
 }
 
-export const dataHandlerStore = new DataHandlerStore;
+export const dataHandlerStore = new DataHandlerStore();

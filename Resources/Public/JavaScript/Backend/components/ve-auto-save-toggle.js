@@ -1,8 +1,7 @@
 import {css, html, LitElement} from 'lit';
-import {onMessageDebounced, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
+import {onMessageDebounced} from '@typo3/visual-editor/Shared/iframe-messaging';
 import {autoSaveActive} from '@typo3/visual-editor/Shared/local-stores';
 import {VeBackendSaveButton} from '@typo3/visual-editor/Backend/components/ve-backend-save-button';
-
 
 /**
  * @extends {HTMLElement}
@@ -82,7 +81,7 @@ export class VeAutoSaveToggle extends LitElement {
   }
 
   #onClick(e) {
-    if(this.hasAttribute('disabled')){
+    if (this.hasAttribute('disabled')) {
       return;
     }
 

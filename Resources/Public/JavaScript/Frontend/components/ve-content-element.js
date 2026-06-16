@@ -1,5 +1,5 @@
 import {css, html, LitElement} from 'lit';
-import {lll} from "@typo3/core/lit-helper.js";
+import {lll} from '@typo3/core/lit-helper.js';
 import {dragInProgressStore} from '@typo3/visual-editor/Frontend/stores/drag-store';
 import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 import {openModal} from '@typo3/visual-editor/Frontend/components/ve-iframe-popup';
@@ -117,7 +117,7 @@ export class VeContentElement extends LitElement {
 
     if (this.parentElement.tagName.toLowerCase() !== 've-content-area') {
       let message = 'parent of ve-content-element must be ve-content-area, found ' + this.parentElement.tagName.toLowerCase();
-      message += "\n" + 'drag and drop is disabled for this element.';
+      message += '\n' + 'drag and drop is disabled for this element.';
       console.warn(message);
     }
   }
@@ -227,7 +227,7 @@ export class VeContentElement extends LitElement {
     const actionBar = html`
       <ve-drag-handle
         table="${this.table}" uid="${this.uid}" CType="${this.CType}"
-        class="action-bar${this.isHidden ? ' hidden' : ''}${this.dragInProgress ? ' dragAndDropActive' : ''}${(this.isHovered || this.isFocusWithin) ? ' hovered': ''}"
+        class="action-bar${this.isHidden ? ' hidden' : ''}${this.dragInProgress ? ' dragAndDropActive' : ''}${(this.isHovered || this.isFocusWithin) ? ' hovered' : ''}"
         isActive="${(this.canBeMoved && this.hasContentAreaAsParent) ? 'true' : 'false'}"
         role="region"
         aria-label="${lll('frontend.actionBar')}"
@@ -237,8 +237,8 @@ export class VeContentElement extends LitElement {
               </span>
         <!-- TODO extract button bar as separate component -->
         ${
-          this.editContentContextualUrl
-            ? html`
+          this.editContentContextualUrl ?
+            html`
               <typo3-backend-contextual-record-edit-trigger
                 url="${this.editContentContextualUrl}"
                 edit-url="${this.editContentUrl}"
@@ -246,12 +246,12 @@ export class VeContentElement extends LitElement {
                 title="${editLabel}"
                 aria-label="${editLabel}"
               >
-                <ve-icon name="actions-open"/>
+                <ve-icon name="actions-open"></ve-icon>
               </typo3-backend-contextual-record-edit-trigger>
             `
             : html`
               <a class="button" tabindex="0" type="button" href="${this.editContentUrl}" @click="${this._openEdit}" title="${editLabel}" aria-label="${editLabel}">
-                <ve-icon name="actions-open"/>
+                <ve-icon name="actions-open"></ve-icon>
               </a>
             `
         }
@@ -259,19 +259,22 @@ export class VeContentElement extends LitElement {
           this.hiddenFieldName ?
             html`
               <button class="button" tabindex="0" type="button" role="switch" @click="${this._toggleHidden}" title="${toggleLabel}" aria-label="${toggleLabel}" aria-checked="${!this.isHidden}" >
-                <ve-icon name="${toggleIcon}"/>
+                <ve-icon name="${toggleIcon}"></ve-icon>
               </button>
-            ` : ''
+            `
+            : ''
         }
         <button class="button" tabindex="0" type="button" @click="${this._delete}" title="${deleteLabel}" aria-label="${deleteLabel}">
-          <ve-icon name="actions-delete"/>
+          <ve-icon name="actions-delete"></ve-icon>
         </button>
         ${
-          window.veInfo.allowNewContent ? html`
+          window.veInfo.allowNewContent ?
+            html`
             <button class="button" tabindex="0" type="button" @click="${this._addAbove}" title="${addLabel}" aria-label="${addLabel}">
-              <ve-icon name="actions-document-add"/>
+              <ve-icon name="actions-document-add"></ve-icon>
             </button>
-          ` : ''
+          `
+            : ''
         }
       </ve-drag-handle>`;
 
@@ -279,7 +282,8 @@ export class VeContentElement extends LitElement {
       ${this.canModifyRecord ? actionBar : ''}
       <slot></slot><!-- slot must be top level to mitigate all CSS problems -->
       ${
-        this.hasContentAreaAsParent ? html`
+        this.hasContentAreaAsParent ?
+          html`
           <ve-drop-zone
             table="${this.table}"
             uid="${this.uid}"
@@ -289,9 +293,10 @@ export class VeContentElement extends LitElement {
             disallowedContentTypes="${this.parentElement.disallowedContentTypes}"
             columnName="${this.parentElement.columnName}"
             tx_container_parent="${this.tx_container_parent}"
-          ></ve-drop-zone>` : ''
+          ></ve-drop-zone>`
+          : ''
       }
-      <div class="border${this.isHidden ? ' hidden' : ''}${this.showElementOverlay ? ' showElementOverlay' : ''}${(this.isHovered || this.isFocusWithin) ? ' hovered': ''}"></div>
+      <div class="border${this.isHidden ? ' hidden' : ''}${this.showElementOverlay ? ' showElementOverlay' : ''}${(this.isHovered || this.isFocusWithin) ? ' hovered' : ''}"></div>
     `;
   }
 

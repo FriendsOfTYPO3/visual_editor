@@ -35,9 +35,6 @@ export class VeEditableText extends LitElement {
   constructor() {
     super();
 
-    this.value = this.getAttribute('value') ?? '';
-    this.valueInitial = this.value;
-    this.validation = this.getAttribute('validation') || {};
     this.invalid = false;
     this.validationErrors = [];
     this.showEmpty = showEmptyActive.get();
@@ -61,6 +58,9 @@ export class VeEditableText extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    this.value = this.getAttribute('value') ?? '';
+    this.valueInitial = this.value;
+    this.validation = this.getAttribute('validation') || {};
 
     this.addEventListener('click', this.onClick);
     this.addEventListener('mousedown', this.onMousedown);
@@ -180,10 +180,12 @@ export class VeEditableText extends LitElement {
     }
 
     const buttonCount = buttonControls.length;
-    const buttons = buttonCount > 0 ? html`
+    const buttons = buttonCount > 0 ?
+      html`
       <div class="buttons">
         ${buttonControls}
-      </div>` : html``;
+      </div>`
+      : html``;
     const shouldBeInline = this.shouldBeInline();
     const fieldLabel = this.name || this.title || this.field || this.placeholder;
     const ariaLabel = lll('editable.title', fieldLabel);
@@ -211,7 +213,7 @@ export class VeEditableText extends LitElement {
         aria-multiline="${this.allowNewlines ? 'true' : 'false'}"
         aria-required="${this.isRequired() ? 'true' : 'false'}"
         spellcheck="true"
-        data-placeholder="${showPlaceholder ? (this.placeholder || '\u200B'/* placeholder keeps firefox from breaking out*/) : ''}"
+        data-placeholder="${showPlaceholder ? (this.placeholder || '\u200B'/* placeholder keeps firefox from breaking out */) : ''}"
         @focus="${() => {
           this.#handleFocus();
         }}"
@@ -456,7 +458,6 @@ export class VeEditableText extends LitElement {
   #handleInput() {
     this.#validateAndStore(this.#editableTextToStoredText(this.#getSlotText()));
   }
-
 
   #handleFocus() {
     this.focused = true;

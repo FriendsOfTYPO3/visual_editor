@@ -1,5 +1,5 @@
 import {css, html, LitElement} from 'lit';
-import {lll} from "@typo3/core/lit-helper.js";
+import {lll} from '@typo3/core/lit-helper.js';
 import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 import {useDataHandler} from '@typo3/visual-editor/Backend/use-data-handler';
 import {reloadAllChildFrames} from '@typo3/visual-editor/Backend/reload-all-child-frames';
@@ -130,7 +130,7 @@ export class VeBackendSaveButton extends LitElement {
       const saveOk = await useDataHandler(lastInfo.data, lastInfo.cmdArray);
       requestAnimationFrame(() => {
         sendMessage('saveEnded');
-      })
+      });
       if (!saveOk) {
         reloadAllChildFrames();
       }

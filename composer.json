@@ -76,8 +76,9 @@
     "post-autoload-dump": [
       "sh -c 'MAJOR=$(typo3 --version | awk '\\''{split($3, v, \".\"); print v[1]}'\\''); ln -sfn \"phpstan-baseline-${MAJOR}.neon\" phpstan-baseline.neon'"
     ],
+    "lint:js": "npm run lint",
     "test:functional": "./Build/Scripts/runTests.sh -s functional",
-    "test:js": "node --test $(find Resources/Public/JavaScript -name \"*.test.js\" | sort)",
+    "test:js": "npm run test",
     "test:unit": "phpunit -c Build/phpunit/UnitTests.xml"
   }
 }

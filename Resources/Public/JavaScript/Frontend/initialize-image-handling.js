@@ -1,5 +1,5 @@
 import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
-import {lll} from "@typo3/core/lit-helper.js";
+import {lll} from '@typo3/core/lit-helper.js';
 
 export function initializeImageHandling() {
   const images = document.querySelectorAll('img[data-veedit]');

@@ -32,7 +32,6 @@ export function initializeSaveHandling() {
   new InterceptUserActionsGuard(dataHandlerStore);
 }
 
-
 onMessage('focusFirstInvalidField', () => {
   focusFirstInvalidField();
 });

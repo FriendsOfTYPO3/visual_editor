@@ -36,8 +36,6 @@ export class VeEditableRichText extends LitElement {
 
   constructor() {
     super();
-    this.value = this.innerHTML;
-    this.empty = this.value === '';
     this.showEmpty = showEmptyActive.get();
     this.onDataHandlerChange = this.#onDataHandlerChange.bind(this);
     this.onShowEmptyChange = this.#onShowEmptyChange.bind(this);
@@ -46,6 +44,8 @@ export class VeEditableRichText extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    this.value = this.innerHTML;
+    this.empty = this.value === '';
 
     dataHandlerStore.addEventListener('change', this.onDataHandlerChange);
     showEmptyActive.addEventListener('change', this.onShowEmptyChange);
@@ -78,12 +78,12 @@ export class VeEditableRichText extends LitElement {
     }
     this.editor.editing.view.document.getRoot('main').placeholder = this.placeholder;
     this.editor.model.document.on('change:data', () => {
-      this.value = this.editor.getData({ skipListItemIds: true });
+      this.value = this.editor.getData({skipListItemIds: true});
       this.empty = this.value === '';
       dataHandlerStore.setData(this.table, this.uid, this.field, this.value);
       this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
     });
-    this.value = this.editor.getData({ skipListItemIds: true });
+    this.value = this.editor.getData({skipListItemIds: true});
     this.empty = this.value === '';
     dataHandlerStore.setInitialData(this.table, this.uid, this.field, this.value);
 
@@ -114,7 +114,7 @@ export class VeEditableRichText extends LitElement {
 
     this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
     const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? undefined;
-    if (storedValue?.trim() !== this.editor?.getData({ skipListItemIds: true })?.trim()) {
+    if (storedValue?.trim() !== this.editor?.getData({skipListItemIds: true})?.trim()) {
       this.value = storedValue ?? this.value;
       this.empty = this.value === '';
       this.editor?.setData(this.value);

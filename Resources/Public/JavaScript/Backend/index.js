@@ -37,7 +37,7 @@ function openIframeModal(src, title = '', size = 'large', type = 'iframe') {
   });
 }
 
-onMessage('openModal', (data) => openIframeModal(data.src, data.title || '', data.size || undefined, data.type || undefined));
+onMessage('openModal', data => openIframeModal(data.src, data.title || '', data.size || undefined, data.type || undefined));
 onMessage('reloadFrames', () => reloadAllChildFrames());
 onMessage('openInMiddleFrame', (href) => {
   const parsedHref = new URL(href, window.location.href);
@@ -48,4 +48,4 @@ onMessage('openInMiddleFrame', (href) => {
   window.location = parsedHref.href;
 });
 
-onMessage('pageChanged', (data) => pageChanged(data.pageId, data.languageId, data.routeArguments));
+onMessage('pageChanged', data => pageChanged(data.pageId, data.languageId, data.routeArguments));

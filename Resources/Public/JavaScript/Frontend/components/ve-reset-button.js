@@ -1,11 +1,10 @@
 import {css, html, LitElement} from 'lit';
-import {lll} from "@typo3/core/lit-helper.js";
+import {lll} from '@typo3/core/lit-helper.js';
 
 /**
  * @extends {HTMLElement}
  */
 export class VeResetButton extends LitElement {
-
   static styles = css`
         button {
             display: flex;
@@ -26,7 +25,7 @@ export class VeResetButton extends LitElement {
 
   _click() {
     this.dispatchEvent(new Event('click', {
-      bubbles: true, composed: true
+      bubbles: true, composed: true,
     }));
   }
 
@@ -34,7 +33,7 @@ export class VeResetButton extends LitElement {
     const label = lll('frontend.resetChanges');
     return html`
       <button type="button" @click="${this._click}" title="${label}" aria-label="${label}">
-        <ve-icon name="actions-undo" width="100%"/>
+        <ve-icon name="actions-undo" width="100%"></ve-icon>
       </button>
     `;
   }

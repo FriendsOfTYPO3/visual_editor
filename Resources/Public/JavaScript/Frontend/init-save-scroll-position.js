@@ -19,7 +19,6 @@ export function initSaveScrollPosition() {
     setTimeout(() => {
       scrollToPosition();
 
-
       setTimeout(() => {
         // init save listeners:
         document.addEventListener('scrollend', saveScrollPosition);

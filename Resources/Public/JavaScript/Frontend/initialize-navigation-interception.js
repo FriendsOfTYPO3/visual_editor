@@ -21,8 +21,7 @@ async function resolveCrossOriginBackendUrl(url) {
 }
 
 export function initializeNavigationInterception() {
-
-  navigation.addEventListener("navigate", (event) => {
+  navigation.addEventListener('navigate', (event) => {
     const newUrl = new URL(event.destination.url);
     if (newUrl.origin !== window.location.origin) {
       event.preventDefault();

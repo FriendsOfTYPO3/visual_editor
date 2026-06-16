@@ -28,7 +28,7 @@ export class VeValidationOverlay extends LitElement {
            role="status"
            aria-live="assertive"
            aria-atomic="true">
-        ${uniqueValidationErrors.map((reason) => html`
+        ${uniqueValidationErrors.map(reason => html`
           <ve-validation-message
             .reason=${reason}
             .animated=${false}
@@ -63,7 +63,7 @@ export class VeValidationOverlay extends LitElement {
     }
 
     const animationDuration = 2000;
-    const existingMessage = this.messages.find((message) => message.reason === reason);
+    const existingMessage = this.messages.find(message => message.reason === reason);
     const messageId = existingMessage ? existingMessage.id : ++this.messageId;
 
     if (existingMessage) {
@@ -120,7 +120,7 @@ export class VeValidationOverlay extends LitElement {
       this.clearTimeouts.delete(messageId);
     }
 
-    this.messages = this.messages.filter((message) => message.id !== messageId);
+    this.messages = this.messages.filter(message => message.id !== messageId);
     this.#notifyStateChange();
   }
 

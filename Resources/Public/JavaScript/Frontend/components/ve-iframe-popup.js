@@ -22,12 +22,11 @@ export function openModal(src, title, size = 'large', type = 'iframe') {
  */
 export class VeIframePopup extends LitElement {
   static properties = {
-    title: {type: String,},
-    src: {type: String,},
-    size: {type: String,},
-    type: {type: String,},
+    title: {type: String},
+    src: {type: String},
+    size: {type: String},
+    type: {type: String},
   };
-
 
   static styles = css`
         :host {
@@ -64,7 +63,7 @@ export class VeIframePopup extends LitElement {
   render() {
     return html`
             <button type="button" @click="${this._click}" title="${this.title}" aria-label="${this.title}">
-                <slot/>
+              <slot></slot>
             </button>
         `;
   }
