@@ -74,9 +74,52 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: [ '8.2', '8.3', '8.4', '8.5' ]
-        typo3: [ '13', '14' ]
-        dbms: [ 'sqlite', 'mariadb', 'mysql', 'postgres' ]
+        # Do not use a full php x TYPO3 x DBMS matrix here: it creates too many
+        # parallel CI jobs. Keep SQLite broad and run server DBMS on boundary
+        # platform combinations to retain useful compatibility coverage.
+        include:
+          - php: '8.2'
+            typo3: '13'
+            dbms: 'sqlite'
+          - php: '8.2'
+            typo3: '13'
+            dbms: 'mariadb'
+          - php: '8.2'
+            typo3: '13'
+            dbms: 'mysql'
+          - php: '8.2'
+            typo3: '13'
+            dbms: 'postgres'
+          - php: '8.2'
+            typo3: '14'
+            dbms: 'sqlite'
+          - php: '8.3'
+            typo3: '13'
+            dbms: 'sqlite'
+          - php: '8.3'
+            typo3: '14'
+            dbms: 'sqlite'
+          - php: '8.4'
+            typo3: '13'
+            dbms: 'sqlite'
+          - php: '8.4'
+            typo3: '14'
+            dbms: 'sqlite'
+          - php: '8.5'
+            typo3: '13'
+            dbms: 'sqlite'
+          - php: '8.5'
+            typo3: '14'
+            dbms: 'sqlite'
+          - php: '8.5'
+            typo3: '14'
+            dbms: 'mariadb'
+          - php: '8.5'
+            typo3: '14'
+            dbms: 'mysql'
+          - php: '8.5'
+            typo3: '14'
+            dbms: 'postgres'
     steps:
       - name: Setup PHP with PECL extension
         uses: shivammathur/setup-php@v2
