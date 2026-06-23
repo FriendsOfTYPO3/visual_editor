@@ -86,19 +86,13 @@ final class ImageViewHelper extends AbstractTagBasedViewHelper
     private function buildVisualEditorPayload(ServerRequestInterface $request): ?array
     {
         $image = $this->resolveImage();
-        if (!$image instanceof File && !$image instanceof FileReference) {
+        if (!$image instanceof FileReference) {
             return null;
         }
 
-        if ($image instanceof File) {
-            $fields = [];
-            $table = 'sys_file';
-            $uid = (int)$image->getProperty('uid');
-        } else {
-            $fields = [(string)$image->getProperty('fieldname')];
-            $table = (string)$image->getProperty('tablenames');
-            $uid = (int)$image->getProperty('uid_foreign');
-        }
+        $fields = [(string)$image->getProperty('fieldname')];
+        $table = (string)$image->getProperty('tablenames');
+        $uid = (int)$image->getProperty('uid_foreign');
 
         if ($uid <= 0 || $table === '') {
             return null;
