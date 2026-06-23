@@ -15,3 +15,7 @@ ExtensionManagementUtility::addTypoScriptSetup("@import 'EXT:visual_editor/Confi
 if (!class_exists(ModifyRenderedContentAreaEvent::class)) {
     class_alias(V13_RenderContentAreaEvent::class, ModifyRenderedContentAreaEvent::class);
 }
+
+// exclude editMode from chash: If the parameter is present, the middleware already stops the normal rendering.
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'] ??= [];
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 'editMode';
