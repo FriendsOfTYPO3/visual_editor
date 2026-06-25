@@ -7,6 +7,7 @@ import {removeRuleBySelector} from '@typo3/visual-editor/Shared/remove-rule-by-s
 import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
 import {showEmptyActive} from '@typo3/visual-editor/Shared/local-stores';
 import {dragInProgressStore} from '@typo3/visual-editor/Frontend/stores/drag-store';
+import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 
 /**
  * Styles are in editable.css
@@ -23,8 +24,10 @@ export class VeEditableRichText extends LitElement {
     table: {type: String},
     uid: {type: Number},
     field: {type: String},
+    fieldPositionId: {type: String},
     placeholder: {type: String},
     options: {type: Object},
+    highlighted: {type: Boolean, reflect: true},
 
     showEmpty: {type: Boolean},
   };
@@ -36,26 +39,41 @@ export class VeEditableRichText extends LitElement {
 
   constructor() {
     super();
+    this.highlighted = false;
     this.showEmpty = showEmptyActive.get();
     this.onDataHandlerChange = this.#onDataHandlerChange.bind(this);
     this.onShowEmptyChange = this.#onShowEmptyChange.bind(this);
     this.onDragInProgressChange = this.#onDragInProgressChange.bind(this);
+    this.onSyncEditableFieldFocus = this.#onSyncEditableFieldFocus.bind(this);
+    this.onEditableFocus = this.#onEditableFocus.bind(this);
+    this.onEditableBlur = this.#onEditableBlur.bind(this);
+    this.editableElement = null;
+    this.unsubscribeSyncEditableFieldFocus = null;
   }
 
   connectedCallback() {
     super.connectedCallback();
-    this.value = this.innerHTML;
+    if (this.value === undefined) {
+      // only read innerHTML once!
+      this.value = this.innerHTML;
+    }
     this.empty = this.value === '';
 
     dataHandlerStore.addEventListener('change', this.onDataHandlerChange);
     showEmptyActive.addEventListener('change', this.onShowEmptyChange);
     dragInProgressStore.addEventListener('change', this.onDragInProgressChange);
+    this.unsubscribeSyncEditableFieldFocus = onMessage('syncEditableFieldFocus', this.onSyncEditableFieldFocus);
   }
 
   disconnectedCallback() {
     dataHandlerStore.removeEventListener('change', this.onDataHandlerChange);
     showEmptyActive.removeEventListener('change', this.onShowEmptyChange);
     dragInProgressStore.removeEventListener('change', this.onDragInProgressChange);
+    this.unsubscribeSyncEditableFieldFocus?.();
+    this.unsubscribeSyncEditableFieldFocus = null;
+    this.editableElement?.removeEventListener('focus', this.onEditableFocus);
+    this.editableElement?.removeEventListener('blur', this.onEditableBlur);
+    this.editableElement = null;
 
     super.disconnectedCallback();
   }
@@ -73,8 +91,11 @@ export class VeEditableRichText extends LitElement {
     this.editor = await initCKEditorInstance(this.options || {}, wrapper, wrapper, Editor);
     const editableElement = this.editor.ui.getEditableElement();
     if (editableElement instanceof HTMLElement) {
+      this.editableElement = editableElement;
       const fieldLabel = this.name || this.title || this.field || this.placeholder;
       editableElement.setAttribute('aria-label', lll('editable.title', fieldLabel));
+      editableElement.addEventListener('focus', this.onEditableFocus);
+      editableElement.addEventListener('blur', this.onEditableBlur);
     }
     this.editor.editing.view.document.getRoot('main').placeholder = this.placeholder;
     this.editor.model.document.on('change:data', () => {
@@ -127,6 +148,31 @@ export class VeEditableRichText extends LitElement {
 
   #onDragInProgressChange() {
     this.style.pointerEvents = dragInProgressStore.value ? 'none' : '';
+  }
+
+  #onEditableFocus() {
+    sendMessage('editableFieldFocusChanged', {
+      fieldPositionId: this.fieldPositionId,
+      focused: true,
+    }, 'parent');
+  }
+
+  #onEditableBlur() {
+    sendMessage('editableFieldFocusChanged', {
+      fieldPositionId: this.fieldPositionId,
+      focused: false,
+    }, 'parent');
+  }
+
+  /**
+   * @param {{languageId: number|string, fieldPositionId: string, focused: boolean}} detail
+   */
+  #onSyncEditableFieldFocus(detail) {
+    if (String(detail.languageId) === String(window.veInfo.languageId)) {
+      return;
+    }
+
+    this.highlighted = detail.focused && detail.fieldPositionId === this.fieldPositionId;
   }
 
   #isRelevantDataHandlerEvent(detail) {

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\SafeDeclareStrictTypesRector;
 use PLUS\GrumPHPConfig\RectorSettings;
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
@@ -40,6 +41,10 @@ return static function (RectorConfig $rectorConfig): void {
             __DIR__ . '/Tests/Functional/Fixtures/Extensions/blog_example',
             SafeDeclareStrictTypesRector::class => [
                 __DIR__ . '/ext_emconf.php',
+            ],
+            RemoveExtraParametersRector::class => [
+                // ignore this->contentFetcher->getFlatContentRecords and this->contentFetcher->getTranslationData in TYPO3 13 (TODO remove if TYPO3 14 is lowest supported version)
+                __DIR__ . '/Classes/Backend/Controller/PageEditController.php',
             ],
         ],
     );

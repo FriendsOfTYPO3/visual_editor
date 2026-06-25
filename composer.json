@@ -70,7 +70,6 @@
       "@composer normalize"
     ],
     "post-update-cmd": [
-      "@composer bump --dev-only",
       "@composer normalize"
     ],
     "post-autoload-dump": [

@@ -3,11 +3,12 @@ import {lll} from '@typo3/core/lit-helper.js';
 import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 import {useDataHandler} from '@typo3/visual-editor/Backend/use-data-handler';
 import {reloadAllChildFrames} from '@typo3/visual-editor/Backend/reload-all-child-frames';
+import {aggregateEditorStates} from '@typo3/visual-editor/Backend/aggregate-editor-states';
 
 /**
- * @type {{data: Object, cmdArray: Object[], invalidFields: Object, count: number, invalidCount: number}}
+ * @type {Map<string, {data: Object, cmdArray: Object[], invalidFields: Object, count: number, invalidCount: number}>}
  */
-let lastInfo = null;
+const editorStates = new Map();
 
 /**
  * @extends {HTMLElement}
@@ -42,9 +43,7 @@ export class VeBackendSaveButton extends LitElement {
     this.onKeydown = this.#onKeydown.bind(this);
     this.disposeUpdateEditorStateListener = null;
     this.disposeDoSaveListener = null;
-    if (lastInfo) {
-      this.onUpdateEditorState(lastInfo);
-    }
+    this.updateAggregatedEditorState();
   }
 
   connectedCallback() {
@@ -95,10 +94,20 @@ export class VeBackendSaveButton extends LitElement {
     `;
   }
 
-  onUpdateEditorState(info) {
-    lastInfo = info;
-    this.count = info.count;
-    this.invalidCount = info.invalidCount;
+  /**
+   *
+   * @param info {{count: number, invalidCount: number}}
+   * @param fromLanguageId {number}
+   */
+  onUpdateEditorState(info, fromLanguageId) {
+    editorStates.set(fromLanguageId, info);
+    this.updateAggregatedEditorState();
+  }
+
+  updateAggregatedEditorState() {
+    const {count, invalidCount} = aggregateEditorStates(editorStates);
+    this.count = count;
+    this.invalidCount = invalidCount;
   }
 
   async doSave() {
@@ -106,10 +115,15 @@ export class VeBackendSaveButton extends LitElement {
       return;
     }
 
-    const count = lastInfo.count;
-    const invalidCount = lastInfo.invalidCount;
+    const count = this.count;
+    const invalidCount = this.invalidCount;
     if (invalidCount > 0) {
-      sendMessage('focusFirstInvalidField');
+      for (const [languageId, editorState] of editorStates.entries()) {
+        if (editorState.invalidCount) {
+          sendMessage('focusFirstInvalidField', {languageId});
+          break;
+        }
+      }
       return;
     }
 
@@ -123,18 +137,20 @@ export class VeBackendSaveButton extends LitElement {
       return;
     }
 
-    const updatePageTree = 'pages' in lastInfo.data;
+    const mergedInfo = aggregateEditorStates(editorStates);
+
+    const updatePageTree = 'pages' in mergedInfo.data;
 
     try {
       this.saving = true;
-      const saveOk = await useDataHandler(lastInfo.data, lastInfo.cmdArray);
-      requestAnimationFrame(() => {
-        sendMessage('saveEnded');
-      });
+      const saveOk = await useDataHandler(mergedInfo.data, mergedInfo.cmdArray);
+      sendMessage('saveEnded');
       if (!saveOk) {
         reloadAllChildFrames();
       }
     } finally {
+      editorStates.clear();
+      this.updateAggregatedEditorState();
       this.saving = false;
     }
 

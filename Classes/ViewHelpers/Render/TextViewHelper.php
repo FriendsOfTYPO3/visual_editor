@@ -193,6 +193,7 @@ final class TextViewHelper extends AbstractViewHelper
         $tag->addAttribute('table', $record->getMainType());
         $tag->addAttribute('uid', (string)($record->getComputedProperties()->getLocalizedUid() ?: $record->getComputedProperties()->getVersionedUid() ?: $record->getUid()));
         $tag->addAttribute('field', $field->getName());
+        $tag->addAttribute('fieldPositionId', $record->getMainType() . ':' . $record->getUid() . ':' . $field->getName());
 
         $tag->addAttribute('name', $label);
 
@@ -274,6 +275,7 @@ final class TextViewHelper extends AbstractViewHelper
         $tag->addAttribute('table', $record->getMainType());
         $tag->addAttribute('uid', (string)($record->getComputedProperties()->getLocalizedUid() ?: $record->getComputedProperties()->getVersionedUid() ?: $record->getUid()));
         $tag->addAttribute('field', $field->getName());
+        $tag->addAttribute('fieldPositionId', $record->getMainType() . ':' . $record->getUid() . ':' . $field->getName());
         $tag->addAttribute('name', $label);
 
         $title = $this->localizationService->tryTranslation(

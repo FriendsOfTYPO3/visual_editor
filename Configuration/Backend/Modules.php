@@ -21,6 +21,7 @@ return [
             'function' => 1,
             'languages' => [0],
             'showHidden' => true,
+            'viewMode' => 1,
         ],
     ],
 

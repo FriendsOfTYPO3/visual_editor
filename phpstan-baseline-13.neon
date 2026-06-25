@@ -1,21 +1,39 @@
 parameters:
 	ignoreErrors:
 		-
+			message: '#^Access to constant MULTI_SELECT on an unknown class TYPO3\\CMS\\Backend\\Template\\Components\\Buttons\\LanguageSelectorMode\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
 			message: '#^Access to constant SINGLE_SELECT on an unknown class TYPO3\\CMS\\Backend\\Template\\Components\\Buttons\\LanguageSelectorMode\.$#'
 			identifier: class.notFound
 			count: 1
 			path: Classes/Backend/Controller/PageEditController.php
 
 		-
+			message: '#^Access to property \$languageInformation on an unknown class TYPO3\\CMS\\Backend\\Context\\PageContext\.$#'
+			identifier: class.notFound
+			count: 2
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
 			message: '#^Access to property \$pageId on an unknown class TYPO3\\CMS\\Backend\\Context\\PageContext\.$#'
+			identifier: class.notFound
+			count: 3
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Access to property \$pageTsConfig on an unknown class TYPO3\\CMS\\Backend\\Context\\PageContext\.$#'
 			identifier: class.notFound
 			count: 1
 			path: Classes/Backend/Controller/PageEditController.php
 
 		-
-			message: '#^Call to an undefined method TYPO3\\CMS\\Backend\\Domain\\Repository\\Localization\\LocalizationRepository\:\:getPageTranslations\(\)\.$#'
-			identifier: method.notFound
-			count: 1
+			message: '#^Access to property \$selectedLanguageIds on an unknown class TYPO3\\CMS\\Backend\\Context\\PageContext\.$#'
+			identifier: class.notFound
+			count: 2
 			path: Classes/Backend/Controller/PageEditController.php
 
 		-
@@ -43,6 +61,12 @@ parameters:
 			path: Classes/Backend/Controller/PageEditController.php
 
 		-
+			message: '#^Call to an undefined method TYPO3\\CMS\\Backend\\View\\Drawing\\DrawingConfiguration\:\:setSelectedLanguageIds\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
 			message: '#^Call to an undefined method TYPO3\\CMS\\Core\\DataHandling\\PageDoktypeRegistry\:\:isPageViewable\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -50,6 +74,24 @@ parameters:
 
 		-
 			message: '#^Call to method build\(\) on an unknown class TYPO3\\CMS\\Backend\\Template\\Components\\Buttons\\LanguageSelectorBuilder\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Call to method createMenu\(\) on an unknown class TYPO3\\CMS\\Backend\\Template\\Components\\ComponentFactory\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Call to method createMenuItem\(\) on an unknown class TYPO3\\CMS\\Backend\\Template\\Components\\ComponentFactory\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Call to method hasMultipleLanguagesSelected\(\) on an unknown class TYPO3\\CMS\\Backend\\Context\\PageContext\.$#'
 			identifier: class.notFound
 			count: 1
 			path: Classes/Backend/Controller/PageEditController.php
@@ -63,7 +105,7 @@ parameters:
 		-
 			message: '#^Class TYPO3\\CMS\\Backend\\Context\\PageContext not found\.$#'
 			identifier: class.notFound
-			count: 1
+			count: 3
 			path: Classes/Backend/Controller/PageEditController.php
 
 		-
@@ -73,14 +115,98 @@ parameters:
 			path: Classes/Backend/Controller/PageEditController.php
 
 		-
-			message: '#^Comparison operation "\<\=" between int\<min, 13\> and 13 is always true\.$#'
-			identifier: smallerOrEqual.alwaysTrue
+			message: '#^Class TYPO3\\CMS\\Backend\\Template\\Components\\ComponentFactory not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Class TYPO3\\CMS\\Backend\\View\\PageLayoutContext constructor invoked with 4 parameters, 5 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Method TYPO3\\CMS\\Backend\\View\\BackendLayout\\ContentFetcher\:\:getFlatContentRecords\(\) invoked with 2 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Method TYPO3\\CMS\\Backend\\View\\BackendLayout\\ContentFetcher\:\:getTranslationData\(\) invoked with 3 parameters, 2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Parameter \#1 \$backendLayout of static method TYPO3\\CMS\\Backend\\View\\Drawing\\DrawingConfiguration\:\:create\(\) expects TYPO3\\CMS\\Backend\\View\\BackendLayout\\BackendLayout, TYPO3\\CMS\\Backend\\View\\BackendLayout\\BackendLayout\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Parameter \#1 \$contentElements of method TYPO3\\CMS\\Backend\\View\\BackendLayout\\ContentFetcher\:\:getTranslationData\(\) expects iterable, TYPO3\\CMS\\Backend\\View\\PageLayoutContext given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Parameter \#1 \$languageId of method TYPO3\\CMS\\Backend\\View\\BackendLayout\\ContentFetcher\:\:getFlatContentRecords\(\) expects int, TYPO3\\CMS\\Backend\\View\\PageLayoutContext given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Parameter \#1 \$pageRecord of class TYPO3\\CMS\\Backend\\View\\PageLayoutContext constructor expects array, TYPO3\\CMS\\Backend\\Context\\PageContext given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Parameter \#2 \$backendLayout of class TYPO3\\CMS\\Backend\\View\\PageLayoutContext constructor expects TYPO3\\CMS\\Backend\\View\\BackendLayout\\BackendLayout, TYPO3\\CMS\\Backend\\View\\BackendLayout\\BackendLayout\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Parameter \#2 \$language of method TYPO3\\CMS\\Backend\\View\\BackendLayout\\ContentFetcher\:\:getTranslationData\(\) expects int, iterable given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Parameter \#3 \$site of class TYPO3\\CMS\\Backend\\View\\PageLayoutContext constructor expects TYPO3\\CMS\\Core\\Site\\Entity\\SiteInterface, TYPO3\\CMS\\Backend\\View\\Drawing\\DrawingConfiguration given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Parameter \#4 \$drawingConfiguration of class TYPO3\\CMS\\Backend\\View\\PageLayoutContext constructor expects TYPO3\\CMS\\Backend\\View\\Drawing\\DrawingConfiguration, Psr\\Http\\Message\\ServerRequestInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Parameter \$pageContext of method TYPO3\\CMS\\VisualEditor\\Backend\\Controller\\PageEditController\:\:buildViewModeSwitchParams\(\) has invalid type TYPO3\\CMS\\Backend\\Context\\PageContext\.$#'
+			identifier: class.notFound
 			count: 1
 			path: Classes/Backend/Controller/PageEditController.php
 
 		-
 			message: '#^Property TYPO3\\CMS\\VisualEditor\\Backend\\Controller\\PageEditController\:\:\$moduleData \(TYPO3\\CMS\\Backend\\Module\\ModuleData\) does not accept TYPO3\\CMS\\Backend\\Module\\ModuleData\|null\.$#'
 			identifier: assign.propertyType
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Property TYPO3\\CMS\\VisualEditor\\Backend\\Controller\\PageEditController\:\:\$selectedLanguages \(list\<TYPO3\\CMS\\Core\\Site\\Entity\\SiteLanguage\>\) does not accept array\<int\<0, max\>, TYPO3\\CMS\\Core\\Site\\Entity\\SiteLanguage\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Unable to resolve the template type T in call to function array_values$#'
+			identifier: argument.templateType
 			count: 1
 			path: Classes/Backend/Controller/PageEditController.php
 

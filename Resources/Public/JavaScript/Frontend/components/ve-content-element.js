@@ -1,13 +1,14 @@
 import {css, html, LitElement} from 'lit';
 import {lll} from '@typo3/core/lit-helper.js';
 import {dragInProgressStore} from '@typo3/visual-editor/Frontend/stores/drag-store';
-import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
+import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 import {openModal} from '@typo3/visual-editor/Frontend/components/ve-iframe-popup';
 import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
 import {calculateAllDebounced} from '@typo3/visual-editor/Frontend/auto-no-overlap';
 import {getAriaRole} from '@typo3/visual-editor/Frontend/get-aria-role';
 import {getAddAboveUidPid} from '@typo3/visual-editor/Frontend/components/add-above-target';
 import {shouldHideContentElement} from '@typo3/visual-editor/Frontend/components/should-hide-content-element';
+import {syncContentElementMoved} from '@typo3/visual-editor/Frontend/components/sync-content-element-moved';
 import {showHiddenActive} from '@typo3/visual-editor/Shared/local-stores';
 
 /**
@@ -23,6 +24,7 @@ export class VeContentElement extends LitElement {
     pid: {type: Number},
     colPos: {type: Number},
     tx_container_parent: {type: Number},
+    scrollPositionId: {type: String},
     isHidden: {type: Boolean},
     hiddenFieldName: {type: String},
     canModifyRecord: {type: Boolean},
@@ -68,6 +70,12 @@ export class VeContentElement extends LitElement {
 
   async _delete() {
     dataHandlerStore.addCmd(this.table, this.uid, 'delete', 1);
+    if (window.veInfo.languageId === 0 && this.table === 'tt_content' && this.scrollPositionId) {
+      sendMessage('contentElementDeleted', {
+        table: this.table,
+        scrollPositionId: this.scrollPositionId,
+      }, 'parent');
+    }
     this.remove();
   }
 
@@ -84,6 +92,8 @@ export class VeContentElement extends LitElement {
     super();
     this.onDragInProgressChange = this.#onDragInProgressChange.bind(this);
     this.onShowHiddenChange = this.#onShowHiddenChange.bind(this);
+    this.unsubscribeSyncContentElementDeleted = null;
+    this.unsubscribeSyncContentElementMoved = null;
     this.showHidden = showHiddenActive.get();
     this.isFocusWithin = false;
     this.addEventListener('mouseenter', () => {
@@ -114,6 +124,36 @@ export class VeContentElement extends LitElement {
 
     dragInProgressStore.addEventListener('change', this.onDragInProgressChange);
     showHiddenActive.addEventListener('change', this.onShowHiddenChange);
+    this.unsubscribeSyncContentElementDeleted = onMessage('syncContentElementDeleted',
+      /**
+        * @param detail {{languageId: number, table: string, scrollPositionId: string}}
+       */
+      (detail) => {
+        if (detail.languageId !== 0) {
+          return;
+        }
+        if (detail.table !== this.table) {
+          return;
+        }
+        if (detail.scrollPositionId !== this.scrollPositionId) {
+          return;
+        }
+        // dataHandlerStore.addCmd(this.table, this.uid, 'delete', 1); TOOD decide if we want this delete action to be visible
+        this.remove();
+      });
+    this.unsubscribeSyncContentElementMoved = onMessage('syncContentElementMoved',
+      /**
+        * @param detail {{languageId: number, table: string, scrollPositionId: string}}
+       */
+      (detail) => {
+        if (detail.table !== this.table) {
+          return;
+        }
+        if (detail.scrollPositionId !== this.scrollPositionId) {
+          return;
+        }
+        syncContentElementMoved(detail);
+      });
 
     if (this.parentElement.tagName.toLowerCase() !== 've-content-area') {
       let message = 'parent of ve-content-element must be ve-content-area, found ' + this.parentElement.tagName.toLowerCase();
@@ -125,6 +165,10 @@ export class VeContentElement extends LitElement {
   disconnectedCallback() {
     dragInProgressStore.removeEventListener('change', this.onDragInProgressChange);
     showHiddenActive.removeEventListener('change', this.onShowHiddenChange);
+    this.unsubscribeSyncContentElementDeleted?.();
+    this.unsubscribeSyncContentElementDeleted = null;
+    this.unsubscribeSyncContentElementMoved?.();
+    this.unsubscribeSyncContentElementMoved = null;
 
     super.disconnectedCallback();
   }
@@ -215,7 +259,7 @@ export class VeContentElement extends LitElement {
    */
   updated(changedProperties) {
     // hide the whole element when "Show hidden" is off and this element is hidden
-    this.style.display = this.hideBecauseHidden ? 'none' : '';
+    this.classList.toggle('ve-hidden', this.hideBecauseHidden);
   }
 
   render() {
@@ -308,6 +352,10 @@ export class VeContentElement extends LitElement {
       overflow: initial !important;
     }
 
+    :host(.ve-hidden) {
+      display: none;
+    }
+
     .border {
       content: '';
       position: absolute;
@@ -378,7 +426,7 @@ export class VeContentElement extends LitElement {
 
     .action-bar.hidden {
       display: flex;
-      opacity: 0.5;
+      opacity: 0.7;
       pointer-events: initial;
     }
 

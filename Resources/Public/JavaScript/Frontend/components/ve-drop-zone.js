@@ -235,6 +235,7 @@ export class VeDropZone extends LitElement {
     }
     sourceElement.setAttribute('colPos', this.colPos);
     sourceElement.setAttribute('tx_container_parent', this.tx_container_parent);
+    this.sendContentElementMoved(firstParent, sourceElement);
 
     switch (firstParent.tagName.toLowerCase()) {
       case 've-content-element':
@@ -426,6 +427,59 @@ export class VeDropZone extends LitElement {
       return false;
     }
     return this.isAnyOfMyParents(table, uid, parentElement);
+  }
+
+  /**
+   * @param {HTMLElement} firstParent
+   * @param {HTMLElement} sourceElement
+   * @return {void}
+   */
+  sendContentElementMoved(firstParent, sourceElement) {
+    if (window.veInfo.languageId !== 0 || sourceElement.table !== 'tt_content' || !sourceElement.scrollPositionId) {
+      return;
+    }
+
+    const target = this.getContentElementMovedTarget(firstParent);
+    if (target.mode === 'after' && !target.targetScrollPositionId) {
+      return;
+    }
+
+    sendMessage('contentElementMoved', {
+      table: sourceElement.table,
+      scrollPositionId: sourceElement.scrollPositionId,
+      ...target,
+    }, 'parent');
+  }
+
+  /**
+   * @param {HTMLElement} firstParent
+   * @return {{mode: 'after', targetScrollPositionId: string}|{mode: 'area-start', colPos: number, containerScrollPositionId: string|null}}
+   */
+  getContentElementMovedTarget(firstParent) {
+    if (firstParent.tagName.toLowerCase() === 've-content-element') {
+      return {
+        mode: 'after',
+        targetScrollPositionId: firstParent.scrollPositionId,
+      };
+    }
+
+    return {
+      mode: 'area-start',
+      colPos: this.colPos,
+      containerScrollPositionId: this.getContainerScrollPositionId(),
+    };
+  }
+
+  /**
+   * @return {string|null}
+   */
+  getContainerScrollPositionId() {
+    const uidOfParent = this.tx_container_parent || (this.colPos > 99 ? parseInt(this.colPos / 100) : 0);
+    if (!uidOfParent) {
+      return null;
+    }
+
+    return document.querySelector('ve-content-element[id="' + this.table + ':' + uidOfParent + '"]')?.scrollPositionId ?? null;
   }
 
   /**
