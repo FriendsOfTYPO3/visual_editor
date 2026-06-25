@@ -48,6 +48,7 @@ use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
 use TYPO3\CMS\Core\Page\PageRenderer;
+use TYPO3\CMS\Core\Routing\RouterInterface;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchema;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
@@ -324,27 +325,35 @@ final class PageEditController
             '_language' => $siteLanguage->getLanguageId(),
             'editMode' => 1,
         ];
-        $previewUriBuilder = PreviewUriBuilder::create($this->pageRecord->getRawRecord()->toArray())
-            ->withAdditionalQueryParameters($parameters);
 
-        // unset the context workspace so we do not get the split screen workspace preview in the editor.
+        $site = $request->getAttribute('site');
+        if (!$site instanceof Site) {
+            throw new InvalidArgumentException('No site found for page id ' . $this->pageRecord->getUid(), 1616071821);
+        }
+
+
         $context = clone $this->context;
-        $context->unsetAspect('workspace');
+        $rootLine = BackendUtility::BEgetRootLine($this->pageRecord->getUid(), '', true);
+        $parameters = [
+            ...$parameters,
+            ...PreviewUriBuilder::getAdditionalQueryParametersForAccessRestrictedPages($this->pageRecord->getRawRecord()->toArray(), $context, $rootLine),
+        ];
 
-        // setting the workspace in $GLOBALS['BE_USER'] is needed until https://review.typo3.org/c/Packages/TYPO3.CMS/+/93603 is merged and than the lowest supported version includes it.
-        $workspace = $this->getBackendUser()->workspace;
-        $this->getBackendUser()->workspace = 0;
-        try {
-            $uri = $previewUriBuilder->buildUri(null, $context);
-        } finally {
-            $this->getBackendUser()->workspace = $workspace;
+        if ($this->pageRecord->getVersionInfo()?->getState() === VersionState::NEW_PLACEHOLDER) {
+            $parameters['ADMCMD_prev'] = 'IGNORE';
         }
 
-        if (!$uri instanceof UriInterface) {
-            throw new InvalidArgumentException('Could not generate preview URI for page ' . $this->pageRecord->getUid(), 4148517490);
+        $translatedPageRecord = $this->pageRecord->getRawRecord()->toArray();
+        if ($siteLanguage->getLanguageId() > 0) {
+            $translatedPageRecord = $this->getLocalizedPageRecord($siteLanguage->getLanguageId()) ?? $this->pageRecord->getRawRecord()->toArray();
         }
 
-        return $uri;
+        return $site->getRouter($context)->generateUri(
+            $translatedPageRecord,
+            $parameters,
+            '',
+            RouterInterface::ABSOLUTE_URL,
+        );
     }
 
     private function makeButtons(ModuleTemplate $view, ServerRequestInterface $request): void
