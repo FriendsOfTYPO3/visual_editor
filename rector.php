@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
+use Rector\CodeQuality\Rector\Identical\ObjectExplicitBoolCompareRector;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\SafeDeclareStrictTypesRector;
 use PLUS\GrumPHPConfig\RectorSettings;
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
@@ -35,6 +36,7 @@ return static function (RectorConfig $rectorConfig): void {
             ...RectorSettings::skip(),
 
             StringableForToStringRector::class,
+            ObjectExplicitBoolCompareRector::class,
             /**
              * rector should not touch these files
              */
