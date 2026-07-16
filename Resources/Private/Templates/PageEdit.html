@@ -17,6 +17,7 @@
       <f:then>
         <f:for each="{languages}" as="language" iteration="iterator">
           <div class="js-replaceable" style="display: flex; gap: 5px; align-items: center; padding: 5px 2px 2px 32px;">
+            {language.pageIcon -> f:format.raw()}
             <core:icon identifier="{language.flagIdentifier}"/>
             {language.title}
             {language.viewButton -> f:format.raw()}

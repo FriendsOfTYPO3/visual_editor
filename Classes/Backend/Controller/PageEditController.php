@@ -40,6 +40,7 @@ use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ImmediateResponseException;
+use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Information\Typo3Version;
@@ -69,6 +70,7 @@ use function array_unique;
 use function array_values;
 use function assert;
 use function count;
+use function htmlspecialchars;
 use function in_array;
 use function is_array;
 use function json_encode;
@@ -85,6 +87,9 @@ final class PageEditController
 {
     /** @var list<SiteLanguage> */
     private array $selectedLanguages = [];
+
+    /** @var list<array<string, string|float|int|bool|null>> */
+    private array $localizedPage = [];
 
     private ModuleData $moduleData;
 
@@ -154,6 +159,8 @@ final class PageEditController
 
         $this->pageRecord = $record;
 
+        $this->localizedPage[0] = $this->pageRecord->getRawRecord()->toArray();
+
         foreach ($this->selectedLanguages as $key => $language) {
             if ($language->getLanguageId() === 0) {
                 continue;
@@ -163,10 +170,11 @@ final class PageEditController
             if ($localizedPageRecord === null) {
                 // if no translation is found for that language, we remove it from the list.
                 unset($this->selectedLanguages[$key]);
+                continue;
             }
-        }
 
-        // TODO filter out by origin, and only allow the first origin (no cross origin)
+            $this->localizedPage[$language->getLanguageId()] = $localizedPageRecord;
+        }
 
         $this->selectedLanguages = array_values($this->selectedLanguages);
 
@@ -219,6 +227,7 @@ final class PageEditController
             $isSameOrigin = $this->isSameOrigin($iframeUrl, $request);
             $langauges[] = [
                 'id' => $siteLanguage->getLanguageId(),
+                'pageIcon' => $this->getPageIcon($this->localizedPage[$siteLanguage->getLanguageId()]),
                 'flagIdentifier' => $siteLanguage->getFlagIdentifier(),
                 'title' => $siteLanguage->getTitle(),
                 'sameOrigin' => $isSameOrigin,
@@ -1018,5 +1027,14 @@ final class PageEditController
         return $uri->getScheme() === $request->getUri()->getScheme()
         && $uri->getHost() === $request->getUri()->getHost()
         && $uri->getPort() === $request->getUri()->getPort();
+    }
+
+    /**
+     * @param array<string, string|float|int|bool|null> $pageRow
+     */
+    private function getPageIcon(array $pageRow): Icon
+    {
+        $icon = $this->iconFactory->getIconForRecord('pages', $pageRow, IconSize::SMALL);
+        return $icon->setTitle(htmlspecialchars((string)($pageRow['title'] ?? '')));
     }
 }
