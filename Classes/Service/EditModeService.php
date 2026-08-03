@@ -196,7 +196,7 @@ if (window.parent === window && window.veInfo) {
         }
 
         if (!$beUser->isInWebMount($record->getPid())) {
-            return false; // no access to this page // TODO move this to the middleware
+            return false; // no access to the records page
         }
 
         if ($record->getMainType() === 'tt_content' && !$beUser->check('explicit_allowdeny', 'tt_content:CType:' . $record->get('CType'))) {

@@ -7,14 +7,14 @@ import {getAriaRole} from '@typo3/visual-editor/Frontend/get-aria-role';
  */
 export class VeContentArea extends LitElement {
   static properties = {
-    target: {type: Number},
-    colPos: {type: Number},
-    allowedContentTypes: {type: String},
-    disallowedContentTypes: {type: String},
-    columnName: {type: String},
-    tx_container_parent: {type: Number},
+    target: {type: Number, reflect: true},
+    colPos: {type: Number, reflect: true},
+    allowedContentTypes: {type: String, reflect: true},
+    disallowedContentTypes: {type: String, reflect: true},
+    columnName: {type: String, reflect: true},
+    tx_container_parent: {type: Number, reflect: true},
 
-    showElementOverlay: {type: Boolean, attribute: false},
+    showElementOverlay: {type: Boolean, state: true},
   };
 
   constructor() {

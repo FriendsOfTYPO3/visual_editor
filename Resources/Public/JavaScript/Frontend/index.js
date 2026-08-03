@@ -15,6 +15,7 @@ import {initializeSpotlightHandling} from '@typo3/visual-editor/Frontend/initial
 import {initializeImageHandling} from '@typo3/visual-editor/Frontend/initialize-image-handling';
 import {initializeScrollPositionSyncAndSave} from '@typo3/visual-editor/Frontend/scroll-position-sync';
 import {initializeIframeLoadingSignal} from '@typo3/visual-editor/Frontend/initialize-iframe-loading-signal';
+import {Idiomorph} from 'idiomorph';
 
 if (window.location.hash === '#ve-close') {
   sendMessage('closeModal');
@@ -32,3 +33,42 @@ initializeSaveHandling();
 initializeNavigationInterception();
 initializeImageHandling();
 initializeScrollPositionSyncAndSave();
+
+window.testIdiomorph = async () => {
+  console.time('testIdiomorph');
+  const response = await fetch(window.location.href);
+  const html = await response.text();
+  const parser = new DOMParser();
+  const newStateDocument = parser.parseFromString(html, 'text/html');
+  await Idiomorph.morph(
+    document.body,
+    newStateDocument.body,
+    {
+      callbacks: {
+        beforeAttributeUpdated: (attributeName, node, mutationType) => {
+          // is lit-element:
+          if ('constructor' in node && 'getPropertyOptions' in node.constructor) {
+            if (node.constructor.getPropertyOptions(attributeName).reflect) {
+              // if reflect is true, than the lit element can handle changing attributes:
+              return true;
+            }
+            // if not, than the change will do nothing:
+            return false;
+          }
+          return true;
+        },
+        beforeNodeMorphed: (oldNode, newNode) => {
+          if (
+            'parentNode' in oldNode
+            && 'tagName' in oldNode.parentNode
+            && oldNode.parentNode.tagName.toLowerCase() === 've-editable-rich-text') {
+            return false;
+          }
+
+          return true;
+        },
+      },
+    },
+  );
+  console.timeEnd('testIdiomorph');
+};

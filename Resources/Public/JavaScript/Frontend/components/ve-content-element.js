@@ -16,24 +16,28 @@ import {showHiddenActive} from '@typo3/visual-editor/Shared/local-stores';
  */
 export class VeContentElement extends LitElement {
   static properties = {
-    id: {type: String},
-    elementName: {type: String},
-    CType: {type: String},
-    table: {type: String},
-    uid: {type: Number},
-    pid: {type: Number},
-    colPos: {type: Number},
-    tx_container_parent: {type: Number},
-    scrollPositionId: {type: String},
+    id: {type: String, reflect: true},
+    elementName: {type: String, reflect: true},
+    CType: {type: String, reflect: true},
+    table: {type: String, reflect: true},
+    uid: {type: Number, reflect: true},
+    pid: {type: Number, reflect: true},
+    colPos: {type: Number, reflect: true},
+    tx_container_parent: {type: Number, reflect: true},
+    scrollPositionId: {type: String, reflect: true},
+    hiddenFieldName: {type: String, reflect: true},
+    canModifyRecord: {type: Boolean, reflect: true},
+    canBeMoved: {type: Boolean, reflect: true},
+
+    // changes:
     isHidden: {type: Boolean},
-    hiddenFieldName: {type: String},
-    canModifyRecord: {type: Boolean},
-    canBeMoved: {type: Boolean},
+    role: {type: String},
 
     showHidden: {type: Boolean, state: true, attribute: false},
     isHovered: {type: Boolean, state: true, attribute: false},
     isFocusWithin: {type: Boolean, state: true, attribute: false},
     dragInProgress: {type: Boolean, state: true, attribute: false},
+    // showElementOverlay is API and set from outside
     showElementOverlay: {type: Boolean, attribute: false},
   };
 

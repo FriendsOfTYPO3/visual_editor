@@ -17,19 +17,19 @@ import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messagi
 export class VeEditableRichText extends LitElement {
   static properties = {
     changed: {type: Boolean, reflect: true},
+    highlighted: {type: Boolean, reflect: true},
     empty: {type: Boolean, reflect: true},
     value: {type: String, reflect: true},
 
-    name: {type: String},
-    table: {type: String},
-    uid: {type: Number},
-    field: {type: String},
-    fieldPositionId: {type: String},
-    placeholder: {type: String},
-    options: {type: Object},
-    highlighted: {type: Boolean, reflect: true},
+    name: {type: String, reflect: true},
+    table: {type: String, reflect: true},
+    uid: {type: Number, reflect: true},
+    field: {type: String, reflect: true},
+    fieldPositionId: {type: String, reflect: true},
+    options: {type: Object, reflect: true},
 
-    showEmpty: {type: Boolean},
+    showEmpty: {type: Boolean, state: true, attribute: false},
+    placeholder: {type: String, state: true, attribute: false},
   };
 
   createRenderRoot() {
@@ -80,13 +80,15 @@ export class VeEditableRichText extends LitElement {
 
   async firstUpdated() {
     this.placeholder = this.name;
-    /** @type {HTMLElement} */
-    const element = this;
+    await this.initCKEditor();
+  }
+
+  async initCKEditor() {
     const wrapper = document.createElement('div');
-    while (element.firstChild) {
-      wrapper.appendChild(element.firstChild);
+    while (this.firstChild) {
+      wrapper.appendChild(this.firstChild);
     }
-    element.appendChild(wrapper);
+    this.appendChild(wrapper);
 
     this.editor = await initCKEditorInstance(this.options || {}, wrapper, wrapper, Editor);
     const editableElement = this.editor.ui.getEditableElement();
@@ -114,17 +116,31 @@ export class VeEditableRichText extends LitElement {
     removeRuleBySelector('.ck-content');
   }
 
+  /**
+   * @param changedProperties {Map<string, any>}
+   */
   updated(changedProperties) {
+    this.showEmpty = showEmptyActive.get();
+    this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
     this.empty = this.value === '';
     const hideEmpty = !this.showEmpty && this.value === '' && !this.matches(':focus-within') && !this.changed;
     if (hideEmpty) {
       this.style.display = 'none';
       if (this.parentElement.innerText === '') {
-        this.parentElement.display = 'none';
+        this.parentElement.style.display = 'none';
       }
     } else {
       this.style.display = '';
-      this.parentElement.display = '';
+      this.parentElement.style.display = '';
+    }
+    if (changedProperties.has('value')) {
+      this.editor?.setData(this.value);
+    }
+    if (changedProperties.has('options') && this.editor) {
+      // need to recreate the editor if options changed
+      this.editor?.destroy();
+      this.innerHTML = this.value;
+      this.initCKEditor();
     }
   }
 

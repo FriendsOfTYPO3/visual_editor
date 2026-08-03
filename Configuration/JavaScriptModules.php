@@ -28,5 +28,6 @@ return [
         '@ckeditor/ckeditor5-editor-inline' => 'EXT:visual_editor/Resources/Public/Contrib/ckeditor5-editor-inline.js',
         # https://review.typo3.org/c/Packages/TYPO3.CMS/+/91561:
         '@typo3/rte-ckeditor/init-ckeditor-instance.js' => 'EXT:visual_editor/Resources/Public/Contrib/init-ckeditor-instance.js',
+        'idiomorph' => 'EXT:visual_editor/Resources/Public/Contrib/idiomorph.esm.js',
     ],
 ];
