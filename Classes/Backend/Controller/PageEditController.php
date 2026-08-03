@@ -352,13 +352,8 @@ final class PageEditController
             $parameters['ADMCMD_prev'] = 'IGNORE';
         }
 
-        $translatedPageRecord = $this->pageRecord->getRawRecord()->toArray();
-        if ($siteLanguage->getLanguageId() > 0) {
-            $translatedPageRecord = $this->getLocalizedPageRecord($siteLanguage->getLanguageId()) ?? $this->pageRecord->getRawRecord()->toArray();
-        }
-
         return $site->getRouter($context)->generateUri(
-            $translatedPageRecord,
+            $this->pageRecord->getRawRecord()->toArray(),
             $parameters,
             '',
             RouterInterface::ABSOLUTE_URL,
