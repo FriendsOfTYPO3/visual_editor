@@ -241,6 +241,12 @@ parameters:
 			path: Classes/Core/RichtText/RichTextConfigurationService.php
 
 		-
+			message: '#^Access to an undefined property TYPO3\\CMS\\Core\\Security\\ContentSecurityPolicy\\Configuration\\Behavior\:\:\$useHash\.$#'
+			identifier: property.notFound
+			count: 1
+			path: Classes/EventListener/PolicyMutatedEventListener.php
+
+		-
 			message: '#^Call to method getContentArea\(\) on an unknown class TYPO3\\CMS\\Fluid\\Event\\ModifyRenderedContentAreaEvent\.$#'
 			identifier: class.notFound
 			count: 6
