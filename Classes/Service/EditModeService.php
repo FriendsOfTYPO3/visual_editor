@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\Service;
 
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use RuntimeException;
@@ -23,6 +24,7 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 
+use TYPO3\CMS\VisualEditor\Events\ModifyNewContentElementWizardUrlParameterEvent;
 use function array_replace_recursive;
 use function method_exists;
 
@@ -39,6 +41,7 @@ final readonly class EditModeService
         private FormProtectionFactory $formProtectionFactory,
         private Typo3Version $typo3Version,
         private AllowedOriginService $allowedOriginService,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -90,13 +93,17 @@ final readonly class EditModeService
 
             $backendEditUrl = (string)$this->getBackendEditUrl($request);
 
-            $newContentUrl = (string)$this->uriBuilder->buildUriFromRoute('new_content_element_wizard', [
-                'id' => $pageId,
-                'colPos' => '__COL_POS__',
-                'uid_pid' => '__UID_PID__',
-                ...($isExtContainerInstalled ? ['tx_container_parent' => '__TX_CONTAINER_PARENT__'] : []),
-                'returnUrl' => $backendEditUrl,
-            ]);
+            $parameters = $this->eventDispatcher->dispatch(
+                new ModifyNewContentElementWizardUrlParameterEvent([
+                    'id' => $pageId,
+                    'colPos' => '__COL_POS__',
+                    'uid_pid' => '__UID_PID__',
+                    ...($isExtContainerInstalled ? ['tx_container_parent' => '__TX_CONTAINER_PARENT__'] : []),
+                    'returnUrl' => $backendEditUrl,
+                ], $this->getUsedArguments($request), $request)
+            )->getParameters();
+
+            $newContentUrl = (string)$this->uriBuilder->buildUriFromRoute('new_content_element_wizard', $parameters);
 
             $editParams = [
                 'edit' => ['__TABLE__' => ['__UID__' => 'edit']],
