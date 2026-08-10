@@ -2,7 +2,7 @@
  * Custom styles for CKEditor to make it blend with the surrounding content.
  * TODO move this into the <ve-editable-rich-text> !!!
  */
-.ck-content.ck-content.ck-content {
+ve-editable-rich-text .ck-content.ck-content.ck-content {
   background: none !important;
   border: none !important;
   box-shadow: none !important;
@@ -14,7 +14,8 @@
 /**
   * Highlight the editable area on hover and focus:
  */
-.ck-content:hover, .ck-content:focus,
+ve-editable-rich-text .ck-content:hover,
+ve-editable-rich-text .ck-content:focus,
 ve-editable-rich-text[highlighted] .ck-content,
 ve-editable-rich-text[empty] .ck-content {
   box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.50) inset !important;
@@ -29,7 +30,7 @@ ve-editable-rich-text[changed] .ck-content {
 /**
   * (for now): Simulate InlineEditor of CKEditor
  */
-.ck-editor__top {
+ve-editable-rich-text .ck-editor__top {
   display: none;
   position: absolute !important;
   bottom: 100%; /* position it over the element */
@@ -43,17 +44,17 @@ ve-editable-rich-text[changed] .ck-content {
   }
 }
 
-.ck-content {
+ve-editable-rich-text .ck-content {
   /*color: var(--ck-content-font-color); !* TODO fix this if color is white we want to use white *!*/
 }
 
 /* hide placeholder if focused */
-.ck.ck-editor__editable.ck-focused > .ck-placeholder::before,
-.ck.ck-editor__editable.ck-focused .ck-placeholder::before {
+ve-editable-rich-text .ck.ck-editor__editable.ck-focused > .ck-placeholder::before,
+ve-editable-rich-text .ck.ck-editor__editable.ck-focused .ck-placeholder::before {
   display: none;
 }
 
-.ck-placeholder {
+ve-editable-rich-text .ck-placeholder {
   font-style: italic;
 }
 
