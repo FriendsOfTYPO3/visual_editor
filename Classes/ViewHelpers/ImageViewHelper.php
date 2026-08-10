@@ -16,6 +16,7 @@ use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Extbase\Service\ImageService;
 use TYPO3\CMS\Fluid\ViewHelpers\ImageViewHelper as CoreImageViewHelper;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
+use TYPO3\CMS\VisualEditor\Service\UrlGenerationService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
 
 use function htmlspecialchars;
@@ -40,6 +41,7 @@ final class ImageViewHelper extends AbstractTagBasedViewHelper
         private readonly ImageService $imageService,
         private readonly EditModeService $editModeService,
         private readonly Typo3Version $typo3Version,
+        private readonly UrlGenerationService $urlGenerationService,
     ) {
         parent::__construct();
     }
@@ -103,7 +105,7 @@ final class ImageViewHelper extends AbstractTagBasedViewHelper
             return null;
         }
 
-        $backendEditUrl = (string)$this->editModeService->getBackendEditUrl($request);
+        $backendEditUrl = (string)$this->urlGenerationService->getBackendEditUrl($request);
         $editParams = [
             'edit' => [$table => [$uid => 'edit']],
             'columnsOnly' => [$table => $fields],

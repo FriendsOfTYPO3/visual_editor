@@ -183,6 +183,41 @@ search for:
   </f:mark.contentArea>
   ````
 
+## PSR-14 events
+
+### `ModifyNewContentElementWizardUrlParameterEvent`
+
+This event allows extensions to modify the URL parameters used to open the new content element wizard. It provides the current parameters, the route arguments used to render the frontend page, and the current request.
+
+For example, a listener can pass a frontend route argument to the wizard:
+
+````php
+<?php
+
+namespace Vendor\MyExtension\EventListener;
+
+use TYPO3\CMS\Core\Attribute\AsEventListener;
+use TYPO3\CMS\VisualEditor\Events\ModifyNewContentElementWizardUrlParameterEvent;
+
+#[AsEventListener]
+final class ModifyNewContentElementWizardUrlParameterEventListener
+{
+    public function __invoke(ModifyNewContentElementWizardUrlParameterEvent $event): void
+    {
+        $context = $event->getUsedArguments()['tx_myextension']['context'] ?? null;
+        if ($context === null) {
+            return;
+        }
+
+        $parameters = $event->getParameters();
+        $parameters['myExtensionContext'] = $context;
+        $event->setParameters($parameters);
+    }
+}
+````
+
+The additional parameter is then available from the request of TYPO3 Core's `ModifyNewContentElementWizardItemsEvent`, where it can be used, for example, to adjust the `defaultValues` of wizard items.
+
 ## Known limitations
 
 - Wrapped content elements rendered with `f:render.contentArea` and `recordAs` are not currently supported for drag-and-drop. In this setup, drag handles may disappear. Move the wrapping markup into the content element rendering instead of wrapping elements at the `contentArea` level.
