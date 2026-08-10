@@ -199,7 +199,7 @@ export class VeEditableText extends LitElement {
     const fieldLabel = this.name || this.title || this.field || this.placeholder;
     const ariaLabel = lll('editable.title', fieldLabel);
 
-    this.classList.toggle('block', !shouldBeInline);
+    this.classList.toggle('ve-block', !shouldBeInline);
 
     const slot = this.#getSlot();
     const showPlaceholder = !this.focused && !(slot?.innerText || this.value).length;
@@ -611,7 +611,7 @@ export class VeEditableText extends LitElement {
       --button-size: min(0.8em, 32px);
     }
 
-    :host(.block) {
+    :host(.ve-block) {
       display: block;
     }
 
