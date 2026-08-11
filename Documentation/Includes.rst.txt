@@ -1,0 +1,16 @@
+..  More information about this file:
+    https://docs.typo3.org/permalink/h2document:includes-rst-txt
+
+..  role:: bash(code)
+..  role:: html(code)
+..  role:: php(code)
+..  role:: rst(code)
+..  role:: typoscript(code)
+..  role:: yaml(code)
+
+..  default-role:: code
+
+..  |extension-key| replace:: visual_editor
+..  |package-name| replace:: friendsoftypo3/visual-editor
+
+..  highlight:: php
