@@ -15,6 +15,7 @@ import {initializeSpotlightHandling} from '@typo3/visual-editor/Frontend/initial
 import {initializeImageHandling} from '@typo3/visual-editor/Frontend/initialize-image-handling';
 import {initializeScrollPositionSyncAndSave} from '@typo3/visual-editor/Frontend/scroll-position-sync';
 import {initializeIframeLoadingSignal} from '@typo3/visual-editor/Frontend/initialize-iframe-loading-signal';
+import {initializeDataVeCustomElement} from '@typo3/visual-editor/Frontend/initialize-data-ve-custom-element';
 
 if (window.location.hash === '#ve-close') {
   sendMessage('closeModal');
@@ -32,3 +33,5 @@ initializeSaveHandling();
 initializeNavigationInterception();
 initializeImageHandling();
 initializeScrollPositionSyncAndSave();
+
+initializeDataVeCustomElement();
