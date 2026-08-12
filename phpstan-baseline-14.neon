@@ -19,12 +19,6 @@ parameters:
 			path: Classes/Backend/Controller/PageEditController.php
 
 		-
-			message: '#^Property TYPO3\\CMS\\VisualEditor\\Backend\\Controller\\PageEditController\:\:\$policyRegistry is never read, only written\.$#'
-			identifier: property.onlyWritten
-			count: 1
-			path: Classes/Backend/Controller/PageEditController.php
-
-		-
 			message: '#^Property TYPO3\\CMS\\VisualEditor\\Backend\\Controller\\PageEditController\:\:\$selectedLanguages \(list\<TYPO3\\CMS\\Core\\Site\\Entity\\SiteLanguage\>\) does not accept array\<int\<0, max\>, TYPO3\\CMS\\Core\\Site\\Entity\\SiteLanguage\>\.$#'
 			identifier: assign.propertyType
 			count: 1
@@ -35,12 +29,6 @@ parameters:
 			identifier: method.notFound
 			count: 4
 			path: Classes/PhpStanRule/NamedArgumentUsageRule.php
-
-		-
-			message: '#^Method TYPO3\\CMS\\VisualEditor\\Service\\DataHandlerService\:\:run\(\) should return list\<string\> but returns array\.$#'
-			identifier: return.type
-			count: 1
-			path: Classes/Service/DataHandlerService.php
 
 		-
 			message: '#^Cannot access offset ''allowed\.'' on TYPO3\\CMS\\Core\\Page\\ContentArea\.$#'
@@ -77,3 +65,9 @@ parameters:
 			identifier: nullCoalesce.initializedProperty
 			count: 1
 			path: Classes/ViewHelpers/Render/TextViewHelper.php
+
+		-
+			message: '#^Property TYPO3\\CMS\\VisualEditor\\ViewHelpers\\Render\\TypolinkViewHelper\:\:\$typo3Version on left side of \?\? is not nullable nor uninitialized\.$#'
+			identifier: nullCoalesce.initializedProperty
+			count: 1
+			path: Classes/ViewHelpers/Render/TypolinkViewHelper.php
