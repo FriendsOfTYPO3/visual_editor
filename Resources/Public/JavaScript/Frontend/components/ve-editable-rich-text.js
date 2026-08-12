@@ -134,9 +134,9 @@ export class VeEditableRichText extends LitElement {
     }
 
     this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
-    const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? undefined;
-    if (storedValue?.trim() !== this.editor?.getData({skipListItemIds: true})?.trim()) {
-      this.value = storedValue ?? this.value;
+    const newValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.value;
+    if (newValue?.trim() !== this.editor?.getData({skipListItemIds: true})?.trim()) {
+      this.value = newValue ?? this.value;
       this.empty = this.value === '';
       this.editor?.setData(this.value);
     }
