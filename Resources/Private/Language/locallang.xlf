@@ -35,6 +35,73 @@
       <trans-unit id="saving">
         <source>Saving ...</source>
       </trans-unit>
+
+      <trans-unit id="changes">
+        <source>Changes</source>
+      </trans-unit>
+      <trans-unit id="changes.count">
+        <source>Changes (%d)</source>
+      </trans-unit>
+      <trans-unit id="changes.title">
+        <source>Unsaved changes</source>
+      </trans-unit>
+      <trans-unit id="changes.empty">
+        <source>No unsaved changes.</source>
+      </trans-unit>
+      <trans-unit id="changes.close">
+        <source>Close</source>
+      </trans-unit>
+      <trans-unit id="changes.reset">
+        <source>Reset all changes</source>
+      </trans-unit>
+      <trans-unit id="changes.resetConfirmTitle">
+        <source>Reset all changes?</source>
+      </trans-unit>
+      <trans-unit id="changes.resetConfirmMessage">
+        <source>This reloads the page and discards all unsaved changes.</source>
+      </trans-unit>
+      <trans-unit id="changes.before">
+        <source>Before</source>
+      </trans-unit>
+      <trans-unit id="changes.current">
+        <source>Current</source>
+      </trans-unit>
+      <trans-unit id="changes.formattingChanged">
+        <source>Formatting changed</source>
+      </trans-unit>
+      <trans-unit id="changes.invalid">
+        <source>Invalid</source>
+      </trans-unit>
+      <trans-unit id="changes.visibility">
+        <source>Visibility</source>
+      </trans-unit>
+      <trans-unit id="changes.visible">
+        <source>Visible</source>
+      </trans-unit>
+      <trans-unit id="changes.hidden">
+        <source>Hidden</source>
+      </trans-unit>
+      <trans-unit id="changes.action.move">
+        <source>Moved</source>
+      </trans-unit>
+      <trans-unit id="changes.action.copy">
+        <source>Copied</source>
+      </trans-unit>
+      <trans-unit id="changes.action.delete">
+        <source>Deleted</source>
+      </trans-unit>
+      <trans-unit id="changes.from">
+        <source>From</source>
+      </trans-unit>
+      <trans-unit id="changes.to">
+        <source>To</source>
+      </trans-unit>
+      <trans-unit id="changes.expand">
+        <source>Expand</source>
+      </trans-unit>
+      <trans-unit id="changes.collapse">
+        <source>Collapse</source>
+      </trans-unit>
       <trans-unit id="validation.required">
         <source>This field is required.</source>
       </trans-unit>

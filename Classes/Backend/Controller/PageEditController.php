@@ -379,6 +379,11 @@ final class PageEditController
             $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 2);
         }
 
+        // Changes
+        if ($button = $this->makeChangesButton($buttonBar)) {
+            $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 2);
+        }
+
         // Spotlight Toggle
         if ($button = $this->makeSpotlightToggleButton($buttonBar)) {
             $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_LEFT, 3);
@@ -867,6 +872,30 @@ final class PageEditController
             ->setAttributes(['disabled' => 'true'])
             ->setLabel($this->getLanguageService()->sL('LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:save'))
             ->setIcon($this->iconFactory->getIcon('actions-save', IconSize::SMALL))
+            ->setTitle('')
+            ->setShowLabelText(true);
+    }
+
+    private function makeChangesButton(ButtonBar $buttonBar): ?GenericButton
+    {
+        if (
+            $this->pageRecord->getVersionInfo()?->getState() === VersionState::DELETE_PLACEHOLDER
+        ) {
+            return null;
+        }
+
+        $previewUriBuilder = PreviewUriBuilder::create($this->pageRecord->getRawRecord()->toArray());
+        if (!$previewUriBuilder->isPreviewable()) {
+            return null;
+        }
+
+        $button = $buttonBar->makeButton(GenericButton::class);
+        assert($button instanceof GenericButton);
+        return $button
+            ->setTag('ve-backend-changes-button')
+            ->setAttributes(['disabled' => 'true'])
+            ->setLabel($this->getLanguageService()->sL('LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:changes'))
+            ->setIcon($this->iconFactory->getIcon('actions-list', IconSize::SMALL))
             ->setTitle('')
             ->setShowLabelText(true);
     }

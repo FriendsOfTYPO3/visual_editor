@@ -35,6 +35,73 @@
       <trans-unit id="saving">
         <target>Wird gespeichert ...</target>
       </trans-unit>
+
+      <trans-unit id="changes">
+        <target>Änderungen</target>
+      </trans-unit>
+      <trans-unit id="changes.count">
+        <target>Änderungen (%d)</target>
+      </trans-unit>
+      <trans-unit id="changes.title">
+        <target>Ungespeicherte Änderungen</target>
+      </trans-unit>
+      <trans-unit id="changes.empty">
+        <target>Keine ungespeicherten Änderungen.</target>
+      </trans-unit>
+      <trans-unit id="changes.close">
+        <target>Schließen</target>
+      </trans-unit>
+      <trans-unit id="changes.reset">
+        <target>Alle Änderungen zurücksetzen</target>
+      </trans-unit>
+      <trans-unit id="changes.resetConfirmTitle">
+        <target>Alle Änderungen zurücksetzen?</target>
+      </trans-unit>
+      <trans-unit id="changes.resetConfirmMessage">
+        <target>Dadurch wird die Seite neu geladen und alle ungespeicherten Änderungen werden verworfen.</target>
+      </trans-unit>
+      <trans-unit id="changes.before">
+        <target>Vorher</target>
+      </trans-unit>
+      <trans-unit id="changes.current">
+        <target>Aktuell</target>
+      </trans-unit>
+      <trans-unit id="changes.formattingChanged">
+        <target>Formatierung geändert</target>
+      </trans-unit>
+      <trans-unit id="changes.invalid">
+        <target>Ungültig</target>
+      </trans-unit>
+      <trans-unit id="changes.visibility">
+        <target>Sichtbarkeit</target>
+      </trans-unit>
+      <trans-unit id="changes.visible">
+        <target>Sichtbar</target>
+      </trans-unit>
+      <trans-unit id="changes.hidden">
+        <target>Verborgen</target>
+      </trans-unit>
+      <trans-unit id="changes.action.move">
+        <target>Verschoben</target>
+      </trans-unit>
+      <trans-unit id="changes.action.copy">
+        <target>Kopiert</target>
+      </trans-unit>
+      <trans-unit id="changes.action.delete">
+        <target>Gelöscht</target>
+      </trans-unit>
+      <trans-unit id="changes.from">
+        <target>Von</target>
+      </trans-unit>
+      <trans-unit id="changes.to">
+        <target>Nach</target>
+      </trans-unit>
+      <trans-unit id="changes.expand">
+        <target>Aufklappen</target>
+      </trans-unit>
+      <trans-unit id="changes.collapse">
+        <target>Einklappen</target>
+      </trans-unit>
       <trans-unit id="validation.required">
         <target>Dieses Feld ist erforderlich.</target>
       </trans-unit>

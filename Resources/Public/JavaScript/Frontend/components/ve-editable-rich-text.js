@@ -8,6 +8,7 @@ import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handle
 import {showEmptyActive} from '@typo3/visual-editor/Shared/local-stores';
 import {dragInProgressStore} from '@typo3/visual-editor/Frontend/stores/drag-store';
 import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
+import {getEditableChangeMetadata} from '@typo3/visual-editor/Frontend/components/editable-change-metadata';
 
 /**
  * Styles are in editable.css
@@ -106,12 +107,26 @@ export class VeEditableRichText extends LitElement {
     });
     this.value = this.editor.getData({skipListItemIds: true});
     this.empty = this.value === '';
-    dataHandlerStore.setInitialData(this.table, this.uid, this.field, this.value);
+    dataHandlerStore.setInitialData(this.table, this.uid, this.field, this.value, getEditableChangeMetadata(this, 'richText'));
 
     // reset CSS
     removeRuleBySelector('.ck.ck-editor__editable_inline > :first-child');
     removeRuleBySelector('.ck.ck-editor__editable_inline > :last-child');
     removeRuleBySelector('.ck-content');
+  }
+
+  /**
+   * @api used by the changes overview
+   */
+  focusEditable() {
+    this.closest('ve-content-element')?.reveal?.();
+    this.style.display = '';
+    if (this.parentElement) {
+      this.parentElement.style.display = '';
+    }
+    this.scrollIntoView({block: 'center', inline: 'nearest', behavior: 'auto'});
+    this.editor?.editing?.view?.focus?.();
+    this.editableElement?.focus({preventScroll: true});
   }
 
   updated(changedProperties) {

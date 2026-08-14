@@ -4,11 +4,7 @@ import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messagi
 import {useDataHandler} from '@typo3/visual-editor/Backend/use-data-handler';
 import {reloadAllChildFrames} from '@typo3/visual-editor/Backend/reload-all-child-frames';
 import {aggregateEditorStates} from '@typo3/visual-editor/Backend/aggregate-editor-states';
-
-/**
- * @type {Map<string, {data: Object, cmdArray: Object[], invalidFields: Object, count: number, invalidCount: number}>}
- */
-const editorStates = new Map();
+import {editorStateStore} from '@typo3/visual-editor/Backend/editor-state-store';
 
 /**
  * @extends {HTMLElement}
@@ -41,7 +37,7 @@ export class VeBackendSaveButton extends LitElement {
     this.saving = false;
     this.onClick = this.#onClick.bind(this);
     this.onKeydown = this.#onKeydown.bind(this);
-    this.disposeUpdateEditorStateListener = null;
+    this.onEditorStateChange = this.updateAggregatedEditorState.bind(this);
     this.disposeDoSaveListener = null;
     this.updateAggregatedEditorState();
   }
@@ -49,9 +45,7 @@ export class VeBackendSaveButton extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
-    if (!this.disposeUpdateEditorStateListener) {
-      this.disposeUpdateEditorStateListener = onMessage('updateEditorState', this.onUpdateEditorState.bind(this));
-    }
+    editorStateStore.addEventListener('change', this.onEditorStateChange);
     if (!this.disposeDoSaveListener) {
       this.disposeDoSaveListener = onMessage('doSave', this.doSave.bind(this));
     }
@@ -61,8 +55,7 @@ export class VeBackendSaveButton extends LitElement {
   }
 
   disconnectedCallback() {
-    this.disposeUpdateEditorStateListener?.();
-    this.disposeUpdateEditorStateListener = null;
+    editorStateStore.removeEventListener('change', this.onEditorStateChange);
     this.disposeDoSaveListener?.();
     this.disposeDoSaveListener = null;
     this.removeEventListener('click', this.onClick);
@@ -94,18 +87,8 @@ export class VeBackendSaveButton extends LitElement {
     `;
   }
 
-  /**
-   *
-   * @param info {{count: number, invalidCount: number}}
-   * @param fromLanguageId {number}
-   */
-  onUpdateEditorState(info, fromLanguageId) {
-    editorStates.set(fromLanguageId, info);
-    this.updateAggregatedEditorState();
-  }
-
   updateAggregatedEditorState() {
-    const {count, invalidCount} = aggregateEditorStates(editorStates);
+    const {count, invalidCount} = aggregateEditorStates(editorStateStore.states);
     this.count = count;
     this.invalidCount = invalidCount;
   }
@@ -118,7 +101,7 @@ export class VeBackendSaveButton extends LitElement {
     const count = this.count;
     const invalidCount = this.invalidCount;
     if (invalidCount > 0) {
-      for (const [languageId, editorState] of editorStates.entries()) {
+      for (const [languageId, editorState] of editorStateStore.states.entries()) {
         if (editorState.invalidCount) {
           sendMessage('focusFirstInvalidField', {languageId});
           break;
@@ -137,7 +120,7 @@ export class VeBackendSaveButton extends LitElement {
       return;
     }
 
-    const mergedInfo = aggregateEditorStates(editorStates);
+    const mergedInfo = aggregateEditorStates(editorStateStore.states);
 
     const updatePageTree = 'pages' in mergedInfo.data;
 
@@ -149,7 +132,7 @@ export class VeBackendSaveButton extends LitElement {
         reloadAllChildFrames();
       }
     } finally {
-      editorStates.clear();
+      editorStateStore.clear();
       this.updateAggregatedEditorState();
       this.saving = false;
     }

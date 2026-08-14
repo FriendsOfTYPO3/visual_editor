@@ -3,9 +3,12 @@
  * @property openModal {{ src: String, title: String, size: 'medium' | 'large' | 'full', type: 'iframe' | 'ajax' }}
  * @property closeModal {null}
  * @property reloadFrames {null}
- * @property updateEditorState {{data: Object, cmdArray: Object[], invalidFields: Object, count: number, invalidCount: number}}
+ * @property updateEditorState {{data: Object, initialData: Object, cmdArray: Object[], cmdMetadata: Object[], fieldMetadata: Object, invalidFields: Object, count: number, invalidCount: number}}
  * @property doSave {null}
  * @property saveEnded {null}
+ * @property discardChanges {{languageId?: number, languageIds?: number[]}|null}
+ * @property changesDiscarded {null}
+ * @property revealChange {{languageId: number, fieldPositionId?: string, scrollPositionId?: string}}
  * @property pageChanged {{pageId: number, languageId: number}}
  * @property openInMiddleFrame {String}
  * @property localStoreChange {{key: String, value: any}}

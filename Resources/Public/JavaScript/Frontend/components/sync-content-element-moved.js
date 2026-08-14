@@ -1,4 +1,6 @@
 import {flipInsertBefore} from '@typo3/visual-editor/Frontend/flip-insert-before';
+import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
+import {refreshEditableChangeMetadataOrders} from '@typo3/visual-editor/Frontend/components/editable-change-metadata';
 
 /**
  * @param {string} value
@@ -88,6 +90,7 @@ export function syncContentElementMoved(detail) {
       return;
     }
     flipInsertBefore(targetElement.parentNode, sourceElement, targetElement.nextSibling);
+    refreshEditableChangeMetadataOrders(dataHandlerStore);
     return;
   }
 
@@ -96,4 +99,5 @@ export function syncContentElementMoved(detail) {
     return;
   }
   flipInsertBefore(targetArea, sourceElement, targetArea.firstChild);
+  refreshEditableChangeMetadataOrders(dataHandlerStore);
 }

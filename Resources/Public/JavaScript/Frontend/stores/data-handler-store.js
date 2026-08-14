@@ -1,12 +1,14 @@
 import {getObjectLeafCount} from '../../Shared/get-object-leaf-count.js';
 
 /**
- * @method addEventListener(type: 'change', listener: (event: CustomEvent<{scope: 'field'|'table'|'global', kind: 'data'|'initial'|'invalid'|'cmd'|'saved', table?: string, uid?: number, field?: string}>) => void): void
+ * @method addEventListener(type: 'change', listener: (event: CustomEvent<{scope: 'field'|'table'|'global', kind: 'data'|'initial'|'metadata'|'invalid'|'cmd'|'saved', table?: string, uid?: number, field?: string}>) => void): void
  */
 class DataHandlerStore extends EventTarget {
   #data = {};
   #initialData = {};
   #cmdArray = [];
+  #cmdMetadata = [];
+  #fieldMetadata = {};
   #invalidFields = {};
 
   get data() {
@@ -19,6 +21,14 @@ class DataHandlerStore extends EventTarget {
 
   get cmdArray() {
     return structuredClone(this.#cmdArray);
+  }
+
+  get cmdMetadata() {
+    return structuredClone(this.#cmdMetadata);
+  }
+
+  get fieldMetadata() {
+    return structuredClone(this.#fieldMetadata);
   }
 
   get invalidFields() {
@@ -43,10 +53,17 @@ class DataHandlerStore extends EventTarget {
    * @param {string} table
    * @param {number} uid
    * @param {string} field
-   * @param {string} value
+   * @param {any} value
+   * @param {Object} [metadata]
    * @return {void}
    */
-  setInitialData(table, uid, field, value) {
+  setInitialData(table, uid, field, value, metadata = undefined) {
+    if (metadata !== undefined) {
+      this.#fieldMetadata[table] = this.#fieldMetadata[table] || {};
+      this.#fieldMetadata[table][uid] = this.#fieldMetadata[table][uid] || {};
+      this.#fieldMetadata[table][uid][field] = structuredClone(metadata);
+    }
+
     if (this.#initialData[table]?.[uid]?.[field] === value) {
       return;
     }
@@ -66,7 +83,57 @@ class DataHandlerStore extends EventTarget {
    * @param {string} table
    * @param {number} uid
    * @param {string} field
-   * @param {string} value
+   * @param {Object} metadata
+   * @param {boolean} dispatchChange
+   * @return {void}
+   */
+  setFieldMetadata(table, uid, field, metadata, dispatchChange = true) {
+    const currentMetadata = this.#fieldMetadata[table]?.[uid]?.[field] || {};
+    const nextMetadata = {...currentMetadata, ...structuredClone(metadata)};
+    if (JSON.stringify(currentMetadata) === JSON.stringify(nextMetadata)) {
+      return;
+    }
+
+    this.#fieldMetadata[table] = this.#fieldMetadata[table] || {};
+    this.#fieldMetadata[table][uid] = this.#fieldMetadata[table][uid] || {};
+    this.#fieldMetadata[table][uid][field] = nextMetadata;
+    if (dispatchChange) {
+      this.#dispatchChange({scope: 'field', kind: 'metadata', table, uid, field});
+    }
+  }
+
+  /**
+   * @param {string} recordKey
+   * @param {number} order
+   * @param {boolean} dispatchChange
+   * @return {void}
+   */
+  updateFieldMetadataOrder(recordKey, order, dispatchChange = true) {
+    if (!Number.isFinite(order)) {
+      return;
+    }
+
+    let hasChanged = false;
+    for (const records of Object.values(this.#fieldMetadata)) {
+      for (const fields of Object.values(records)) {
+        for (const metadata of Object.values(fields)) {
+          if (metadata.recordKey === recordKey && metadata.order !== order) {
+            metadata.order = order;
+            hasChanged = true;
+          }
+        }
+      }
+    }
+    if (hasChanged && dispatchChange) {
+      this.#dispatchChange({scope: 'global', kind: 'metadata'});
+    }
+  }
+
+  /**
+   * @param {string} table
+   * @param {number} uid
+   * @param {string} field
+   * @param {any} value
    * @return {void}
    */
   setData(table, uid, field, value) {
@@ -94,9 +161,10 @@ class DataHandlerStore extends EventTarget {
    * @param {number} uid
    * @param {'move'|'copy'|'delete'} action
    * @param {any} value
+   * @param {Object} [metadata]
    * @return {void}
    */
-  addCmd(table, uid, action, value) {
+  addCmd(table, uid, action, value, metadata = {}) {
     this.#cmdArray.push({
       [table]: {
         [uid]: {
@@ -104,6 +172,7 @@ class DataHandlerStore extends EventTarget {
         },
       },
     });
+    this.#cmdMetadata.push({...structuredClone(metadata), action});
     this.#dispatchChange({scope: 'table', kind: 'cmd', table, uid});
   }
 
@@ -122,6 +191,7 @@ class DataHandlerStore extends EventTarget {
   reset() {
     this.#data = {};
     this.#cmdArray = [];
+    this.#cmdMetadata = [];
     this.#invalidFields = {};
     this.#dispatchChange({scope: 'global', kind: 'saved'});
   }

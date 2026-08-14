@@ -9,6 +9,7 @@ import {getEditValue, insertTextAtSelection} from '@typo3/visual-editor/Frontend
 import {getValidationIssues, normalizeValue} from '@typo3/visual-editor/Frontend/components/ve-editable-text/validation';
 import {getCaretOffset, setCaretPosition} from '@typo3/visual-editor/Frontend/caret-helper';
 import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
+import {getEditableChangeMetadata} from '@typo3/visual-editor/Frontend/components/editable-change-metadata';
 
 /**
  * @extends {HTMLElement}
@@ -116,7 +117,7 @@ export class VeEditableText extends LitElement {
     this.placeholder = this.name;
     this.skipNextValueNormalization = true;
     this.#setSlotText(this.valueInitial);
-    dataHandlerStore.setInitialData(this.table, this.uid, this.field, this.valueInitial);
+    dataHandlerStore.setInitialData(this.table, this.uid, this.field, this.valueInitial, getEditableChangeMetadata(this));
     this.#applyValidationState(this.valueInitial);
   }
 
@@ -155,6 +156,7 @@ export class VeEditableText extends LitElement {
    * @api used by initialize-save-handling.js focusFirstInvalidField function
    */
   focusEditable() {
+    this.closest('ve-content-element')?.reveal?.();
     this.style.display = '';
     if (this.parentElement) {
       this.parentElement.style.display = '';
@@ -591,6 +593,7 @@ export class VeEditableText extends LitElement {
     this.invalid = validationErrors.length > 0;
     this.validationErrors = validationErrors;
 
+    dataHandlerStore.setFieldMetadata(this.table, this.uid, this.field, {validationErrors});
     dataHandlerStore.setInvalid(this.table, this.uid, this.field, this.invalid);
   }
 

@@ -1,6 +1,7 @@
 import Modal from '@typo3/backend/modal.js';
 import {onMessage, sendMessage, stopListeningMessages} from '@typo3/visual-editor/Shared/iframe-messaging';
 import '@typo3/visual-editor/Backend/components/ve-auto-save-toggle';
+import '@typo3/visual-editor/Backend/components/ve-backend-changes-button';
 import '@typo3/visual-editor/Backend/components/ve-backend-save-button';
 import '@typo3/visual-editor/Backend/components/ve-spotlight-toggle';
 import '@typo3/visual-editor/Backend/components/ve-show-empty-toggle';

@@ -49,6 +49,29 @@ export class VeContentElement extends LitElement {
       ?.replace('__UID__', this.uid);
   }
 
+  get changeMetadata() {
+    const order = [...document.querySelectorAll('ve-content-element, ve-editable-text, ve-editable-rich-text')].indexOf(this);
+    const recordKey = this.scrollPositionId || `${this.table}:${this.uid}`;
+    return {
+      recordKey,
+      recordLabel: this.elementName || recordKey,
+      recordType: this.CType || this.table,
+      scrollPositionId: this.scrollPositionId || recordKey,
+      ...(order >= 0 ? {order} : {}),
+    };
+  }
+
+  /**
+   * @api used by the changes overview
+   */
+  reveal() {
+    this.showHidden = true;
+    this.classList.remove('ve-hidden');
+    this.tabIndex = -1;
+    this.scrollIntoView({block: 'center', inline: 'nearest', behavior: 'auto'});
+    this.focus({preventScroll: true});
+  }
+
   /**
    * @param {MouseEvent} event
    */
@@ -69,7 +92,7 @@ export class VeContentElement extends LitElement {
   }
 
   async _delete() {
-    dataHandlerStore.addCmd(this.table, this.uid, 'delete', 1);
+    dataHandlerStore.addCmd(this.table, this.uid, 'delete', 1, this.changeMetadata);
     if (window.veInfo.languageId === 0 && this.table === 'tt_content' && this.scrollPositionId) {
       sendMessage('contentElementDeleted', {
         table: this.table,
@@ -214,7 +237,12 @@ export class VeContentElement extends LitElement {
     }
 
     if (this.hiddenFieldName) {
-      dataHandlerStore.setInitialData(this.table, this.uid, this.hiddenFieldName, !!this.isHidden);
+      dataHandlerStore.setInitialData(this.table, this.uid, this.hiddenFieldName, !!this.isHidden, {
+        ...this.changeMetadata,
+        fieldLabel: lll('changes.visibility'),
+        kind: 'visibility',
+        hidden: true,
+      });
     }
 
     /** @type {HTMLElement} */

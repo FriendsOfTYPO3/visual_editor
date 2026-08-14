@@ -6,6 +6,7 @@ import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messagi
 import {dragInProgressStore} from '@typo3/visual-editor/Frontend/stores/drag-store';
 import {flipInsertBefore} from '@typo3/visual-editor/Frontend/flip-insert-before';
 import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
+import {refreshEditableChangeMetadataOrders} from '@typo3/visual-editor/Frontend/components/editable-change-metadata';
 import {autoNoOverlap, calculateAllDebounced} from '@typo3/visual-editor/Frontend/auto-no-overlap';
 import {DROP_ZONE_LABEL_FIT_DEFAULTS, fitDropZoneLabel} from '@typo3/visual-editor/Frontend/components/ve-drop-zone/label-fitting';
 
@@ -186,6 +187,20 @@ export class VeDropZone extends LitElement {
     }
     event.preventDefault();
     const data = JSON.parse(dataString);
+    const sourceElement = document.getElementById(data.table + ':' + data.uid);
+    const sourceArea = sourceElement?.closest('ve-content-area');
+    const sourceLabel = sourceArea?.columnName
+      || (sourceArea?.colPos !== undefined ? String(sourceArea.colPos) : sourceElement?.getAttribute('colPos'))
+      || `${data.table}:${data.uid}`;
+    const commandMetadata = {
+      ...(sourceElement?.changeMetadata || {
+        recordKey: `${data.table}:${data.uid}`,
+        recordLabel: data.CType || `${data.table}:${data.uid}`,
+        recordType: data.CType || data.table,
+      }),
+      sourceLabel,
+      targetLabel: this.getChangeTargetLabel(),
+    };
 
     const actionData = {
       action: 'paste',
@@ -210,7 +225,7 @@ export class VeDropZone extends LitElement {
         return;
       }
 
-      dataHandlerStore.addCmd(data.table, data.uid, 'copy', actionData);
+      dataHandlerStore.addCmd(data.table, data.uid, 'copy', actionData, commandMetadata);
 
       sendMessage('doSave');
       const unsubscribe = onMessage('saveEnded', () => {
@@ -220,8 +235,6 @@ export class VeDropZone extends LitElement {
       return;
     }
 
-    dataHandlerStore.addCmd(data.table, data.uid, 'move', actionData);
-
     this.isDragHovering = false; // reset
 
     const firstParent = findFirstParent(['ve-content-element', 've-content-area'], this);
@@ -229,7 +242,6 @@ export class VeDropZone extends LitElement {
     if (!firstParent) {
       throw new Error('Cannot find parent ve-content-element or ve-content-area for drop zone');
     }
-    const sourceElement = document.getElementById(data.table + ':' + data.uid);
     if (!sourceElement) {
       throw new Error('Cannot find source element for drop operation: ' + data.table + ':' + data.uid);
     }
@@ -241,12 +253,16 @@ export class VeDropZone extends LitElement {
       case 've-content-element':
         // append after the area brick
         flipInsertBefore(firstParent.parentNode, sourceElement, firstParent.nextSibling);
-        return;
+        break;
       case 've-content-area':
         // append as first child of the column
         flipInsertBefore(firstParent, sourceElement, firstParent.firstChild);
-        return;
+        break;
     }
+
+    refreshEditableChangeMetadataOrders(dataHandlerStore);
+    const movedMetadata = sourceElement.changeMetadata;
+    dataHandlerStore.addCmd(data.table, data.uid, 'move', actionData, {...commandMetadata, ...movedMetadata});
   }
 
   #onDragInProgressChange() {
@@ -500,6 +516,13 @@ export class VeDropZone extends LitElement {
   getVisibleLabelParts() {
     const variants = this.getLabelVariants();
     return variants.find(variant => variant.name === this.labelFit.variant)?.parts || [];
+  }
+
+  getChangeTargetLabel() {
+    return this.getLabelVariants()
+      .find(variant => variant.name === 'full')
+      ?.parts.map(part => part.text)
+      .join(' ') || '';
   }
 
   /**
