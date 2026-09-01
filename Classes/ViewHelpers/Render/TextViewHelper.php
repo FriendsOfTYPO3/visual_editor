@@ -11,6 +11,7 @@ use TYPO3\CMS\Core\Domain\Exception\RecordPropertyNotFoundException;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Html\RteHtmlParser;
+use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Schema\Field\InputFieldType;
@@ -18,7 +19,9 @@ use TYPO3\CMS\Core\Schema\Field\TextFieldType;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
-use TYPO3\CMS\Fluid\ViewHelpers\Format\HtmlViewHelper;
+use TYPO3\CMS\Fluid\ViewHelpers\Format\HtmlViewHelper as FormatHtmlViewHelper;
+use TYPO3\CMS\Fluid\ViewHelpers\Sanitize\HtmlViewHelper as SanitizeHtmlViewHelper;
+use TYPO3\CMS\Fluid\ViewHelpers\Transform\HtmlViewHelper as TransformHtmlViewHelper;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Core\RichtText\RichTextConfigurationService;
 use TYPO3\CMS\VisualEditor\Core\RichtText\RichTextConfigurationServiceDto;
@@ -164,7 +167,7 @@ final class TextViewHelper extends AbstractViewHelper
                 return $this->renderInput($value, $record, $fieldSchema, $label, $canEdit, true);
             }
 
-            return $this->renderRichText($value, $record, $fieldSchema, $label, $canEdit);
+            return $this->renderRichText($value, $record, $fieldSchema, $label, $canEdit, $request);
         }
 
         $table = $record->getMainType();
@@ -254,16 +257,34 @@ final class TextViewHelper extends AbstractViewHelper
         return json_encode($validation, JSON_THROW_ON_ERROR);
     }
 
-    private function renderRichText(string $value, RecordInterface $record, TextFieldType $field, string $label, bool $editMode): RichText
+    private function renderRichText(string $value, RecordInterface $record, TextFieldType $field, string $label, bool $editMode, ServerRequestInterface $request): RichText
     {
         if (!$editMode) {
             $renderingContext = $this->renderingContext ?? throw new InvalidArgumentException('$this->renderingContext is not available', 1772464098);
-            $escapedValue = $renderingContext->getViewHelperInvoker()->invoke(
-                HtmlViewHelper::class,
-                [],
-                $renderingContext,
-                fn(): string => $value,
-            );
+
+            $isBackendRequest = ApplicationType::fromRequest($request)->isBackend();
+            if (!$isBackendRequest) {
+                $escapedValue = $renderingContext->getViewHelperInvoker()->invoke(
+                    FormatHtmlViewHelper::class,
+                    [],
+                    $renderingContext,
+                    fn(): string => $value,
+                );
+            } else {
+                $escapedValue = $renderingContext->getViewHelperInvoker()->invoke(
+                    SanitizeHtmlViewHelper::class,
+                    [],
+                    $renderingContext,
+                    fn(): string => $value,
+                );
+                $escapedValue = $renderingContext->getViewHelperInvoker()->invoke(
+                    TransformHtmlViewHelper::class,
+                    [],
+                    $renderingContext,
+                    fn() => $escapedValue,
+                );
+            }
+
             return new RichText($label, $escapedValue, $value === '', $value);
         }
 

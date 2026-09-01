@@ -1,44 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-  <file source-language="en" datatype="plaintext" original="EXT:visual_editor/Resources/Private/Language/locallang_mod.xlf" date="2026-01-05T12:00:00Z" product-name="cms">
-    <header/>
-    <body>
-      <trans-unit id="mlang_labels_tablabel">
-        <source>Page content</source>
-      </trans-unit>
-      <trans-unit id="mlang_labels_tabdescr">
-        <source>This module allows you to edit webpages, their content as seen by visitors.</source>
-      </trans-unit>
-      <trans-unit id="mlang_tabs_tab">
-        <source>Edit</source>
-      </trans-unit>
-      <trans-unit id="edit_page">
-        <source>Edit page</source>
-      </trans-unit>
-      <trans-unit id="showEmpty">
-        <source>Show empty</source>
-      </trans-unit>
-      <trans-unit id="showHidden">
-        <source>Show hidden</source>
-      </trans-unit>
-      <trans-unit id="viewMode.singleLanguage">
-        <source>Single language</source>
-      </trans-unit>
-      <trans-unit id="viewMode.multiLanguage">
-        <source>Multi language</source>
-      </trans-unit>
-      <trans-unit id="crossOrigin.title">
-        <source>Change backend origin for this language</source>
-      </trans-unit>
-      <trans-unit id="crossOrigin.description">
-        <source>The visual editor can only load and communicate with the page preview when the TYPO3 backend uses the same origin as the site language.</source>
-      </trans-unit>
-      <trans-unit id="crossOrigin.securityNote">
-        <source>This protects browser security boundaries and keeps editor actions like selecting elements, opening modals, and saving changes connected to the correct page.</source>
-      </trans-unit>
-      <trans-unit id="crossOrigin.button">
-        <source>Open backend on the correct origin</source>
-      </trans-unit>
-    </body>
-  </file>
+<xliff
+    xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+    <file source-language="en" datatype="plaintext" original="EXT:visual_editor/Resources/Private/Language/locallang_mod.xlf" date="2026-01-05T12:00:00Z" product-name="cms">
+        <header/>
+        <body>
+            <trans-unit id="mlang_labels_tablabel">
+                <source>Page content</source>
+            </trans-unit>
+            <trans-unit id="mlang_labels_tabdescr">
+                <source>This module allows you to edit webpages, their content as seen by visitors.</source>
+            </trans-unit>
+            <trans-unit id="mlang_tabs_tab">
+                <source>Edit</source>
+            </trans-unit>
+            <trans-unit id="edit_page">
+                <source>Edit page</source>
+            </trans-unit>
+            <trans-unit id="showEmpty">
+                <source>Show empty</source>
+            </trans-unit>
+            <trans-unit id="showHidden">
+                <source>Show hidden</source>
+            </trans-unit>
+            <trans-unit id="viewMode.singleLanguage">
+                <source>Single language</source>
+            </trans-unit>
+            <trans-unit id="viewMode.multiLanguage">
+                <source>Multi language</source>
+            </trans-unit>
+            <trans-unit id="crossOrigin.title">
+                <source>Change backend origin for this language</source>
+            </trans-unit>
+            <trans-unit id="crossOrigin.description">
+                <source>The visual editor can only load and communicate with the page preview when the TYPO3 backend uses the same origin as the site language.</source>
+            </trans-unit>
+            <trans-unit id="crossOrigin.securityNote">
+                <source>This protects browser security boundaries and keeps editor actions like selecting elements, opening modals, and saving changes connected to the correct page.</source>
+            </trans-unit>
+            <trans-unit id="crossOrigin.button">
+                <source>Open backend on the correct origin</source>
+            </trans-unit>
+        </body>
+    </file>
 </xliff>

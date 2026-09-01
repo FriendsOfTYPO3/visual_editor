@@ -110,9 +110,7 @@ readonly class RichTextConfigurationService
         $configuration = $this->replaceAbsolutePathsToRelativeResourcesPath($configuration);
 
         // unless explicitly set, the debug mode is enabled in development context
-        if (!isset($configuration['debug'])) {
-            $configuration['debug'] = ($GLOBALS['TYPO3_CONF_VARS']['BE']['debug'] ?? false) && Environment::getContext()->isDevelopment();
-        }
+        $configuration['debug'] ??= ($GLOBALS['TYPO3_CONF_VARS']['BE']['debug'] ?? false) && Environment::getContext()->isDevelopment();
 
         return $this->eventDispatcher
             ->dispatch(new AfterPrepareConfigurationForEditorEvent($configuration, $richTextConfigurationServiceDto->getData()))->getConfiguration();
