@@ -1,107 +1,105 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-  <file target-language="de" datatype="plaintext" original="EXT:visual_editor/Retargets/Private/Language/locallang.xlf" date="2026-01-05T12:00:00Z" product-name="cms">
-    <header/>
-    <body>
-      <trans-unit id="autosave">
-        <target>Autospeichern</target>
-      </trans-unit>
-      <trans-unit id="autosave.disabled">
-        <target>Zu Arbeitsumgebung wechseln für Autospeichern</target>
-      </trans-unit>
-
-      <trans-unit id="editable.title">
-        <target>%s bearbeiten</target>
-      </trans-unit>
-
-      <trans-unit id="save">
-        <target>Speichern</target>
-      </trans-unit>
-      <trans-unit id="save.change">
-        <target>1 Änderung speichern</target>
-      </trans-unit>
-      <trans-unit id="save.changes">
-        <target>%d Änderungen speichern</target>
-      </trans-unit>
-      <trans-unit id="save.failed">
-        <target>Fehler beim Speichern</target>
-      </trans-unit>
-      <trans-unit id="save.fixInvalidField">
-        <target>1 Fehler beheben</target>
-      </trans-unit>
-      <trans-unit id="save.fixInvalidFields">
-        <target>%d Fehler beheben</target>
-      </trans-unit>
-      <trans-unit id="saving">
-        <target>Wird gespeichert ...</target>
-      </trans-unit>
-      <trans-unit id="validation.required">
-        <target>Dieses Feld ist erforderlich.</target>
-      </trans-unit>
-      <trans-unit id="validation.min">
-        <target>Bitte mindestens %d Zeichen eingeben.</target>
-      </trans-unit>
-      <trans-unit id="validation.max">
-        <target>Bitte nicht mehr als %d Zeichen eingeben.</target>
-      </trans-unit>
-      <trans-unit id="inputDenial.noNewlines">
-        <target>Zeilenumbrüche sind nicht erlaubt.</target>
-      </trans-unit>
-      <trans-unit id="inputDenial.nospace">
-        <target>Leerzeichen sind nicht erlaubt.</target>
-      </trans-unit>
-      <trans-unit id="inputDenial.alpha">
-        <target>Es sind nur Buchstaben erlaubt.</target>
-      </trans-unit>
-      <trans-unit id="inputDenial.num">
-        <target>Es sind nur Zahlen erlaubt.</target>
-      </trans-unit>
-      <trans-unit id="inputDenial.alphanum">
-        <target>Es sind nur Buchstaben und Zahlen erlaubt.</target>
-      </trans-unit>
-      <trans-unit id="inputDenial.alphanum_x">
-        <target>Es sind nur Buchstaben, Zahlen, _ und - erlaubt.</target>
-      </trans-unit>
-
-      <trans-unit id="frontend.confirmCopy">
-        <target>Element kopieren?</target>
-      </trans-unit>
-      <trans-unit id="frontend.confirmCopy.saveAll">
-        <target>Alle Änderungen speichern und Element kopieren?</target>
-      </trans-unit>
-      <trans-unit id="frontend.addContentElement">
-        <target>Neuen Inhalt erstellen in </target>
-      </trans-unit>
-      <trans-unit id="frontend.after">
-        <target>nach</target>
-      </trans-unit>
-      <trans-unit id="frontend.in">
-        <target>in</target>
-      </trans-unit>
-      <trans-unit id="frontend.inColumn">
-        <target>in Spalte</target>
-      </trans-unit>
-      <trans-unit id="frontend.resetChanges">
-        <target>Änderungen zurücksetzen</target>
-      </trans-unit>
-      <trans-unit id="frontend.editContentElement">
-        <target>Inhaltselement bearbeiten</target>
-      </trans-unit>
-      <trans-unit id="frontend.showContentElement">
-        <target>Inhaltselement anzeigen</target>
-      </trans-unit>
-      <trans-unit id="frontend.deleteContentElement">
-        <target>Inhaltselement löschen</target>
-      </trans-unit>
-      <trans-unit id="frontend.addContentElementButton">
-        <target>Inhaltselement hinzufügen</target>
-      </trans-unit>
-      <trans-unit id="frontend.actionBar">
-        <target>Aktionsleiste</target>
-      </trans-unit>
-      <trans-unit id="frontend.editImageButton">
-        <target>Bild bearbeiten</target>
-      </trans-unit>
-    </body>
-  </file>
+<xliff
+    xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+    <file target-language="de" datatype="plaintext" original="EXT:visual_editor/Retargets/Private/Language/locallang.xlf" date="2026-01-05T12:00:00Z" product-name="cms">
+        <header/>
+        <body>
+            <trans-unit id="autosave">
+                <target>Autospeichern</target>
+            </trans-unit>
+            <trans-unit id="autosave.disabled">
+                <target>Zu Arbeitsumgebung wechseln für Autospeichern</target>
+            </trans-unit>
+            <trans-unit id="editable.title">
+                <target>%s bearbeiten</target>
+            </trans-unit>
+            <trans-unit id="save">
+                <target>Speichern</target>
+            </trans-unit>
+            <trans-unit id="save.change">
+                <target>1 Änderung speichern</target>
+            </trans-unit>
+            <trans-unit id="save.changes">
+                <target>%d Änderungen speichern</target>
+            </trans-unit>
+            <trans-unit id="save.failed">
+                <target>Fehler beim Speichern</target>
+            </trans-unit>
+            <trans-unit id="save.fixInvalidField">
+                <target>1 Fehler beheben</target>
+            </trans-unit>
+            <trans-unit id="save.fixInvalidFields">
+                <target>%d Fehler beheben</target>
+            </trans-unit>
+            <trans-unit id="saving">
+                <target>Wird gespeichert ...</target>
+            </trans-unit>
+            <trans-unit id="validation.required">
+                <target>Dieses Feld ist erforderlich.</target>
+            </trans-unit>
+            <trans-unit id="validation.min">
+                <target>Bitte mindestens %d Zeichen eingeben.</target>
+            </trans-unit>
+            <trans-unit id="validation.max">
+                <target>Bitte nicht mehr als %d Zeichen eingeben.</target>
+            </trans-unit>
+            <trans-unit id="inputDenial.noNewlines">
+                <target>Zeilenumbrüche sind nicht erlaubt.</target>
+            </trans-unit>
+            <trans-unit id="inputDenial.nospace">
+                <target>Leerzeichen sind nicht erlaubt.</target>
+            </trans-unit>
+            <trans-unit id="inputDenial.alpha">
+                <target>Es sind nur Buchstaben erlaubt.</target>
+            </trans-unit>
+            <trans-unit id="inputDenial.num">
+                <target>Es sind nur Zahlen erlaubt.</target>
+            </trans-unit>
+            <trans-unit id="inputDenial.alphanum">
+                <target>Es sind nur Buchstaben und Zahlen erlaubt.</target>
+            </trans-unit>
+            <trans-unit id="inputDenial.alphanum_x">
+                <target>Es sind nur Buchstaben, Zahlen, _ und - erlaubt.</target>
+            </trans-unit>
+            <trans-unit id="frontend.confirmCopy">
+                <target>Element kopieren?</target>
+            </trans-unit>
+            <trans-unit id="frontend.confirmCopy.saveAll">
+                <target>Alle Änderungen speichern und Element kopieren?</target>
+            </trans-unit>
+            <trans-unit id="frontend.addContentElement">
+                <target>Neuen Inhalt erstellen in </target>
+            </trans-unit>
+            <trans-unit id="frontend.after">
+                <target>nach</target>
+            </trans-unit>
+            <trans-unit id="frontend.in">
+                <target>in</target>
+            </trans-unit>
+            <trans-unit id="frontend.inColumn">
+                <target>in Spalte</target>
+            </trans-unit>
+            <trans-unit id="frontend.resetChanges">
+                <target>Änderungen zurücksetzen</target>
+            </trans-unit>
+            <trans-unit id="frontend.editContentElement">
+                <target>Inhaltselement bearbeiten</target>
+            </trans-unit>
+            <trans-unit id="frontend.showContentElement">
+                <target>Inhaltselement anzeigen</target>
+            </trans-unit>
+            <trans-unit id="frontend.deleteContentElement">
+                <target>Inhaltselement löschen</target>
+            </trans-unit>
+            <trans-unit id="frontend.addContentElementButton">
+                <target>Inhaltselement hinzufügen</target>
+            </trans-unit>
+            <trans-unit id="frontend.actionBar">
+                <target>Aktionsleiste</target>
+            </trans-unit>
+            <trans-unit id="frontend.editImageButton">
+                <target>Bild bearbeiten</target>
+            </trans-unit>
+        </body>
+    </file>
 </xliff>

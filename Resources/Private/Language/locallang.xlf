@@ -1,107 +1,105 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-  <file source-language="en" datatype="plaintext" original="EXT:visual_editor/Resources/Private/Language/locallang.xlf" date="2026-01-05T12:00:00Z" product-name="cms">
-    <header/>
-    <body>
-      <trans-unit id="autosave">
-        <source>autosave</source>
-      </trans-unit>
-      <trans-unit id="autosave.disabled">
-        <source>to enable autosave, switch to a workspace</source>
-      </trans-unit>
-
-      <trans-unit id="editable.title">
-        <source>edit %s</source>
-      </trans-unit>
-
-      <trans-unit id="save">
-        <source>Save</source>
-      </trans-unit>
-      <trans-unit id="save.change">
-        <source>Save 1 change</source>
-      </trans-unit>
-      <trans-unit id="save.changes">
-        <source>Save %d changes</source>
-      </trans-unit>
-      <trans-unit id="save.failed">
-        <source>Error while saving</source>
-      </trans-unit>
-      <trans-unit id="save.fixInvalidField">
-        <source>Fix an error</source>
-      </trans-unit>
-      <trans-unit id="save.fixInvalidFields">
-        <source>Fix %d errors</source>
-      </trans-unit>
-      <trans-unit id="saving">
-        <source>Saving ...</source>
-      </trans-unit>
-      <trans-unit id="validation.required">
-        <source>This field is required.</source>
-      </trans-unit>
-      <trans-unit id="validation.min">
-        <source>Please enter at least %d characters.</source>
-      </trans-unit>
-      <trans-unit id="validation.max">
-        <source>Please enter no more than %d characters.</source>
-      </trans-unit>
-      <trans-unit id="inputDenial.noNewlines">
-        <source>Line breaks are not allowed.</source>
-      </trans-unit>
-      <trans-unit id="inputDenial.nospace">
-        <source>Spaces are not allowed.</source>
-      </trans-unit>
-      <trans-unit id="inputDenial.alpha">
-        <source>Only letters are allowed.</source>
-      </trans-unit>
-      <trans-unit id="inputDenial.num">
-        <source>Only numbers are allowed.</source>
-      </trans-unit>
-      <trans-unit id="inputDenial.alphanum">
-        <source>Only letters and numbers are allowed.</source>
-      </trans-unit>
-      <trans-unit id="inputDenial.alphanum_x">
-        <source>Only letters, numbers, _ and - are allowed.</source>
-      </trans-unit>
-
-      <trans-unit id="frontend.confirmCopy">
-        <source>copy the element?</source>
-      </trans-unit>
-      <trans-unit id="frontend.confirmCopy.saveAll">
-        <source>Save all changes, and copy the element?</source>
-      </trans-unit>
-      <trans-unit id="frontend.addContentElement">
-        <source>Create new Content in </source>
-      </trans-unit>
-      <trans-unit id="frontend.after">
-        <source>after</source>
-      </trans-unit>
-      <trans-unit id="frontend.in">
-        <source>in</source>
-      </trans-unit>
-      <trans-unit id="frontend.inColumn">
-        <source>in column</source>
-      </trans-unit>
-      <trans-unit id="frontend.resetChanges">
-        <source>reset changes</source>
-      </trans-unit>
-      <trans-unit id="frontend.editContentElement">
-        <source>Edit content element</source>
-      </trans-unit>
-      <trans-unit id="frontend.showContentElement">
-        <source>Show content element</source>
-      </trans-unit>
-      <trans-unit id="frontend.deleteContentElement">
-        <source>Delete content element</source>
-      </trans-unit>
-      <trans-unit id="frontend.addContentElementButton">
-        <source>Add content element</source>
-      </trans-unit>
-      <trans-unit id="frontend.actionBar">
-        <source>Action Bar</source>
-      </trans-unit>
-      <trans-unit id="frontend.editImageButton">
-        <source>Edit Image</source>
-      </trans-unit>
-    </body>
-  </file>
+<xliff
+    xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+    <file source-language="en" datatype="plaintext" original="EXT:visual_editor/Resources/Private/Language/locallang.xlf" date="2026-01-05T12:00:00Z" product-name="cms">
+        <header/>
+        <body>
+            <trans-unit id="autosave">
+                <source>autosave</source>
+            </trans-unit>
+            <trans-unit id="autosave.disabled">
+                <source>to enable autosave, switch to a workspace</source>
+            </trans-unit>
+            <trans-unit id="editable.title">
+                <source>edit %s</source>
+            </trans-unit>
+            <trans-unit id="save">
+                <source>Save</source>
+            </trans-unit>
+            <trans-unit id="save.change">
+                <source>Save 1 change</source>
+            </trans-unit>
+            <trans-unit id="save.changes">
+                <source>Save %d changes</source>
+            </trans-unit>
+            <trans-unit id="save.failed">
+                <source>Error while saving</source>
+            </trans-unit>
+            <trans-unit id="save.fixInvalidField">
+                <source>Fix an error</source>
+            </trans-unit>
+            <trans-unit id="save.fixInvalidFields">
+                <source>Fix %d errors</source>
+            </trans-unit>
+            <trans-unit id="saving">
+                <source>Saving ...</source>
+            </trans-unit>
+            <trans-unit id="validation.required">
+                <source>This field is required.</source>
+            </trans-unit>
+            <trans-unit id="validation.min">
+                <source>Please enter at least %d characters.</source>
+            </trans-unit>
+            <trans-unit id="validation.max">
+                <source>Please enter no more than %d characters.</source>
+            </trans-unit>
+            <trans-unit id="inputDenial.noNewlines">
+                <source>Line breaks are not allowed.</source>
+            </trans-unit>
+            <trans-unit id="inputDenial.nospace">
+                <source>Spaces are not allowed.</source>
+            </trans-unit>
+            <trans-unit id="inputDenial.alpha">
+                <source>Only letters are allowed.</source>
+            </trans-unit>
+            <trans-unit id="inputDenial.num">
+                <source>Only numbers are allowed.</source>
+            </trans-unit>
+            <trans-unit id="inputDenial.alphanum">
+                <source>Only letters and numbers are allowed.</source>
+            </trans-unit>
+            <trans-unit id="inputDenial.alphanum_x">
+                <source>Only letters, numbers, _ and - are allowed.</source>
+            </trans-unit>
+            <trans-unit id="frontend.confirmCopy">
+                <source>copy the element?</source>
+            </trans-unit>
+            <trans-unit id="frontend.confirmCopy.saveAll">
+                <source>Save all changes, and copy the element?</source>
+            </trans-unit>
+            <trans-unit id="frontend.addContentElement">
+                <source>Create new Content in </source>
+            </trans-unit>
+            <trans-unit id="frontend.after">
+                <source>after</source>
+            </trans-unit>
+            <trans-unit id="frontend.in">
+                <source>in</source>
+            </trans-unit>
+            <trans-unit id="frontend.inColumn">
+                <source>in column</source>
+            </trans-unit>
+            <trans-unit id="frontend.resetChanges">
+                <source>reset changes</source>
+            </trans-unit>
+            <trans-unit id="frontend.editContentElement">
+                <source>Edit content element</source>
+            </trans-unit>
+            <trans-unit id="frontend.showContentElement">
+                <source>Show content element</source>
+            </trans-unit>
+            <trans-unit id="frontend.deleteContentElement">
+                <source>Delete content element</source>
+            </trans-unit>
+            <trans-unit id="frontend.addContentElementButton">
+                <source>Add content element</source>
+            </trans-unit>
+            <trans-unit id="frontend.actionBar">
+                <source>Action Bar</source>
+            </trans-unit>
+            <trans-unit id="frontend.editImageButton">
+                <source>Edit Image</source>
+            </trans-unit>
+        </body>
+    </file>
 </xliff>

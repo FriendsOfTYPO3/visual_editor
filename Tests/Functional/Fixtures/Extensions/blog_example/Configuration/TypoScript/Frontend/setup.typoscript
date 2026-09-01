@@ -15,7 +15,7 @@ page {
   }
 }
 plugin.tx_blogexample {
-	persistence {
-		storagePid = 3
-	}
+  persistence {
+    storagePid = 3
+  }
 }
