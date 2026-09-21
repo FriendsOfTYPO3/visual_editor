@@ -82,13 +82,21 @@ readonly class EditModeMiddleware implements MiddlewareInterface
 
     private function handleEdit(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        // The core's PreviewSimulator has already decided whether hidden pages (the
+        // previewed page itself or a hidden ancestor with extendToSubpages) and
+        // scheduled records are visible in this preview. Keep that decision and only
+        // enforce hidden content for editing: resetting includeHiddenPages makes
+        // PageRepository::getPage() return no record for a hidden page, which breaks
+        // e.g. content sliding (ContentObjectRenderer::getSlidePids()).
+        /** @var VisibilityAspect $visibilityAspect */
+        $visibilityAspect = $this->context->getAspect('visibility');
         $this->context->setAspect(
             'visibility',
             new VisibilityAspect(
-                includeHiddenPages: false,
+                includeHiddenPages: $visibilityAspect->includeHiddenPages(),
                 includeHiddenContent: true,
                 includeDeletedRecords: false,
-                includeScheduledRecords: false,
+                includeScheduledRecords: $visibilityAspect->includeScheduledRecords(),
             ),
         );
 
