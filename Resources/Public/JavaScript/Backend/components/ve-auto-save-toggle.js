@@ -49,7 +49,7 @@ export class VeAutoSaveToggle extends LitElement {
     super.connectedCallback();
 
     if (!this.disposeUpdateEditorStateListener) {
-      this.disposeUpdateEditorStateListener = onMessageDebounced('updateEditorState', this.#onEditorStateMessage.bind(this), 300);
+      this.disposeUpdateEditorStateListener = onMessageDebounced('updateEditorState', this.#onEditorStateMessage.bind(this), 1000);
     }
 
     this.addEventListener('click', this.onClick);
