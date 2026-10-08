@@ -244,6 +244,33 @@ The editor interface includes accessible labels, keyboard-focusable controls, va
 
 Final accessibility depends on the project templates, CSS, semantic HTML, and editor-authored content. Drag-and-drop workflows are pointer-oriented, so projects should verify alternative workflows for their editor needs. Project-level accessibility should be checked in the integrated TYPO3 site.
 
+## JavaScript development
+
+Run the Playwright browser tests with Docker or Podman:
+
+```sh
+./Build/Scripts/runTests.sh -s playwright
+```
+
+This installs Composer dependencies when missing, installs the locked npm
+dependencies in a temporary container mount, and runs headless Chromium.
+No local PHP, Node.js, browser, or TYPO3 site setup is required.
+Use `-b podman` to select Podman explicitly. CI uses the same command.
+
+With Node.js 22 or newer, run these commands from the repository root:
+
+```sh
+composer install
+npm ci
+npm test
+npm run test:browser
+npm run lint
+```
+
+Browser tests run headlessly and automatically find or download Chromium on the
+first run. See [browser test instructions](Tests/Browser/README.md) for offline
+setup, Linux system dependencies, and custom browser paths.
+
 ## License and Authors: License type, contributors, contact information
 
 This extension is licensed under the [GPL-2.0-or-later](https://spdx.org/licenses/GPL-2.0-or-later.html) license.
