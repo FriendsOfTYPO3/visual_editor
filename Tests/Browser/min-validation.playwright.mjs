@@ -6,14 +6,14 @@ async function readState(page) {
 
     // A canonical value update must not clear errors in a later Lit render.
     await editor.updateComplete;
-    await new Promise(resolve => {
+    await new Promise((resolve) => {
       requestAnimationFrame(() => requestAnimationFrame(resolve));
     });
     await editor.updateComplete;
 
     // Match the production specifier to share its actual store instance.
     const {dataHandlerStore} = await import(
-      '@typo3/visual-editor/Frontend/stores/data-handler-store'
+      '@typo3/visual-editor/Frontend/stores/data-handler-store',
     );
     const slot = editor.shadowRoot.querySelector('.slot');
 
@@ -32,7 +32,7 @@ async function readState(page) {
 async function createEditor(page) {
   await page.evaluate(async () => {
     const {dataHandlerStore} = await import(
-      '@typo3/visual-editor/Frontend/stores/data-handler-store'
+      '@typo3/visual-editor/Frontend/stores/data-handler-store',
     );
     dataHandlerStore.reset();
     window.TYPO3.lang['validation.min'] = 'Minimum %d characters';
@@ -108,14 +108,14 @@ export async function runMinimumLengthTests(page) {
       await page.evaluate(async () => {
         document.getElementById('min-validation-fixture')?.remove();
         const {dataHandlerStore} = await import(
-          '@typo3/visual-editor/Frontend/stores/data-handler-store'
+          '@typo3/visual-editor/Frontend/stores/data-handler-store',
         );
         dataHandlerStore.reset();
       });
     }
   }
 
-  await test('keyboard deletion preserves raw minimum-length errors after Lit settles', async slot => {
+  await test('keyboard deletion preserves raw minimum-length errors after Lit settles', async (slot) => {
     assertInvalidInput(await readState(page), 'ab');
 
     // Correcting the visible input also removes the pending store change.
@@ -131,13 +131,13 @@ export async function runMinimumLengthTests(page) {
     });
   });
 
-  await test('further keyboard deletion validates input with an unchanged canonical value', async slot => {
+  await test('further keyboard deletion validates input with an unchanged canonical value', async (slot) => {
     await readState(page);
     await slot.press('Backspace');
     assertInvalidInput(await readState(page), 'a');
   });
 
-  await test('blur and refocus keep the normalized optional empty value valid', async slot => {
+  await test('blur and refocus keep the normalized optional empty value valid', async (slot) => {
     await readState(page);
     await page.locator('#outside').focus();
     assertValidEmpty(await readState(page), false);

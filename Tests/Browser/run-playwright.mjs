@@ -15,7 +15,8 @@ import {delimiter, join, resolve, sep} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright';
-import {runMinimumLengthTests} from './min-validation.mjs';
+import {runPlainTextTests} from './plain-text.playwright.mjs';
+import {runMinimumLengthTests} from './min-validation.playwright.mjs';
 
 function browserExecutable() {
   if (process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH) {
@@ -75,8 +76,7 @@ window.TYPO3 = {lang: {'validation.max': 'Max %d', 'inputDenial.noNewlines': 'No
 </script>
 <script type="importmap">${JSON.stringify({imports})}</script>
 <script type="module">
-import {runTests} from '/Resources/Public/JavaScript/Frontend/components/ve-editable-text/plain-text.browser.js';
-window.browserTests = await runTests();
+import '@typo3/visual-editor/Frontend/components/ve-editable-text';
 </script>`;
 
 const server = createServer(async (request, response) => {
@@ -115,15 +115,15 @@ try {
 
   const page = await browser.newPage();
   const errors = [];
-  page.on('pageerror', error => {
+  page.on('pageerror', (error) => {
     errors.push(error.message);
     console.error(error.message);
   });
 
   await page.goto(`http://127.0.0.1:${server.address().port}/`);
-  await page.waitForFunction(() => window.browserTests !== undefined, undefined, {timeout: 10000});
+  await page.waitForFunction(() => customElements.get('ve-editable-text') !== undefined, undefined, {timeout: 10000});
 
-  const results = await page.evaluate(() => window.browserTests);
+  const results = await runPlainTextTests(page);
   results.push(...await runMinimumLengthTests(page));
   console.log(results.join('\n'));
 
