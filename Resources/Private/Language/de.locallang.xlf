@@ -68,7 +68,7 @@
                 <target>Alle Änderungen speichern und Element kopieren?</target>
             </trans-unit>
             <trans-unit id="frontend.addContentElement">
-                <target>Neuen Inhalt erstellen in </target>
+                <target>Neuen Inhalt erstellen in</target>
             </trans-unit>
             <trans-unit id="frontend.after">
                 <target>nach</target>

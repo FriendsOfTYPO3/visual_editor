@@ -68,7 +68,7 @@
                 <source>Save all changes, and copy the element?</source>
             </trans-unit>
             <trans-unit id="frontend.addContentElement">
-                <source>Create new Content in </source>
+                <source>Create new Content in</source>
             </trans-unit>
             <trans-unit id="frontend.after">
                 <source>after</source>
