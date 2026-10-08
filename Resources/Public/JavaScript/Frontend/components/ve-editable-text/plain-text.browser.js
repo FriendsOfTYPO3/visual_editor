@@ -110,6 +110,55 @@ export async function runTests() {
     equal(storedValue(), 'Straßex');
   });
 
+  // Cover both unchanged and changed canonical values for each normalizer.
+  for (const [evalName, initial, entered, normalized] of [
+    ['trim', 'foo', 'foo ', 'foo'],
+    ['trim', 'foo', ' bar ', 'bar'],
+
+    ['upper', 'FOO', 'fOo', 'FOO'],
+    ['upper', 'BASE', 'miXed', 'MIXED'],
+
+    ['lower', 'foo', 'FOO', 'foo'],
+    ['lower', 'base', 'MiXeD', 'mixed'],
+  ]) {
+    await test(`${evalName} keeps the canonical value after edit, blur and refocus: ${JSON.stringify(entered)}`, {
+      value: initial,
+      transform: 'none',
+      validation: {eval: [evalName]},
+    }, async (slot, editor) => {
+      await focus(slot);
+
+      const range = document.createRange();
+      range.selectNodeContents(slot);
+
+      const selection = slot.getRootNode().getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      if (!document.execCommand('insertText', false, entered)) {
+        throw new Error('Browser replacement failed');
+      }
+      await editor.updateComplete;
+
+      // Keep raw input visible while focused, even though the model is normalized.
+      equal(slot.innerText, entered);
+      equal(editor.value, normalized);
+      // An unchanged canonical value produces no pending store change.
+      equal(storedValue(), normalized === initial ? undefined : normalized);
+
+      slot.blur();
+      await editor.updateComplete;
+
+      equal(slot.innerText, normalized);
+      equal(editor.value, normalized);
+
+      await focus(slot);
+
+      equal(slot.innerText, normalized);
+      equal(editor.value, normalized);
+    });
+  }
+
   // Exercise blur before deferred focus work or Lit rendering can complete.
   await test('immediate focus and blur preserves casing before a Lit render', {value: 'Straße'}, async (slot, editor) => {
     slot.focus();
@@ -221,6 +270,143 @@ export async function runTests() {
 
     equal(slot.firstChild, text);
     equal(editor.valueInitial, 'NeW Straße');
+    equal(storedValue(), undefined);
+  });
+
+  // The rendered casing can already match an external update while the raw DOM differs.
+  for (const [initial, transform, updated] of [
+    ['foo', 'uppercase', 'FOO'],
+    ['FOO', 'lowercase', 'foo'],
+    ['Straße', 'uppercase', 'STRASSE'],
+  ]) {
+    await test(`external store updates synchronize raw DOM under ${transform}: ${JSON.stringify(initial)}`, {
+      value: initial,
+      transform,
+    }, async (slot, editor) => {
+      equal(slot.textContent, initial);
+      equal(slot.innerText, updated);
+
+      dataHandlerStore.setData('tt_content', 1, 'header', updated);
+      await editor.updateComplete;
+
+      equal(editor.value, updated);
+      equal(storedValue(), updated);
+      equal(slot.textContent, updated);
+    });
+
+    await test(`immediate focus and blur preserve external store updates under ${transform}: ${JSON.stringify(initial)}`, {
+      value: initial,
+      transform,
+    }, async (slot, editor) => {
+      dataHandlerStore.setData('tt_content', 1, 'header', updated);
+      await editor.updateComplete;
+
+      equal(editor.value, updated);
+      equal(storedValue(), updated);
+
+      // Blur synchronously before the deferred focus callback can synchronize the DOM.
+      slot.focus();
+      slot.blur();
+      await editor.updateComplete;
+
+      equal(editor.value, updated);
+      equal(storedValue(), updated);
+      equal(slot.textContent, updated);
+
+      await frames();
+      await editor.updateComplete;
+
+      equal(editor.value, updated);
+      equal(storedValue(), updated);
+      equal(slot.textContent, updated);
+      equal(editor.matches(':focus-within'), false);
+      equal(slot.matches(':focus'), false);
+    });
+  }
+
+  await test('unfocused value property changes synchronize the displayed text', {value: 'foo', transform: 'none'}, async (slot, editor) => {
+    editor.value = 'bar';
+    await editor.updateComplete;
+
+    equal(editor.value, 'bar');
+    equal(storedValue(), 'bar');
+    equal(slot.innerText, 'bar');
+  });
+
+  await test('unfocused validation updates preserve unchanged raw text nodes under uppercase', {value: 'foo'}, async (slot, editor) => {
+    const text = slot.firstChild;
+
+    editor.validation = {eval: ['trim']};
+    await editor.updateComplete;
+
+    equal(editor.value, 'foo');
+    equal(storedValue(), undefined);
+    equal(slot.textContent, 'foo');
+    equal(slot.firstChild, text);
+    equal(slot.classList.contains('editing'), false);
+    equal(getComputedStyle(slot).textTransform, 'uppercase');
+  });
+
+  await test('unfocused validation updates preserve unchanged rendered line breaks and nodes', {value: 'FIRST\nSECOND'}, async (slot, editor) => {
+    slot.innerHTML = '<div>FIRST<br>SECOND</div>';
+    const block = slot.firstChild;
+    const first = block.firstChild;
+    const second = block.lastChild;
+    const lineBreak = block.childNodes[1];
+
+    equal(slot.innerText, 'FIRST\nSECOND');
+
+    editor.validation = {eval: ['trim']};
+    await editor.updateComplete;
+
+    equal(editor.value, 'FIRST\nSECOND');
+    equal(storedValue(), undefined);
+    equal(slot.innerText, 'FIRST\nSECOND');
+    equal(slot.firstChild, block);
+    equal(block.firstChild, first);
+    equal(block.lastChild, second);
+    equal(block.childNodes[1], lineBreak);
+    equal(slot.classList.contains('editing'), false);
+    equal(getComputedStyle(slot).textTransform, 'uppercase');
+  });
+
+  await test('unfocused validation changes synchronize normalized display', {value: 'foo', transform: 'none'}, async (slot, editor) => {
+    editor.validation = {eval: ['upper']};
+    await editor.updateComplete;
+
+    equal(editor.value, 'FOO');
+    equal(storedValue(), 'FOO');
+    equal(slot.innerText, 'FOO');
+  });
+
+  await test('unfocused external store updates preserve significant whitespace', {value: 'foo', transform: 'none'}, async (slot, editor) => {
+    dataHandlerStore.setData('tt_content', 1, 'header', 'foo ');
+    await editor.updateComplete;
+
+    equal(editor.value, 'foo ');
+    equal(slot.innerText, 'foo ');
+
+    await focus(slot);
+
+    equal(slot.innerText, 'foo ');
+  });
+
+  await test('store notifications preserve raw input while focused', {value: 'foo', transform: 'none', validation: {eval: ['trim']}}, async (slot, editor) => {
+    await focus(slot);
+    append(slot, ' ');
+    await editor.updateComplete;
+
+    dataHandlerStore.setInvalid('tt_content', 1, 'header', true);
+    await editor.updateComplete;
+
+    equal(editor.value, 'foo');
+    equal(slot.innerText, 'foo ');
+
+    slot.blur();
+    await editor.updateComplete;
+    await focus(slot);
+
+    equal(slot.innerText, 'foo');
     equal(storedValue(), undefined);
   });
 

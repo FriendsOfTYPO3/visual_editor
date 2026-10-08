@@ -14,8 +14,18 @@ import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messagi
  * @extends {HTMLElement}
  */
 export class VeEditableText extends LitElement {
+  #pendingNormalizedValue;
+
   static properties = {
     changed: {type: Boolean, reflect: true},
+    /**
+     * Canonical editor value after validation and normalization.
+     *
+     * While editing, the DOM reflects the current user input and may differ from
+     * this normalized value stored in the data handler.
+     *
+     * @type {string}
+     */
     value: {type: String, reflect: true},
 
     name: {type: String},
@@ -121,13 +131,22 @@ export class VeEditableText extends LitElement {
   }
 
   updated(changedProperties) {
+    const isInternalValueUpdate = this.value === this.#pendingNormalizedValue;
+    this.#pendingNormalizedValue = undefined;
     this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
     if (changedProperties.has('value') || changedProperties.has('validation')) {
       if (this.skipNextValueNormalization) {
         this.skipNextValueNormalization = false;
         this.#applyValidationState(this.value);
-      } else {
-        this.#validateAndStore(this.value);
+      } else if (changedProperties.has('validation') || !isInternalValueUpdate || !this.matches(':focus-within')) {
+        // Validate changed rules against the input still visible while editing.
+        const value = changedProperties.has('validation') && this.matches(':focus-within') ?
+          this.#editableTextToStoredText(this.#getSlotText())
+          : this.value;
+        this.#validateAndStore(value);
+        if (!this.matches(':focus-within')) {
+          this.#setSlotText(this.value);
+        }
       }
     }
 
@@ -360,8 +379,8 @@ export class VeEditableText extends LitElement {
     this.valueInitial = dataHandlerStore.initialData[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
     const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
     const isFocused = this.matches(':focus-within');
-    // Unfocused innerText may be case-transformed; compare the raw model instead.
-    if (!isFocused && storedValue?.trim() !== this.value.trim()) {
+    // Unfocused innerText may be case-transformed; compare the canonical model instead.
+    if (!isFocused && storedValue !== this.value) {
       this.skipNextValueNormalization = true;
       this.value = storedValue ?? this.value;
       this.#setSlotText(this.value);
@@ -374,12 +393,23 @@ export class VeEditableText extends LitElement {
    */
   #setSlotText(value) {
     const element = this.#getSlot();
-    // only change if something changes, otherwise the cursor position would reset on call
-    if (element && element.innerText !== value) {
+    if (!element) {
+      return false;
+    }
+
+    // Compare rendered line breaks without inherited CSS casing.
+    // Keep unchanged text nodes and selections intact.
+    const wasEditing = element.classList.contains('editing');
+    element.classList.toggle('editing', true);
+    try {
+      if (element.innerText === value) {
+        return false;
+      }
       element.innerText = value;
       return true;
+    } finally {
+      element.classList.toggle('editing', wasEditing);
     }
-    return false;
   }
 
   #getSlotText() {
@@ -501,6 +531,7 @@ export class VeEditableText extends LitElement {
         focused: false,
       }, 'parent');
       this.#setSlotText(this.#validateAndStore(this.#editableTextToStoredText(this.#getSlotText())));
+      this.#applyValidationState(this.value);
     } finally {
       this.#getSlot().classList.remove('editing');
     }
@@ -568,7 +599,6 @@ export class VeEditableText extends LitElement {
    * @returns {string}
    */
   #validateAndStore(value) {
-    this.value = value;
     this.#applyValidationState(value);
 
     let normalizedValue = normalizeValue(value, this.validation).text;
@@ -583,6 +613,11 @@ export class VeEditableText extends LitElement {
       normalizedValue = normalizedValue.slice(0, max);
     }
 
+    // The input was already validated; its canonical value may differ while focused.
+    if (this.value !== normalizedValue) {
+      this.#pendingNormalizedValue = normalizedValue;
+      this.value = normalizedValue;
+    }
     dataHandlerStore.setData(this.table, this.uid, this.field, normalizedValue);
     return normalizedValue;
   }

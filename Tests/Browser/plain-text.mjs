@@ -1,7 +1,7 @@
 /**
  * Runs editor JavaScript components directly in headless Chromium using
  * TYPO3's Composer-provided browser modules, without a running TYPO3 instance.
- * Checks text casing, normalization, focus/blur, selections, and store updates.
+ * Checks casing, normalization, keyboard validation, focus/blur, and selections.
  * Uses a minimal page and the JavaScript store; PHP DataHandler execution,
  * database persistence, and full TYPO3 save/reload are outside its scope.
  * Browser coverage is limited to Chromium.
@@ -15,6 +15,7 @@ import {delimiter, join, resolve, sep} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright';
+import {runMinimumLengthTests} from './min-validation.mjs';
 
 function browserExecutable() {
   if (process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH) {
@@ -123,6 +124,7 @@ try {
   await page.waitForFunction(() => window.browserTests !== undefined, undefined, {timeout: 10000});
 
   const results = await page.evaluate(() => window.browserTests);
+  results.push(...await runMinimumLengthTests(page));
   console.log(results.join('\n'));
 
   const failures = results.filter(result => result.startsWith('FAIL'));
