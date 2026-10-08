@@ -359,9 +359,9 @@ export class VeEditableText extends LitElement {
     this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
     this.valueInitial = dataHandlerStore.initialData[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
     const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
-    const slot = this.#getSlot();
     const isFocused = this.matches(':focus-within');
-    if (!isFocused && storedValue?.trim() !== slot?.innerText?.trim()) {
+    // Unfocused innerText may be case-transformed; compare the raw model instead.
+    if (!isFocused && storedValue?.trim() !== this.value.trim()) {
       this.skipNextValueNormalization = true;
       this.value = storedValue ?? this.value;
       this.#setSlotText(this.value);
@@ -470,6 +470,8 @@ export class VeEditableText extends LitElement {
   }
 
   #handleFocus() {
+    // Keep the raw text visible until blur has finished reading and storing it.
+    this.#getSlot().classList.add('editing');
     this.focused = true;
     sendMessage('editableFieldFocusChanged', {
       fieldPositionId: this.fieldPositionId,
@@ -479,6 +481,9 @@ export class VeEditableText extends LitElement {
     // in chromium, we need to wait until we can the caret position
     requestAnimationFrame(() => {
       const element = this.#getSlot();
+      if (!element?.matches(':focus')) {
+        return;
+      }
       const caret = getCaretOffset(element);
       const newCaretPosition = this.#storedTextToEditableText(this.value.slice(0, caret)).length;
 
@@ -489,12 +494,16 @@ export class VeEditableText extends LitElement {
   }
 
   #handleBlur() {
-    this.focused = false;
-    sendMessage('editableFieldFocusChanged', {
-      fieldPositionId: this.fieldPositionId,
-      focused: false,
-    }, 'parent');
-    this.#setSlotText(this.#validateAndStore(this.#editableTextToStoredText(this.#getSlotText())));
+    try {
+      this.focused = false;
+      sendMessage('editableFieldFocusChanged', {
+        fieldPositionId: this.fieldPositionId,
+        focused: false,
+      }, 'parent');
+      this.#setSlotText(this.#validateAndStore(this.#editableTextToStoredText(this.#getSlotText())));
+    } finally {
+      this.#getSlot().classList.remove('editing');
+    }
   }
 
   /**
@@ -651,6 +660,10 @@ export class VeEditableText extends LitElement {
       box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.50) inset;
       backdrop-filter: blur(10px) invert(20%);
       outline-color: #5432fe;
+    }
+
+    .slot.editing {
+      text-transform: none !important;
     }
 
     .slot.block {
