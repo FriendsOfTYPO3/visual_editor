@@ -19,6 +19,7 @@ final readonly class ContentArea
         private int $tx_container_parent,
         private array $allowedContentTypes = [],
         private array $disallowedContentTypes = [],
+        private bool $adoptParent = true,
     ) {
     }
 
@@ -39,6 +40,7 @@ final readonly class ContentArea
     {
         return [
             'tx_container_parent' => $this->tx_container_parent,
+            'adoptParent' => $this->adoptParent,
         ];
     }
 

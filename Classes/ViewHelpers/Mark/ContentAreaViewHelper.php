@@ -58,6 +58,7 @@ final class ContentAreaViewHelper extends AbstractViewHelper
         $this->registerArgument('colPos', 'int', 'The colPos number', true);
         // this class is a 100% copy of the core ContentAreaViewHelper, it is here for adding the tx_container_parent argument and making it available for TYPO3 13
         $this->registerArgument('txContainerParent', 'int', 'if you have EXT:container you need to add record.tx_container_parent', false, 0);
+        $this->registerArgument('adoptParent', 'bool', 'By default the content area takes over the attributes of its parent element and replaces it. Set it to false to keep the parent. The content area then does not change the layout.', false, true);
     }
 
     public function render(): string
@@ -77,18 +78,19 @@ final class ContentAreaViewHelper extends AbstractViewHelper
 
         $colPos = (int)$this->arguments['colPos'];
         $txContainerParent = (int)$this->arguments['txContainerParent'];
+        $adoptParent = (bool)$this->arguments['adoptParent'];
 
         $event = $this->eventDispatcher->dispatch(
             new RenderContentAreaEvent(
                 renderedContentArea: $renderedContentArea,
-                contentArea: $this->getContentArea($request, $colPos, $txContainerParent),
+                contentArea: $this->getContentArea($request, $colPos, $txContainerParent, $adoptParent),
                 request: $request,
             ),
         );
         return $event->getRenderedContentArea();
     }
 
-    private function getContentArea(ServerRequestInterface $request, int $colPos, int $txContainerParent): ContentArea
+    private function getContentArea(ServerRequestInterface $request, int $colPos, int $txContainerParent, bool $adoptParent): ContentArea
     {
         if ($txContainerParent) {
             // TODO combine this with the code from getAllowedContentTypes and getDisallowedContentTypes to avoid multiple calls to BackendUtility::getRecord and Registry::getColPosName
@@ -109,6 +111,7 @@ final class ContentAreaViewHelper extends AbstractViewHelper
                 tx_container_parent: $txContainerParent,
                 allowedContentTypes: $allowedContentTypes,
                 disallowedContentTypes: $disallowedContentTypes,
+                adoptParent: $adoptParent,
             );
         }
 
@@ -146,6 +149,7 @@ final class ContentAreaViewHelper extends AbstractViewHelper
                     tx_container_parent: 0,
                     allowedContentTypes: $allowed,
                     disallowedContentTypes: $disallowed,
+                    adoptParent: $adoptParent,
                 );
             }
         }

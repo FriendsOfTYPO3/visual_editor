@@ -24,7 +24,7 @@ final class ContentAreaTest extends TestCase
         self::assertSame(42, $subject->getColPos());
         self::assertSame('main', $subject->getName());
         self::assertSame(
-            ['tx_container_parent' => 17],
+            ['tx_container_parent' => 17, 'adoptParent' => true],
             $subject->getConfiguration()
         );
         self::assertSame(['text', 'textmedia'], $subject->getAllowedContentTypes());
@@ -42,6 +42,19 @@ final class ContentAreaTest extends TestCase
 
         self::assertSame([], $subject->getAllowedContentTypes());
         self::assertSame([], $subject->getDisallowedContentTypes());
-        self::assertSame(['tx_container_parent' => 0], $subject->getConfiguration());
+        self::assertSame(['tx_container_parent' => 0, 'adoptParent' => true], $subject->getConfiguration());
+    }
+
+    #[Test]
+    public function canKeepTheParentElement(): void
+    {
+        $subject = new ContentArea(
+            colPos: 0,
+            name: 'main',
+            tx_container_parent: 0,
+            adoptParent: false
+        );
+
+        self::assertSame(['tx_container_parent' => 0, 'adoptParent' => false], $subject->getConfiguration());
     }
 }

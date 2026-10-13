@@ -13,6 +13,8 @@ export class VeContentArea extends LitElement {
     disallowedContentTypes: {type: String},
     columnName: {type: String},
     tx_container_parent: {type: Number},
+    // stays where it is, does not take over the parent and does not change the layout of the page
+    standalone: {type: Boolean},
 
     showElementOverlay: {type: Boolean, attribute: false},
   };
@@ -38,8 +40,8 @@ export class VeContentArea extends LitElement {
   firstUpdated(changedProperties) {
     /** @type {HTMLElement} */
     const element = this;
-    if (element.getAttribute('was')) {
-      // already processed
+    if (element.getAttribute('was') || element.hasAttribute('standalone')) {
+      // already processed or not meant to replace the parent
       return;
     }
     const parent = element.parentElement;
@@ -119,6 +121,16 @@ export class VeContentArea extends LitElement {
     :host {
       display: block;
       position: relative;
+    }
+
+    /* the elements are laid out as if the content area was not there */
+    :host([standalone]) {
+      display: contents;
+    }
+
+    /* the drop zone at the start of the area must not take a cell of the grid of the parent */
+    :host([standalone]) ve-drop-zone {
+      position: absolute;
     }
 
     .ve-content-area {

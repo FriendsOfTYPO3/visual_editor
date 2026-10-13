@@ -45,6 +45,11 @@ final readonly class RenderContentAreaEventListener
         $columnName = $event->getContentArea()->getName();
         $tag->addAttribute('columnName', $this->localizationService->tryTranslation($columnName));
 
+        if (($event->getContentArea()->getConfiguration()['adoptParent'] ?? true) === false) {
+            // the content area stays where it is and does not change the layout
+            $tag->addAttribute('standalone', 'true');
+        }
+
         $extContainer = $event->getContentArea()->getConfiguration()['container'] ?? null;
         if ($extContainer instanceof Container) {
             $localizedUid = $extContainer->getContainerRecord()['_ORIG_uid'] ?? $extContainer->getContainerRecord()['_LOCALIZED_UID'] ?? $extContainer->getUidOfLiveWorkspace();

@@ -183,6 +183,25 @@ search for:
   </f:mark.contentArea>
   ````
 
+#### Keeping the layout of the parent element (`adoptParent`)
+
+By default the content area takes over the attributes (`class`, `id`, ...) of the element it sits in and replaces that element. The elements are then children of the content area. If your CSS depends on the markup, for example a CSS grid whose items must be direct children of the grid, or `main > section`, this changes the layout in the edit mode.
+
+With `adoptParent="{false}"` of `f:mark.contentArea` the parent element stays as it is. The content area is not part of the layout (`display: contents`), so the elements are laid out as before. Selectors with a child combinator no longer match the elements directly, so the edit mode needs a few CSS lines, for example:
+
+````html
+<f:mark.contentArea colPos="0" adoptParent="{false}">
+  <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{colPos: '0'}"/>
+</f:mark.contentArea>
+````
+
+````css
+/* edit mode: the elements are children of ve-content-area, which is not part of the layout */
+.grid > ve-content-area > * {
+  grid-column: body-content-start / body-content-end;
+}
+````
+
 ## PSR-14 events
 
 ### `ModifyNewContentElementWizardUrlParameterEvent`
