@@ -40,7 +40,7 @@ export class VeIframePopup extends LitElement {
         }
 
         button:focus-visible {
-            outline: 2px solid #5432fe;
+            outline: 2px solid var(--ve-accent, #5432fe);
             outline-offset: 2px;
         }
     `;
