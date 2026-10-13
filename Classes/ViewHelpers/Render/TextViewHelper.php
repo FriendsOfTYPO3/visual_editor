@@ -352,6 +352,8 @@ final class TextViewHelper extends AbstractViewHelper
             $this->assetCollector->addJavaScriptModule($importModule['module']);
         }
 
+        // TYPO3 only adds the CKEditor UI styles for backend form fields; priority keeps them before editable.css
+        $this->assetCollector->addStyleSheet('ve-ckeditor', 'EXT:rte_ckeditor/Resources/Public/Css/editor.css', [], ['priority' => true]);
         $this->assetCollector->addJavaScriptModule('@typo3/ckeditor5/translations/' . $config['language']['ui'] . '.js');
         return [json_encode($config, JSON_THROW_ON_ERROR), $richtextConfiguration['proc.'] ?? []];
     }
