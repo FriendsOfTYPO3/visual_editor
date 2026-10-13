@@ -19,6 +19,8 @@
  * @property syncContentElementDeleted {{languageId: number, table: string, scrollPositionId: string}}
  * @property contentElementMoved {{table: string, scrollPositionId: string, mode: 'after', targetScrollPositionId: string}|{table: string, scrollPositionId: string, mode: 'area-start', colPos: number, containerScrollPositionId: string|null}}
  * @property syncContentElementMoved {{languageId: number, table: string, scrollPositionId: string, mode: 'after', targetScrollPositionId: string}|{languageId: number, table: string, scrollPositionId: string, mode: 'area-start', colPos: number, containerScrollPositionId: string|null}}
+ * @property appearanceDraftChanged {{table: string, scrollPositionId: string, values: Record<string, string>}}
+ * @property syncAppearanceDraft {{languageId: number, table: string, scrollPositionId: string, values: Record<string, string>}}
  * @property iframeLoadingStarted {null}
  */
 
