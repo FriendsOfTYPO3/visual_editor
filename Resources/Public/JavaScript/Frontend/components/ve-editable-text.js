@@ -634,31 +634,47 @@ export class VeEditableText extends LitElement {
       --padding-right: calc(4px + var(--button-size) * var(--button-count) + 4px * 2 * var(--button-count));
       padding: 4px var(--padding-right) 4px 4px;
       margin: -4px;
-      outline: 0.25rem solid transparent;
+      outline: 2px solid transparent;
+      outline-offset: 0;
 
-      transition: backdrop-filter 0.2s;
+      transition: outline-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 
       &:before {
         content: attr(data-placeholder);
-        font-style: italic;
       }
     }
 
     .slot:hover,
-    .slot:focus,
-    .slot.highlighted,
-    .slot.empty {
-      box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.50) inset;
-      backdrop-filter: blur(10px) invert(20%);
-      outline-color: #5432fe;
+    .slot.empty:hover {
+      outline-color: color-mix(in srgb, var(--ve-accent, #5432fe) 55%, transparent);
+      background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 8%, transparent);
     }
+
+    .slot:focus,
+    .slot.highlighted {
+      outline-color: var(--ve-accent, #5432fe);
+      background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 12%, transparent);
+    }
+
+    .slot.empty {
+      outline-style: solid;
+      outline-color: color-mix(in srgb, var(--ve-accent, #5432fe) 10%, transparent);
+      background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 4%, transparent);
+      background-image: repeating-linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--ve-accent, #5432fe) 8%, transparent) 0 3px,
+        transparent 3px 8px
+      );
+    }
+
 
     .slot.block {
       display: block;
     }
 
     .slot.changed {
-      backdrop-filter: blur(10px) hue-rotate(120deg) invert(30%);
+      background-color: color-mix(in srgb, var(--ve-success, #3b9e3b) 10%, transparent);
+      box-shadow: inset 3px 0 0 var(--ve-success, #3b9e3b);
     }
 
     .slot.invalid {
