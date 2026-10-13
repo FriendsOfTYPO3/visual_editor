@@ -12,25 +12,34 @@ let overlayPathEl = null;
 let currentTargets = [];
 let isActive = false;
 let listenersAdded = false;
+let updateScheduled = false;
+let lastPathD = null;
+
+// Size of the whole document; the overlay is anchored to the document (not the viewport),
+// so the browser scrolls it together with the content and the holes never lag behind.
+let docWidth = 0;
+let docHeight = 0;
 
 const HOLE_PADDING_BLOCK = 8; // top/bottom padding around highlighted element
 const HOLE_PADDING_INLINE = 10; // left/right padding around highlighted element
 
 const EPS = 1e-6; // float compare tolerance
 
-const resizeObserver = new ResizeObserver(() => onWindowChanged());
-const mutationObserver = new MutationObserver(() => onWindowChanged());
+const resizeObserver = new ResizeObserver(() => scheduleUpdate());
+const mutationObserver = new MutationObserver(() => scheduleUpdate());
 
 function ensureStyle() {
   if (styleEl) return;
 
   const css = `
-/* SVG overlay that blocks clicks only where it is painted (outside the holes). */
+/* SVG overlay that blocks clicks only where it is painted (outside the holes).
+   It is positioned in document coordinates; width/height are set inline. */
 .spotlight-overlay-svg {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  max-height: none;
   z-index: 999999;
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -69,11 +78,17 @@ function ensureOverlay() {
   overlayPathEl.setAttribute('fill', 'rgba(0,0,0,0.8)');
   overlayPathEl.setAttribute('fill-rule', 'evenodd'); // outer rect minus holes
 
-  overlaySvgEl.appendChild(overlayPathEl);
-  document.body.appendChild(overlaySvgEl);
+  overlaySvgEl.setAttribute('preserveAspectRatio', 'none');
 
-  updateViewport();
-  updateOverlayPath(); // initialize with empty (no holes)
+  overlaySvgEl.appendChild(overlayPathEl);
+  document.documentElement.appendChild(overlaySvgEl);
+
+  // After the fade-out the overlay is collapsed, so it cannot keep the document scrollable.
+  overlaySvgEl.addEventListener('transitionend', () => {
+    if (!isActive) collapseOverlay();
+  });
+
+  collapseOverlay();
 }
 
 function ensureInfrastructure() {
@@ -81,23 +96,39 @@ function ensureInfrastructure() {
   ensureOverlay();
 }
 
-function updateViewport() {
-  if (!overlaySvgEl) return;
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
+function setOverlaySize(width, height) {
+  // Inline style, because site CSS such as `svg {max-width: 100%; height: auto}`
+  // would override the width/height attributes.
+  overlaySvgEl.style.width = `${width}px`;
+  overlaySvgEl.style.height = `${height}px`;
+  overlaySvgEl.setAttribute('width', String(width));
+  overlaySvgEl.setAttribute('height', String(height));
+  overlaySvgEl.setAttribute('viewBox', `0 0 ${width} ${height}`);
+}
 
-  overlaySvgEl.setAttribute('width', String(vw));
-  overlaySvgEl.setAttribute('height', String(vh));
-  overlaySvgEl.setAttribute('viewBox', `0 0 ${vw} ${vh}`);
-  overlaySvgEl.setAttribute('preserveAspectRatio', 'none');
+function collapseOverlay() {
+  if (!overlaySvgEl) return;
+  setOverlaySize(0, 0);
+  docWidth = 0;
+  docHeight = 0;
+  lastPathD = null;
+}
+
+function updateDocumentSize() {
+  if (!overlaySvgEl) return;
+
+  // Measure with the overlay collapsed, otherwise it inflates the scroll size itself
+  // and the document could never shrink again.
+  setOverlaySize(0, 0);
+  const root = document.scrollingElement || document.documentElement;
+  docWidth = Math.max(root.scrollWidth, root.clientWidth);
+  docHeight = Math.max(root.scrollHeight, root.clientHeight);
+  setOverlaySize(docWidth, docHeight);
 }
 
 function buildOverlayPathD(holes) {
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-
-  // Full viewport rectangle
-  let d = `M 0 0 H ${vw} V ${vh} H 0 Z`;
+  // Full document rectangle
+  let d = `M 0 0 H ${docWidth} V ${docHeight} H 0 Z`;
 
   // Each hole rectangle; with fill-rule: evenodd, these become cut-outs
   for (const hole of holes) {
@@ -112,14 +143,11 @@ function buildOverlayPathD(holes) {
   return d;
 }
 
-function clampRectToViewport(r) {
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-
-  const x1 = Math.max(0, Math.min(vw, r.x));
-  const y1 = Math.max(0, Math.min(vh, r.y));
-  const x2 = Math.max(0, Math.min(vw, r.x + r.w));
-  const y2 = Math.max(0, Math.min(vh, r.y + r.h));
+function clampRectToDocument(r) {
+  const x1 = Math.max(0, Math.min(docWidth, r.x));
+  const y1 = Math.max(0, Math.min(docHeight, r.y));
+  const x2 = Math.max(0, Math.min(docWidth, r.x + r.w));
+  const y2 = Math.max(0, Math.min(docHeight, r.y + r.h));
 
   const w = Math.max(0, x2 - x1);
   const h = Math.max(0, y2 - y1);
@@ -138,7 +166,7 @@ function clampRectToViewport(r) {
  */
 function unionRects(rects) {
   const normalized = rects
-    .map(clampRectToViewport)
+    .map(clampRectToDocument)
     .filter(r => r.w > EPS && r.h > EPS);
 
   if (normalized.length <= 1) return normalized;
@@ -288,8 +316,8 @@ function computeHolesFromTargets() {
     const rect = el.getBoundingClientRect();
     if (!rect || (rect.width <= EPS && rect.height <= EPS)) continue;
 
-    const x = rect.left - HOLE_PADDING_INLINE;
-    const y = rect.top - HOLE_PADDING_BLOCK;
+    const x = rect.left + window.scrollX - HOLE_PADDING_INLINE;
+    const y = rect.top + window.scrollY - HOLE_PADDING_BLOCK;
     const w = rect.width + HOLE_PADDING_INLINE * 2;
     const h = rect.height + HOLE_PADDING_BLOCK * 2;
 
@@ -301,28 +329,55 @@ function computeHolesFromTargets() {
 }
 
 function updateOverlayPath() {
-  if (!overlayPathEl) return;
+  if (!overlayPathEl || !isActive) return;
 
-  currentTargets = selectElements(currentSelectorToHighlight);
-  updateViewport();
+  updateDocumentSize();
 
-  if (!isActive || !currentTargets.length) {
-    overlayPathEl.setAttribute('d', buildOverlayPathD([]));
-    return;
-  }
+  const d = buildOverlayPathD(computeHolesFromTargets());
+  if (d === lastPathD) return;
 
-  const holes = computeHolesFromTargets();
-  overlayPathEl.setAttribute('d', buildOverlayPathD(holes));
+  lastPathD = d;
+  overlayPathEl.setAttribute('d', d);
 }
 
-function onWindowChanged() {
+function isSameTargetList(a, b) {
+  return a.length === b.length && a.every((el, i) => el === b[i]);
+}
+
+/**
+ * Re-selects the targets and only re-observes them when the list changed.
+ * Re-observing an unchanged list would make the ResizeObserver fire again.
+ */
+function refreshTargets() {
+  const targets = selectElements(currentSelectorToHighlight);
+  if (isSameTargetList(targets, currentTargets)) return;
+
+  currentTargets = targets;
+  observeTargets();
+}
+
+function runScheduledUpdate() {
+  updateScheduled = false;
   if (!isActive) return;
+
+  refreshTargets();
   updateOverlayPath();
 }
 
-function addListeners() {
-  if (listenersAdded) return;
-  listenersAdded = true;
+/**
+ * Coalesces all change notifications into at most one update per frame.
+ */
+function scheduleUpdate() {
+  if (!isActive || updateScheduled) return;
+  updateScheduled = true;
+  requestAnimationFrame(runScheduledUpdate);
+}
+
+function observeTargets() {
+  resizeObserver.disconnect();
+  mutationObserver.disconnect();
+
+  resizeObserver.observe(document.documentElement);
 
   currentTargets.forEach((el) => {
     if (!(el instanceof Element)) return;
@@ -345,10 +400,16 @@ function addListeners() {
       });
     }
   });
+}
 
-  document.addEventListener('toggle', onWindowChanged, {capture: true});
-  window.addEventListener('resize', onWindowChanged);
-  window.addEventListener('scroll', onWindowChanged, {passive: true});
+function addListeners() {
+  if (listenersAdded) return;
+  listenersAdded = true;
+
+  observeTargets();
+
+  document.addEventListener('toggle', scheduleUpdate, {capture: true});
+  window.addEventListener('resize', scheduleUpdate);
 }
 
 function removeListeners() {
@@ -358,9 +419,8 @@ function removeListeners() {
   resizeObserver.disconnect();
   mutationObserver.disconnect();
 
-  document.removeEventListener('toggle', onWindowChanged, {capture: true});
-  window.removeEventListener('resize', onWindowChanged);
-  window.removeEventListener('scroll', onWindowChanged);
+  document.removeEventListener('toggle', scheduleUpdate, {capture: true});
+  window.removeEventListener('resize', scheduleUpdate);
 }
 
 /**
@@ -429,14 +489,17 @@ export function highlight(selectorToHighlight) {
  * Deactivates the spotlight overlay.
  */
 export function reset() {
+  const wasActive = isActive;
+
   isActive = false;
   currentTargets = [];
   currentSelectorToHighlight = null;
 
   if (overlaySvgEl) {
     overlaySvgEl.classList.remove('spotlight-overlay-svg--active');
+    // An active overlay is collapsed once its fade-out has finished (transitionend).
+    if (!wasActive) collapseOverlay();
   }
 
   removeListeners();
-  updateOverlayPath();
 }
