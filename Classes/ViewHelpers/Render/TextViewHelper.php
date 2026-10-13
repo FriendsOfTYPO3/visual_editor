@@ -16,7 +16,6 @@ use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Schema\Field\InputFieldType;
 use TYPO3\CMS\Core\Schema\Field\TextFieldType;
-use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 use TYPO3\CMS\Fluid\ViewHelpers\Format\HtmlViewHelper as FormatHtmlViewHelper;
@@ -30,6 +29,7 @@ use TYPO3\CMS\VisualEditor\EditableResult\RichText;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 use TYPO3\CMS\VisualEditor\Service\ModelToRawRecordService;
+use TYPO3\CMS\VisualEditor\Service\RecordSchemaService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\InvalidArgumentValueException;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
@@ -68,7 +68,7 @@ final class TextViewHelper extends AbstractViewHelper
     public function __construct(
         private readonly EditModeService $editModeService,
         private readonly RecordFactory $recordFactory,
-        private readonly TcaSchemaFactory $tcaSchema,
+        private readonly RecordSchemaService $recordSchema,
         private readonly RteHtmlParser $rteHtmlParser,
         private readonly AssetCollector $assetCollector,
         private readonly RichTextConfigurationService $richTextConfigurationService,
@@ -150,7 +150,7 @@ final class TextViewHelper extends AbstractViewHelper
 
         $canEdit = $this->editModeService->canEditField($record, $field, $request);
 
-        $schema = $this->tcaSchema->get($record->getFullType());
+        $schema = $this->recordSchema->getSchema($record);
         $tableLabel = $schema->getTitle($this->localizationService->tryTranslation(...));
 
         $fieldSchema = $schema->getField($field);
@@ -317,7 +317,7 @@ final class TextViewHelper extends AbstractViewHelper
      */
     private function getOptions(RecordInterface $record, string $field): array
     {
-        $schema = $this->tcaSchema->get($record->getFullType());
+        $schema = $this->recordSchema->getSchema($record);
         $richtextConfiguration = $this->richtext->getConfiguration(
             $record->getMainType(),
             $field,

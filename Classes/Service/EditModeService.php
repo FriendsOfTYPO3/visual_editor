@@ -15,7 +15,6 @@ use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
-use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 
@@ -26,7 +25,7 @@ final readonly class EditModeService
     public function __construct(
         private AssetCollector $assetCollector,
         private PageRenderer $pageRenderer,
-        private TcaSchemaFactory $tcaSchema,
+        private RecordSchemaService $recordSchema,
         private LanguageServiceFactory $languageServiceFactory,
         private LanguageModeService $languageModeService,
         private LocalizationService $localizationService,
@@ -124,7 +123,7 @@ if (window.parent === window && window.veInfo) {
             return false; // not in edit mode
         }
 
-        $tcaSchema = $this->tcaSchema->get($record->getFullType());
+        $tcaSchema = $this->recordSchema->getSchema($record);
         $fieldType = $tcaSchema->getField($field);
 
         if ($tcaSchema->hasCapability(TcaSchemaCapability::AccessReadOnly)) {

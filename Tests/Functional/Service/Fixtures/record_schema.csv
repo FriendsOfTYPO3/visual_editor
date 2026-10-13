@@ -1,0 +1,7 @@
+"pages"
+,"uid","pid","title","doktype","deleted","hidden","perms_everybody"
+,1,0,"Root",1,0,0,15
+"tt_content"
+,"uid","pid","CType","header","deleted","hidden"
+,1,1,"text","Text",0,0
+,2,1,"list","Legacy plugin",0,0
