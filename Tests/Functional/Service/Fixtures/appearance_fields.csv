@@ -1,0 +1,16 @@
+"be_users"
+,"uid","pid","tstamp","username","password","admin","disable","starttime","endtime","options","crdate","workspace_perms","deleted","TSconfig","lastlogin","workspace_id"
+,1,0,1366642540,"admin","$1$tCrlLajZ$C0sikFQQ3SWaFAZ1Me0Z/1",1,0,0,0,0,1366642540,1,0,,1371033743,0
+"pages"
+,"uid","pid","title","doktype","is_siteroot","deleted","hidden","perms_everybody","slug","sys_language_uid","l10n_parent","TSconfig"
+,1,0,"Root",1,1,0,0,15,"/",0,0,
+,2,1,"Configured",1,0,0,0,15,"/configured",0,0,"mod.web_edit.appearanceFields.tt_content = layout, -space_before_class, -space_after_class"
+,3,1,"Form config",1,0,0,0,15,"/form-config",0,0,"TCEFORM.tt_content.frame_class.disabled = 1"
+,4,1,"Removed items",1,0,0,0,15,"/removed-items",0,0,"TCEFORM.tt_content.frame_class.removeItems = ruler-before, indent"
+"tt_content"
+,"uid","pid","CType","header","sys_language_uid","l18n_parent","frame_class","deleted","hidden"
+,1,1,"text","Default",0,0,"default",0,0
+,2,2,"text","Configured",0,0,"ruler-before",0,0
+,3,1,"text","Translation",1,1,"ruler-after",0,0
+,4,3,"text","Disabled field",0,0,"default",0,0
+,5,4,"text","Removed items",0,0,"default",0,0

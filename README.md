@@ -42,6 +42,7 @@ This extension provides visual editing features for content elements in TYPO3 CM
 - 🔦 **Finding editable areas:** use Spotlight to highlight editable text, rich text, images, and content elements.
 - 👻 **Showing empty fields:** use "show empty" when editable but currently empty fields are hard to see.
 - 🌐 **Multi language edits:** available with TYPO3 v14. Use the "Multi language" view to compare translations side by side, edit visible fields in each preview, and save pending changes together.
+- 🎨 **Changing the appearance:** available with TYPO3 v14. The action bar of a content element has buttons for appearance fields such as the frame or the grid class (see [Appearance fields](#appearance-fields)). Click a button, choose an option, and the element changes immediately. The change is saved with the other changes. A dot in front of a button marks a value that is not saved yet.
 - ↔️ **Moving content:** drag content elements by their handle. Hold Ctrl while dropping to copy instead of moving.
 - ✍️ **Editing special text characters:** type `&shy;` for a soft hyphen and `&nbsp;` for a non-breaking space. Entity-like text that starts with `&`, such as `&nbsp;`, is shown with `&amp;` while editing so it stays literal text.
 
@@ -201,6 +202,35 @@ With `adoptParent="{false}"` of `f:mark.contentArea` the parent element stays as
   grid-column: body-content-start / body-content-end;
 }
 ````
+
+## Appearance fields
+
+*TYPO3 v14 only.* The action bar of a content element offers select fields of the record as buttons, for example the frame class. A click opens the options like the select in the edit form of the backend. A change is shown immediately and is saved with the other changes.
+
+By default these fields of `tt_content` are offered: `frame_class`, `space_before_class`, `space_after_class`.
+
+You can add fields, or remove a default by prefixing it with `-`, in the page TSconfig:
+
+````typoscript
+mod.web_edit.appearanceFields.tt_content = grid_class, grid_class_position, -space_before_class
+````
+
+A field is offered only if:
+
+- it is a single select field without `foreign_table` (the items may still come from an `itemsProcFunc`) and is shown in the edit form for the CType of the element,
+- the editor may edit it (access to the field, language and table),
+- it is not hidden in the edit form with `TCEFORM.tt_content.<field>.disabled = 1` (also per type with `types.<CType>.disabled`),
+- it is not excluded from the translation (`l10n_mode = exclude`) when the element is a translation.
+
+The options are the ones of the edit form: `itemsProcFunc` is called with the unsaved values of the record, `removeItems`, `keepItems` and `addItems` of `TCEFORM` are applied, and a value that is no longer allowed after a change of another field is reset.
+
+### How the immediate change works
+
+While the editor changes a value, the frontend page is rendered again with the unsaved values (a `POST` request with `veDraft[<table>][<uid>][<field>]` to the URL of the page). The values only exist for this request, nothing is saved. Only fields from the configuration above with values that are items of the field are accepted, and only for a backend user in edit mode.
+
+Then the `class` attributes of the content element and of its direct child elements are taken over from the response. All other attributes and all texts stay as they are, so unsaved text changes are not lost. If your template does not put the classes there, the change is visible after saving.
+
+Fields that are excluded from the translation are changed in the translations of a multi language view as well.
 
 ## PSR-14 events
 

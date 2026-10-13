@@ -97,6 +97,12 @@
             <trans-unit id="frontend.actionBar">
                 <target>Aktionsleiste</target>
             </trans-unit>
+            <trans-unit id="frontend.appearance">
+                <target>Erscheinungsbild</target>
+            </trans-unit>
+            <trans-unit id="frontend.unsavedChange">
+                <target>nicht gespeichert</target>
+            </trans-unit>
             <trans-unit id="frontend.editImageButton">
                 <target>Bild bearbeiten</target>
             </trans-unit>

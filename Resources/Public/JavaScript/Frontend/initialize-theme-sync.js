@@ -10,8 +10,15 @@ const BACKEND_TOKENS = {
   '--ve-accent-contrast': '--typo3-state-primary-color',
   '--ve-surface': '--typo3-surface-container-high',
   '--ve-on-surface': '--typo3-text-color-base',
+  // the background of the toolbar of the module (.module-docheader), the action bars use it to look like a part of it
+  '--ve-toolbar-bg': '--module-docheader-bg',
   '--ve-success': '--typo3-state-success-bg',
   '--ve-danger': '--typo3-state-danger-bg',
+};
+
+// The font size of the buttons and labels of the toolbar of the module, the action bars use it for their texts.
+const BACKEND_FONT_SIZE_TOKENS = {
+  '--ve-font-size': '--typo3-component-font-size',
 };
 
 /**
@@ -31,6 +38,15 @@ function resolveBackendColors(backendDocument) {
       probe.style.color = '';
       probe.style.color = `var(${token})`;
       const resolved = backendDocument.defaultView.getComputedStyle(probe).color;
+      if (resolved) {
+        colors[property] = resolved;
+      }
+    }
+
+    for (const [property, token] of Object.entries(BACKEND_FONT_SIZE_TOKENS)) {
+      probe.style.fontSize = '';
+      probe.style.fontSize = `var(${token})`;
+      const resolved = backendDocument.defaultView.getComputedStyle(probe).fontSize;
       if (resolved) {
         colors[property] = resolved;
       }
