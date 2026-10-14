@@ -55,6 +55,7 @@ final readonly class EditModeService
         }
 
         $this->assetCollector->addStyleSheet('editable', 'EXT:visual_editor/Resources/Public/Css/editable.css');
+        $this->assetCollector->addStyleSheet('rte_ckeditor_editor', 'EXT:rte_ckeditor/Resources/Public/Css/editor.css');
         $this->assetCollector->addJavaScriptModule('@typo3/visual-editor/Frontend/index');
         if ($this->typo3Version->getMajorVersion() >= 14) {
             $this->assetCollector->addJavaScriptModule('@typo3/backend/element/contextual-record-edit-trigger.js');
