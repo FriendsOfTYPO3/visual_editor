@@ -199,10 +199,11 @@ export class VeContentElement extends LitElement {
   #updateFrame() {
     const rect = this.#computeFrameRect();
     const properties = {
-      '--ve-frame-top': rect ? `${rect.top}px` : null,
-      '--ve-frame-left': rect ? `${rect.left}px` : null,
-      '--ve-frame-width': rect ? `${rect.width}px` : null,
-      '--ve-frame-height': rect ? `${rect.height}px` : null,
+      // whole pixels, so the action bar and its cut-out in the spotlight do not end in the middle of a pixel
+      '--ve-frame-top': rect ? `${Math.round(rect.top)}px` : null,
+      '--ve-frame-left': rect ? `${Math.round(rect.left)}px` : null,
+      '--ve-frame-width': rect ? `${Math.round(rect.width)}px` : null,
+      '--ve-frame-height': rect ? `${Math.round(rect.height)}px` : null,
     };
     for (const [name, value] of Object.entries(properties)) {
       if (value === null) {
@@ -535,10 +536,13 @@ export class VeContentElement extends LitElement {
       cursor: grab;
     }
 
+    /* The action bar appears at once. The spotlight cuts a hole around it as soon as it is hovered, so a fade-in would
+       show the bright page through the hole. Fading out is fine, the hole is closed by then. */
     .action-bar.hovered,
     .action-bar:focus-within {
       opacity: 1;
       pointer-events: initial;
+      transition: none;
     }
 
     .action-bar.dragAndDropActive {
@@ -570,6 +574,11 @@ export class VeContentElement extends LitElement {
       cursor: pointer;
 
       transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    /* the icons of the buttons are as big as the ones of the layout module */
+    .button ve-icon {
+      font-size: 16px;
     }
 
     .button:hover {
