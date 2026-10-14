@@ -14,6 +14,15 @@ const BACKEND_TOKENS = {
   '--ve-danger': '--typo3-state-danger-bg',
 };
 
+// These are drawn on the website itself, whose background does not follow the backend color scheme.
+// The light variant has enough contrast on light pages and on dark pages (with the white halo).
+const PAGE_TOKENS = ['--ve-accent', '--ve-success'];
+
+// The thin outline around the field rings, it keeps them visible on dark and colored pages.
+const STATIC_TOKENS = {
+  '--ve-halo': '#fff',
+};
+
 /**
  * Backend tokens are defined with light-dark() and var(), so the value is only resolved for a real property.
  *
@@ -29,6 +38,7 @@ function resolveBackendColors(backendDocument) {
   try {
     for (const [property, token] of Object.entries(BACKEND_TOKENS)) {
       probe.style.color = '';
+      probe.style.colorScheme = PAGE_TOKENS.includes(property) ? 'light' : '';
       probe.style.color = `var(${token})`;
       const resolved = backendDocument.defaultView.getComputedStyle(probe).color;
       if (resolved) {
@@ -42,6 +52,10 @@ function resolveBackendColors(backendDocument) {
 }
 
 function applyBackendTheme() {
+  for (const [property, value] of Object.entries(STATIC_TOKENS)) {
+    document.documentElement.style.setProperty(property, value);
+  }
+
   try {
     const backendDocument = window.parent.document;
     const colors = resolveBackendColors(backendDocument);

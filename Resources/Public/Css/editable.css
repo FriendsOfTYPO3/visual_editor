@@ -17,6 +17,8 @@ ve-editable-rich-text .ck-content.ck-content.ck-content {
 ve-editable-rich-text .ck-content.ck-content.ck-content {
   outline: 2px solid transparent !important;
   outline-offset: 0 !important;
+  /* white halo outside the ring keeps it visible on dark and colored pages, changed bar on the left */
+  box-shadow: var(--ve-field-halo, 0 0 #0000), var(--ve-field-bar, 0 0 #0000) !important;
   transition: outline-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -29,12 +31,14 @@ ve-editable-rich-text .ck-content.ck-content.ck-content:focus,
 ve-editable-rich-text[highlighted] .ck-content.ck-content.ck-content {
   outline-color: var(--ve-accent, #5432fe) !important;
   background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 12%, transparent) !important;
+  --ve-field-halo: 0 0 0 3px var(--ve-halo, #fff);
 }
 
 ve-editable-rich-text[empty] .ck-content.ck-content.ck-content {
   outline-style: dotted !important;
-  outline-color: color-mix(in srgb, var(--ve-accent, #5432fe) 60%, transparent) !important;
+  outline-color: var(--ve-accent, #5432fe) !important;
   background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 6%, transparent) !important;
+  --ve-field-halo: 0 0 0 3px var(--ve-halo, #fff);
   background-image: repeating-linear-gradient(
     135deg,
     color-mix(in srgb, var(--ve-accent, #5432fe) 14%, transparent) 0 3px,
@@ -43,8 +47,20 @@ ve-editable-rich-text[empty] .ck-content.ck-content.ck-content {
 }
 
 ve-editable-rich-text[changed] .ck-content.ck-content.ck-content {
-  background-color: color-mix(in srgb, var(--ve-success, #3b9e3b) 10%, transparent) !important;
-  box-shadow: inset 3px 0 0 var(--ve-success, #3b9e3b) !important;
+  background-color: color-mix(in srgb, var(--ve-success, #3b9e3b) var(--ve-changed-strength, 10%), transparent) !important;
+  --ve-field-bar: inset 3px 0 0 var(--ve-success, #3b9e3b);
+  position: relative !important;
+}
+
+/* The screen blend adds light only: invisible on light pages, it lifts the tint on dark ones. */
+ve-editable-rich-text[changed] .ck-content.ck-content.ck-content::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-color: color-mix(in srgb, var(--ve-success, #3b9e3b) var(--ve-changed-dark-strength, 25%), transparent);
+  mix-blend-mode: screen;
 }
 
 /**

@@ -471,8 +471,8 @@ export class VeContentElement extends LitElement {
       border-radius: 999px;
       background:
         center / 16px 16px no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 8s2.3-4.5 6.5-4.5S14.5 8 14.5 8s-2.3 4.5-6.5 4.5S1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/><path d="M2.5 13.5l11-11"/></svg>'),
-        color-mix(in srgb, var(--ve-surface, #171717) 85%, transparent);
-      border: 1px solid color-mix(in srgb, var(--ve-on-surface, #d9d9d9) 30%, transparent);
+        rgba(23, 23, 23, 0.85); /* always dark: the icon is white */
+      border: 1px solid rgba(217, 217, 217, 0.3);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
@@ -577,6 +577,7 @@ export class VeContentElement extends LitElement {
     }
 
     .button:focus-visible {
+      border-color: var(--ve-on-surface, #d9d9d9);
       background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 28%, transparent);
       outline: 2px solid var(--ve-accent, #5432fe);
       outline-offset: 1px;
