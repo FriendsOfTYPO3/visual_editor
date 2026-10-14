@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace TYPO3\CMS\VisualEditor\Service;
 
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Backend\Form\Exception as FormException;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Core\Schema\Field\StaticSelectFieldType;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 
+use function array_column;
+use function array_keys;
 use function array_replace;
 use function in_array;
 use function is_array;
@@ -31,6 +33,7 @@ final class AppearanceDraftService
     public function __construct(
         private readonly TcaSchemaFactory $tcaSchemaFactory,
         private readonly AppearanceFieldsService $appearanceFieldsService,
+        private readonly AppearanceItemsService $appearanceItemsService,
     ) {
     }
 
@@ -57,14 +60,15 @@ final class AppearanceDraftService
                     continue;
                 }
 
+                $pendingValues = [];
                 foreach ($fields as $fieldName => $value) {
-                    if (
-                        is_string($value)
-                        && in_array($fieldName, $allowedFields, true)
-                        && $this->isItemValue($table, $fieldName, $value)
-                    ) {
-                        $this->draft[$table][(int)$uid][$fieldName] = $value;
+                    if (is_string($fieldName) && is_string($value) && in_array($fieldName, $allowedFields, true)) {
+                        $pendingValues[$fieldName] = $value;
                     }
+                }
+
+                foreach ($this->filterItemValues($request, $table, (int)$uid, $pageInformation->getId(), $pendingValues) as $fieldName => $value) {
+                    $this->draft[$table][(int)$uid][$fieldName] = $value;
                 }
             }
         }
@@ -91,24 +95,33 @@ final class AppearanceDraftService
         return $row;
     }
 
-    private function isItemValue(string $table, string $fieldName, string $value): bool
+    /**
+     * Keeps the values that are items of the field in the edit form of the record. That includes the items
+     * that the page TSconfig adds (TCEFORM addItems) and the items of an itemsProcFunc, not only the items of the TCA.
+     *
+     * @param array<string, string> $pendingValues
+     * @return array<string, string>
+     */
+    private function filterItemValues(ServerRequestInterface $request, string $table, int $uid, int $pageId, array $pendingValues): array
     {
-        $schema = $this->tcaSchemaFactory->get($table);
-        if (!$schema->hasField($fieldName)) {
-            return false;
+        if ($pendingValues === []) {
+            return [];
         }
 
-        $field = $schema->getField($fieldName);
-        if (!$field instanceof StaticSelectFieldType) {
-            return false;
+        try {
+            $resolvedFields = $this->appearanceItemsService->resolve($request, $table, $uid, $pageId, array_keys($pendingValues), $pendingValues);
+        } catch (FormException) {
+            // the record does not exist, or the user may not edit it
+            return [];
         }
 
-        foreach ($field->getItems() as $item) {
-            if ((string)$item->getValue() === $value) {
-                return true;
+        $itemValues = [];
+        foreach ($resolvedFields as $fieldName => $resolvedField) {
+            if (in_array($pendingValues[$fieldName], array_column($resolvedField['items'], 'value'), true)) {
+                $itemValues[$fieldName] = $pendingValues[$fieldName];
             }
         }
 
-        return false;
+        return $itemValues;
     }
 }

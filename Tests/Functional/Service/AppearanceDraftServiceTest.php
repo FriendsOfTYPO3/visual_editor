@@ -8,6 +8,7 @@ use Generator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Service\AppearanceDraftService;
@@ -23,7 +24,8 @@ final class AppearanceDraftServiceTest extends FunctionalTestCase
     {
         parent::setUp();
         $this->importCSVDataSet(__DIR__ . '/Fixtures/appearance_fields.csv');
-        $this->setUpBackendUser(1);
+        $backendUser = $this->setUpBackendUser(1);
+        $GLOBALS['LANG'] = $this->get(LanguageServiceFactory::class)->createFromUserPreferences($backendUser);
     }
 
     /**
@@ -73,18 +75,42 @@ final class AppearanceDraftServiceTest extends FunctionalTestCase
 
         yield 'the localized uid of the record' => [
             'pageId' => 1,
-            'draft' => ['tt_content' => [5 => ['frame_class' => 'ruler-before']]],
+            'draft' => ['tt_content' => [3 => ['frame_class' => 'ruler-before']]],
             'table' => 'tt_content',
-            'row' => [...$row, '_LOCALIZED_UID' => 5],
-            'expected' => ['uid' => 1, 'frame_class' => 'ruler-before', 'space_before_class' => '', '_LOCALIZED_UID' => 5],
+            'row' => [...$row, '_LOCALIZED_UID' => 3],
+            'expected' => ['uid' => 1, 'frame_class' => 'ruler-before', 'space_before_class' => '', '_LOCALIZED_UID' => 3],
         ];
 
         yield 'the uid of a version of the record' => [
             'pageId' => 1,
-            'draft' => ['tt_content' => [7 => ['frame_class' => 'ruler-before']]],
+            'draft' => ['tt_content' => [2 => ['frame_class' => 'ruler-before']]],
             'table' => 'tt_content',
-            'row' => [...$row, '_ORIG_uid' => 7],
-            'expected' => ['uid' => 1, 'frame_class' => 'ruler-before', 'space_before_class' => '', '_ORIG_uid' => 7],
+            'row' => [...$row, '_ORIG_uid' => 2],
+            'expected' => ['uid' => 1, 'frame_class' => 'ruler-before', 'space_before_class' => '', '_ORIG_uid' => 2],
+        ];
+
+        yield 'an item that the page TSconfig adds' => [
+            'pageId' => 5,
+            'draft' => ['tt_content' => [6 => ['frame_class' => 'bg-dark']]],
+            'table' => 'tt_content',
+            'row' => ['uid' => 6, 'frame_class' => 'default'],
+            'expected' => ['uid' => 6, 'frame_class' => 'bg-dark'],
+        ];
+
+        yield 'an item that another page adds' => [
+            'pageId' => 1,
+            'draft' => ['tt_content' => [1 => ['frame_class' => 'bg-dark']]],
+            'table' => 'tt_content',
+            'row' => $row,
+            'expected' => $row,
+        ];
+
+        yield 'a record that does not exist' => [
+            'pageId' => 1,
+            'draft' => ['tt_content' => [99 => ['frame_class' => 'ruler-before']]],
+            'table' => 'tt_content',
+            'row' => ['uid' => 99, 'frame_class' => 'default'],
+            'expected' => ['uid' => 99, 'frame_class' => 'default'],
         ];
 
         yield 'another record' => [

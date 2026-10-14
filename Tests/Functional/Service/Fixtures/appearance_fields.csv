@@ -7,6 +7,7 @@
 ,2,1,"Configured",1,0,0,0,15,"/configured",0,0,"mod.web_edit.appearanceFields.tt_content = layout, -space_before_class, -space_after_class"
 ,3,1,"Form config",1,0,0,0,15,"/form-config",0,0,"TCEFORM.tt_content.frame_class.disabled = 1"
 ,4,1,"Removed items",1,0,0,0,15,"/removed-items",0,0,"TCEFORM.tt_content.frame_class.removeItems = ruler-before, indent"
+,5,1,"Added items",1,0,0,0,15,"/added-items",0,0,"TCEFORM.tt_content.frame_class.addItems.bg-dark = Dark"
 "tt_content"
 ,"uid","pid","CType","header","sys_language_uid","l18n_parent","frame_class","deleted","hidden"
 ,1,1,"text","Default",0,0,"default",0,0
@@ -14,3 +15,4 @@
 ,3,1,"text","Translation",1,1,"ruler-after",0,0
 ,4,3,"text","Disabled field",0,0,"default",0,0
 ,5,4,"text","Removed items",0,0,"default",0,0
+,6,5,"text","Added items",0,0,"default",0,0
