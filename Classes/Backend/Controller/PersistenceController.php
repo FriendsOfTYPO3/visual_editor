@@ -8,8 +8,11 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use TYPO3\CMS\Backend\Attribute\AsController;
+use TYPO3\CMS\Core\Crypto\Random;
+use TYPO3\CMS\Core\DataHandling\Model\CorrelationId;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\VisualEditor\Service\DataHandlerService;
+use TYPO3\CMS\VisualEditor\SysHistory\SysHistoryCombiner;
 
 use function array_keys;
 use function implode;
@@ -20,6 +23,8 @@ final readonly class PersistenceController
 {
     public function __construct(
         private DataHandlerService $dataHandlerService,
+        private SysHistoryCombiner $sysHistoryCombiner,
+        private Random $randomGenerator,
     ) {
     }
 
@@ -44,11 +49,15 @@ final readonly class PersistenceController
         }
 
         $GLOBALS['TYPO3_REQUEST'] = $request;
-        $errorLog = $this->dataHandlerService->run($data, []);
+        $correlationId = CorrelationId::forScope($this->randomGenerator->generateRandomBase64String(32))
+            ->withAspects(SysHistoryCombiner::CORRELATION_ASPECT);
+        $errorLog = $this->dataHandlerService->run($data, [], $correlationId);
 
         foreach ($cmdArray as $cmd) {
-            $errorLog = [...$errorLog, ...$this->dataHandlerService->run([], $cmd)];
+            $errorLog = [...$errorLog, ...$this->dataHandlerService->run([], $cmd, $correlationId)];
         }
+
+        $this->sysHistoryCombiner->combine();
 
         if ($errorLog) {
             return new JsonResponse(['success' => false, 'errorLog' => $errorLog], 500);
