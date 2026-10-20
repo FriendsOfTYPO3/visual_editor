@@ -348,7 +348,7 @@ final class TextViewHelper extends AbstractViewHelper
         $config['debug'] = false; // for now we disable debug mode
 
         // load required JavaScript modules:
-        foreach ($config['importModules'] as $importModule) {
+        foreach ($config['importModules'] ?? [] as $importModule) {
             $this->assetCollector->addJavaScriptModule($importModule['module']);
         }
 

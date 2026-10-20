@@ -65,6 +65,14 @@ readonly class RichTextConfigurationService
             $configuration['placeholder'] = $richTextConfigurationServiceDto->placeholder;
         }
 
+        foreach (['importModules', 'removeImportModules'] as $key) {
+            foreach ($configuration[$key] ?? [] as $index => $module) {
+                if (is_string($module)) {
+                    $configuration[$key][$index] = ['module' => $module, 'exports' => ['default']];
+                }
+            }
+        }
+
         return $configuration;
     }
 
