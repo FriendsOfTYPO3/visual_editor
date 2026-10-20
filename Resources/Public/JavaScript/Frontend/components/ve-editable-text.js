@@ -634,23 +634,56 @@ export class VeEditableText extends LitElement {
       --padding-right: calc(4px + var(--button-size) * var(--button-count) + 4px * 2 * var(--button-count));
       padding: 4px var(--padding-right) 4px 4px;
       margin: -4px;
-      outline: 0.25rem solid transparent;
+      outline: 2px solid transparent;
+      outline-offset: 0;
+      /* white halo outside the ring keeps it visible on dark and colored pages, changed bar on the left */
+      box-shadow: var(--ve-field-halo, 0 0 #0000), var(--ve-field-bar, 0 0 #0000);
 
-      transition: backdrop-filter 0.2s;
+      transition: outline-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 
       &:before {
         content: attr(data-placeholder);
-        font-style: italic;
       }
     }
 
-    .slot:hover,
+    /* the ring and the hatch are defined in editable.css (custom properties inherit into this shadow DOM) */
+    .slot:hover:not(:focus):not(.highlighted) {
+      background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 8%, transparent);
+      background-image: var(--ve-ring-images);
+      background-size: var(--ve-ring-sizes);
+      background-position: var(--ve-ring-positions);
+      background-repeat: var(--ve-ring-repeats);
+    }
+
     .slot:focus,
-    .slot.highlighted,
+    .slot.highlighted {
+      outline-color: var(--ve-accent, #5432fe);
+      background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 12%, transparent);
+      --ve-field-halo: 0 0 0 3px color-mix(in srgb, var(--ve-halo, #fff) 55%, transparent);
+    }
+
     .slot.empty {
-      box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.50) inset;
-      backdrop-filter: blur(10px) invert(20%);
-      outline-color: #5432fe;
+      outline-style: dotted;
+      outline-width: 1px;
+      outline-color: color-mix(in srgb, var(--ve-accent, #5432fe) 60%, var(--ve-halo, #fff));
+      background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 4%, transparent);
+      background-image: var(--ve-empty-hatch);
+    }
+
+
+    .slot.empty:hover:not(:focus):not(.highlighted) {
+      background-image: var(--ve-ring-images), var(--ve-empty-hatch);
+      background-size: var(--ve-ring-sizes), auto;
+      background-position: var(--ve-ring-positions), 0 0;
+      background-repeat: var(--ve-ring-repeats), repeat;
+    }
+
+    .slot.empty:focus,
+    .slot.empty.highlighted {
+      outline-style: solid;
+      outline-width: 2px;
+      outline-color: var(--ve-accent, #5432fe);
+      --ve-field-halo: 0 0 0 3px color-mix(in srgb, var(--ve-halo, #fff) 55%, transparent);
     }
 
     .slot.block {
@@ -658,7 +691,20 @@ export class VeEditableText extends LitElement {
     }
 
     .slot.changed {
-      backdrop-filter: blur(10px) hue-rotate(120deg) invert(30%);
+      background-color: color-mix(in srgb, var(--ve-success, #3b9e3b) var(--ve-changed-strength, 10%), transparent);
+      --ve-field-bar: inset 3px 0 0 var(--ve-success, #3b9e3b);
+      position: relative;
+    }
+
+    /* The screen blend adds light only: invisible on light pages, it lifts the tint on dark ones. */
+    .slot.changed::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background-color: color-mix(in srgb, var(--ve-success, #3b9e3b) var(--ve-changed-dark-strength, 15%), transparent);
+      mix-blend-mode: screen;
     }
 
     .slot.invalid {
