@@ -35,7 +35,7 @@ const ACTION_BAR_HOLE_PADDING = 0;
 // gets that much less padding, so it ends where the cut-out of the field ends.
 const TOOLBAR_SELECTOR = '.ck-editor__top';
 const TOOLBAR_OVERHANG = 4;
-const ACTION_BAR_HOLE_RADIUS = 3; // radius of the action bar itself
+const ACTION_BAR_HOLE_RADIUS = 3; // radius of the action bar itself, when its style does not say
 const ACTION_BAR_SELECTOR = '.action-bar.hovered, .action-bar.hidden, .action-bar:focus-within';
 const MASK_ID = 'spotlightOverlayMask';
 
@@ -373,7 +373,9 @@ function computeHolesFromTargets() {
     const w = rect.width + paddingInline * 2;
     const h = rect.height + paddingBlock * 2;
 
-    holes.push({...clampRectToDocument({x, y, w, h}), r: isActionBar ? ACTION_BAR_HOLE_RADIUS : HOLE_RADIUS});
+    // the action bar is only round at the top, its bottom edge sits on the frame of the content element
+    const barRadius = isActionBar ? (parseFloat(getComputedStyle(el).borderTopLeftRadius) || ACTION_BAR_HOLE_RADIUS) : 0;
+    holes.push({...clampRectToDocument({x, y, w, h}), r: isActionBar ? barRadius : HOLE_RADIUS, topOnly: isActionBar});
   }
 
   return holes.filter(r => r.w > EPS && r.h > EPS);
@@ -381,6 +383,21 @@ function computeHolesFromTargets() {
 
 function renderMaskHoles(holes) {
   overlayMaskHolesEl.replaceChildren(...holes.map((hole) => {
+    if (hole.topOnly) {
+      const r = Math.min(hole.r, hole.w / 2, hole.h);
+      const path = document.createElementNS(SVG_NS, 'path');
+      path.setAttribute('d', [
+        `M ${hole.x} ${hole.y + hole.h}`,
+        `V ${hole.y + r}`,
+        `A ${r} ${r} 0 0 1 ${hole.x + r} ${hole.y}`,
+        `H ${hole.x + hole.w - r}`,
+        `A ${r} ${r} 0 0 1 ${hole.x + hole.w} ${hole.y + r}`,
+        `V ${hole.y + hole.h}`,
+        'Z',
+      ].join(' '));
+      return path;
+    }
+
     const rect = document.createElementNS(SVG_NS, 'rect');
     rect.setAttribute('x', String(hole.x));
     rect.setAttribute('y', String(hole.y));

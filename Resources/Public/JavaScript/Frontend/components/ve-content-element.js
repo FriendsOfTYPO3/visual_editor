@@ -481,8 +481,7 @@ export class VeContentElement extends LitElement {
       background-image: linear-gradient(to top, rgba(59, 158, 59, 0.90) 0%, transparent min(500px, max(100px, 50%)));
     }
 
-    /* The frame hugs the spotlight cut-outs of the fields (see #updateFrame), the whole element otherwise.
-       It stays quiet (1px), the field rings inside it are the strong cue (2px). */
+    /* The frame hugs the spotlight cut-outs of the fields (see #updateFrame), the whole element otherwise. */
     .frame {
       position: absolute;
       top: var(--ve-frame-top, 0px);
@@ -492,10 +491,15 @@ export class VeContentElement extends LitElement {
       z-index: 10;
       pointer-events: none;
       box-sizing: border-box;
-      outline: 1px solid color-mix(in srgb, var(--ve-accent, #5432fe) 70%, transparent);
-      outline-offset: 0;
+      /* Drawn inside: the area around the cut-out is dimmed by the spotlight, a line outside would be dimmed with it.
+         A 1px ring of alternating accent and light dashes: one of the two always stands out from the page behind it,
+         light or dark. A blend mode is not reliable here, it does not see a page background painted on the canvas.
+         "in srgb": Firefox renders the hard stops wrong for theme colors given as color(srgb ...) without it. */
+      padding: 1px;
+      background: repeating-linear-gradient(in srgb 45deg, var(--ve-accent, #5432fe) 0 3px, color-mix(in srgb, var(--ve-halo, #fff) 70%, transparent) 3px 6px);
+      mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+      mask-composite: exclude;
       border-radius: 0 5px 5px 5px; /* CUTOUT_RADIUS, the top left corner is where the action bar attaches */
-      background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 3%, transparent);
     }
 
     .action-bar {
@@ -508,13 +512,15 @@ export class VeContentElement extends LitElement {
       /* sits on the top edge of the frame */
       bottom: calc(100% - var(--ve-frame-top, 0px));
       left: calc(var(--ve-frame-left, 0px) - 1px);
-      background: color-mix(in srgb, var(--ve-surface, #171717) 90%, transparent);
+      background: var(--ve-button-bg, #f7f7f8);
       backdrop-filter: blur(8px);
-      color: var(--ve-on-surface, #d9d9d9);
+      color: var(--ve-button-color, #181718);
       border: 0;
       padding: 3px 4px;
-      border-radius: 3px 3px 0 0;
-      box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.25);
+      /* as round as the buttons of the backend, the bottom edge sits on the frame */
+      border-radius: var(--ve-button-radius, 3px) var(--ve-button-radius, 3px) 0 0;
+      /* the inset line separates the bar from the page in light and dark mode */
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ve-button-color, #181718) 40%, transparent), 0 0 6px rgba(0, 0, 0, 0.125);
       z-index: 10100;
       font-size: 13px;
       line-height: 1.4;
@@ -565,10 +571,10 @@ export class VeContentElement extends LitElement {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: var(--ve-on-surface, #d9d9d9);
+      color: var(--ve-button-color, #181718);
       background: transparent;
       border: 1px solid transparent;
-      border-radius: 2px;
+      border-radius: max(2px, calc(var(--ve-button-radius, 3px) - 4px));
       padding: 0.2em 0.5em;
       text-decoration: none;
       cursor: pointer;
@@ -582,11 +588,11 @@ export class VeContentElement extends LitElement {
     }
 
     .button:hover {
-      background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 28%, transparent);
+      background-color: var(--ve-button-hover-bg, #e5e4e7);
     }
 
     .button:focus-visible {
-      border-color: var(--ve-on-surface, #d9d9d9);
+      border-color: var(--ve-button-color, #181718);
       background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 28%, transparent);
       outline: 2px solid var(--ve-accent, #5432fe);
       outline-offset: 1px;

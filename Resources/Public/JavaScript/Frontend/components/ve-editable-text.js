@@ -646,31 +646,45 @@ export class VeEditableText extends LitElement {
       }
     }
 
-    .slot:hover,
-    .slot.empty:hover {
-      outline-color: color-mix(in srgb, var(--ve-accent, #5432fe) 55%, transparent);
+    /* the ring and the hatch are defined in editable.css (custom properties inherit into this shadow DOM) */
+    .slot:hover:not(:focus):not(.highlighted) {
       background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 8%, transparent);
+      background-image: var(--ve-ring-images);
+      background-size: var(--ve-ring-sizes);
+      background-position: var(--ve-ring-positions);
+      background-repeat: var(--ve-ring-repeats);
     }
 
     .slot:focus,
     .slot.highlighted {
       outline-color: var(--ve-accent, #5432fe);
       background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 12%, transparent);
-      --ve-field-halo: 0 0 0 3px var(--ve-halo, #fff);
+      --ve-field-halo: 0 0 0 3px color-mix(in srgb, var(--ve-halo, #fff) 55%, transparent);
     }
 
     .slot.empty {
       outline-style: dotted;
-      outline-color: var(--ve-accent, #5432fe);
-      --ve-field-halo: 0 0 0 2px var(--ve-halo, #fff);
+      outline-width: 1px;
+      outline-color: color-mix(in srgb, var(--ve-accent, #5432fe) 60%, var(--ve-halo, #fff));
       background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 4%, transparent);
-      background-image: repeating-linear-gradient(
-        135deg,
-        color-mix(in srgb, var(--ve-accent, #5432fe) 8%, transparent) 0 3px,
-        transparent 3px 8px
-      );
+      background-image: var(--ve-empty-hatch);
     }
 
+
+    .slot.empty:hover:not(:focus):not(.highlighted) {
+      background-image: var(--ve-ring-images), var(--ve-empty-hatch);
+      background-size: var(--ve-ring-sizes), auto;
+      background-position: var(--ve-ring-positions), 0 0;
+      background-repeat: var(--ve-ring-repeats), repeat;
+    }
+
+    .slot.empty:focus,
+    .slot.empty.highlighted {
+      outline-style: solid;
+      outline-width: 2px;
+      outline-color: var(--ve-accent, #5432fe);
+      --ve-field-halo: 0 0 0 3px color-mix(in srgb, var(--ve-halo, #fff) 55%, transparent);
+    }
 
     .slot.block {
       display: block;

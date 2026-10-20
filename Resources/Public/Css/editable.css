@@ -1,4 +1,30 @@
 /**
+ * Shared by all editable fields (also read inside the shadow DOM of <ve-editable-text>).
+ *
+ * The hover ring is a dashed line of accent and light dashes: one of the two always stands out from the
+ * page behind it, light or dark. It is painted as four background strips inside the padding of the field.
+ * "in srgb": Firefox renders hard color stops wrong for colors given as color(srgb ...) without it.
+ */
+:root {
+  --ve-ring-width: 2px;
+  --ve-ring-dash-horizontal: repeating-linear-gradient(in srgb 90deg, var(--ve-accent, #5432fe) 0 3px, color-mix(in srgb, var(--ve-halo, #fff) 70%, transparent) 3px 6px);
+  --ve-ring-dash-vertical: repeating-linear-gradient(in srgb 180deg, var(--ve-accent, #5432fe) 0 3px, color-mix(in srgb, var(--ve-halo, #fff) 70%, transparent) 3px 6px);
+  --ve-ring-images: var(--ve-ring-dash-horizontal), var(--ve-ring-dash-horizontal), var(--ve-ring-dash-vertical), var(--ve-ring-dash-vertical);
+  --ve-ring-sizes: 100% var(--ve-ring-width), 100% var(--ve-ring-width), var(--ve-ring-width) 100%, var(--ve-ring-width) 100%;
+  --ve-ring-positions: top left, bottom left, top left, top right;
+  --ve-ring-repeats: no-repeat, no-repeat, no-repeat, no-repeat;
+
+  /* light and accent stripes: one of them always shows on the page behind */
+  --ve-empty-hatch: repeating-linear-gradient(
+    in srgb 135deg,
+    color-mix(in srgb, var(--ve-halo, #fff) 18%, transparent) 0 2px,
+    transparent 2px 6px,
+    color-mix(in srgb, var(--ve-accent, #5432fe) 22%, transparent) 6px 8px,
+    transparent 8px 12px
+  );
+}
+
+/**
  * Custom styles for CKEditor to make it blend with the surrounding content.
  * TODO move this into the <ve-editable-rich-text> !!!
  */
@@ -22,28 +48,42 @@ ve-editable-rich-text .ck-content.ck-content.ck-content {
   transition: outline-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-ve-editable-rich-text .ck-content.ck-content.ck-content:hover {
-  outline-color: color-mix(in srgb, var(--ve-accent, #5432fe) 55%, transparent) !important;
+ve-editable-rich-text:not([highlighted]) .ck-content.ck-content.ck-content:hover:not(:focus) {
   background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 8%, transparent) !important;
+  background-image: var(--ve-ring-images) !important;
+  background-size: var(--ve-ring-sizes) !important;
+  background-position: var(--ve-ring-positions) !important;
+  background-repeat: var(--ve-ring-repeats) !important;
 }
 
 ve-editable-rich-text .ck-content.ck-content.ck-content:focus,
 ve-editable-rich-text[highlighted] .ck-content.ck-content.ck-content {
   outline-color: var(--ve-accent, #5432fe) !important;
   background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 12%, transparent) !important;
-  --ve-field-halo: 0 0 0 3px var(--ve-halo, #fff);
+  --ve-field-halo: 0 0 0 3px color-mix(in srgb, var(--ve-halo, #fff) 55%, transparent);
 }
 
 ve-editable-rich-text[empty] .ck-content.ck-content.ck-content {
   outline-style: dotted !important;
-  outline-color: var(--ve-accent, #5432fe) !important;
+  outline-width: 1px !important;
+  outline-color: color-mix(in srgb, var(--ve-accent, #5432fe) 60%, var(--ve-halo, #fff)) !important;
   background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 6%, transparent) !important;
-  --ve-field-halo: 0 0 0 3px var(--ve-halo, #fff);
-  background-image: repeating-linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--ve-accent, #5432fe) 14%, transparent) 0 3px,
-    transparent 3px 8px
-  ) !important;
+  background-image: var(--ve-empty-hatch) !important;
+}
+
+ve-editable-rich-text[empty]:not([highlighted]) .ck-content.ck-content.ck-content:hover:not(:focus) {
+  background-image: var(--ve-ring-images), var(--ve-empty-hatch) !important;
+  background-size: var(--ve-ring-sizes), auto !important;
+  background-position: var(--ve-ring-positions), 0 0 !important;
+  background-repeat: var(--ve-ring-repeats), repeat !important;
+}
+
+ve-editable-rich-text[empty] .ck-content.ck-content.ck-content:focus,
+ve-editable-rich-text[empty][highlighted] .ck-content.ck-content.ck-content {
+  outline-style: solid !important;
+  outline-width: 2px !important;
+  outline-color: var(--ve-accent, #5432fe) !important;
+  --ve-field-halo: 0 0 0 3px color-mix(in srgb, var(--ve-halo, #fff) 55%, transparent);
 }
 
 ve-editable-rich-text[changed] .ck-content.ck-content.ck-content {
@@ -117,12 +157,37 @@ img[data-veedit] {
   &:focus {
     /*filter: brightness(0.6);*/
     cursor: pointer;
+  }
+
+  &:focus {
     outline-color: var(--ve-accent, #5432fe);
   }
 }
 
 *:has(> img[data-veedit]) {
   anchor-scope: --ve-image;
+}
+
+/* the hover ring: an image has no padding to paint it in, so it is a box over the image */
+*:has(> img[data-veedit])::before {
+  content: '';
+  position: absolute;
+  position-anchor: --ve-image;
+  top: anchor(top);
+  right: anchor(right);
+  bottom: anchor(bottom);
+  left: anchor(left);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  background-image: var(--ve-ring-images);
+  background-size: var(--ve-ring-sizes);
+  background-position: var(--ve-ring-positions);
+  background-repeat: var(--ve-ring-repeats);
+}
+
+*:has(> img[data-veedit]:hover:not(:focus))::before {
+  opacity: 1;
 }
 
 *:has(> img[data-veedit])::after {

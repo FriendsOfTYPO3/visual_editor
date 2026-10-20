@@ -8,8 +8,10 @@
 const BACKEND_TOKENS = {
   '--ve-accent': '--typo3-state-primary-bg',
   '--ve-accent-contrast': '--typo3-state-primary-color',
-  '--ve-surface': '--typo3-surface-container-high',
-  '--ve-on-surface': '--typo3-text-color-base',
+  // the default button of the backend, the action bar looks like one
+  '--ve-button-bg': '--typo3-state-default-bg',
+  '--ve-button-color': '--typo3-state-default-color',
+  '--ve-button-hover-bg': '--typo3-state-default-hover-bg',
   '--ve-success': '--typo3-state-success-bg',
   '--ve-danger': '--typo3-state-danger-bg',
 };
@@ -51,6 +53,27 @@ function resolveBackendColors(backendDocument) {
   return colors;
 }
 
+/**
+ * The corner radius of a (small) button of the backend. The token is only defined on the buttons themselves,
+ * and it is relative to the font size, so the resolved value is read from a button.
+ *
+ * @param {Document} backendDocument
+ * @returns {string|null}
+ */
+function resolveBackendButtonRadius(backendDocument) {
+  const probe = backendDocument.createElement('button');
+  probe.className = 'btn btn-sm';
+  probe.style.display = 'none';
+  backendDocument.body.appendChild(probe);
+  try {
+    // display: none does not matter for the radius, but a detached style would not resolve
+    const radius = backendDocument.defaultView.getComputedStyle(probe).borderTopLeftRadius;
+    return radius && parseFloat(radius) > 0 ? radius : null;
+  } finally {
+    probe.remove();
+  }
+}
+
 function applyBackendTheme() {
   for (const [property, value] of Object.entries(STATIC_TOKENS)) {
     document.documentElement.style.setProperty(property, value);
@@ -61,6 +84,10 @@ function applyBackendTheme() {
     const colors = resolveBackendColors(backendDocument);
     for (const [property, value] of Object.entries(colors)) {
       document.documentElement.style.setProperty(property, value);
+    }
+    const radius = resolveBackendButtonRadius(backendDocument);
+    if (radius) {
+      document.documentElement.style.setProperty('--ve-button-radius', radius);
     }
   } catch {
     // cross-origin or no backend parent: keep the defaults of the components
