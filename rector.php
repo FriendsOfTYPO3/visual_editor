@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\SafeDeclareStrictTypesRector;
 use PLUS\GrumPHPConfig\RectorSettings;
-use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\Config\RectorConfig;
 use Rector\Php80\Rector\Class_\StringableForToStringRector;
 
@@ -14,7 +13,6 @@ return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->importNames();
     $rectorConfig->importShortClasses();
     $rectorConfig->removeUnusedImports();
-    $rectorConfig->cacheClass(FileCacheStorage::class);
     $rectorConfig->cacheDirectory('./var/cache/rector');
 
     $rectorConfig->paths(
