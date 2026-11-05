@@ -9,11 +9,16 @@ use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use UnexpectedValueException;
+
+use function json_encode;
+
+use const JSON_THROW_ON_ERROR;
 
 #[Autoconfigure(public: true)]
 final readonly class ContentElementWrapperService
@@ -23,6 +28,8 @@ final readonly class ContentElementWrapperService
         private EditModeService $editModeService,
         private TcaSchemaFactory $tcaSchema,
         private LocalizationService $localizationService,
+        private AppearanceFieldsService $appearanceFieldsService,
+        private Typo3Version $typo3Version,
     ) {
     }
 
@@ -82,6 +89,14 @@ final readonly class ContentElementWrapperService
         $tag->addAttribute('hiddenFieldName', $hiddenFieldName);
         if ($canModifyRecord) {
             $tag->addAttribute('canModifyRecord', 'true');
+
+            // TODO remove the version check if TYPO3 v14 is the minimum requirement
+            if ($this->typo3Version->getMajorVersion() >= 14) {
+                $appearanceFields = $this->appearanceFieldsService->getFields($record, $data, $request);
+                if ($appearanceFields !== []) {
+                    $tag->addAttribute('appearanceFields', json_encode($appearanceFields, JSON_THROW_ON_ERROR));
+                }
+            }
         }
 
         if (!$record->getLanguageInfo()?->getTranslationParent()) {

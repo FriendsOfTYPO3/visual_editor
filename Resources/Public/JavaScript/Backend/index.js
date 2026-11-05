@@ -65,6 +65,7 @@ const syncMessages = [
   ['editableFieldFocusChanged', 'syncEditableFieldFocus'],
   ['contentElementDeleted', 'syncContentElementDeleted'],
   ['contentElementMoved', 'syncContentElementMoved'],
+  ['appearanceDraftChanged', 'syncAppearanceDraft'],
 ];
 syncMessages.forEach(([event, message]) => {
   onMessage(event, (data, languageId) => sendMessage(message, {

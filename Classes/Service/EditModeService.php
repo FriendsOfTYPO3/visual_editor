@@ -60,6 +60,7 @@ final readonly class EditModeService
         $this->assetCollector->addJavaScriptModule('@typo3/visual-editor/Frontend/index');
         if ($this->typo3Version->getMajorVersion() >= 14) {
             $this->assetCollector->addJavaScriptModule('@typo3/backend/element/contextual-record-edit-trigger.js');
+            $this->assetCollector->addJavaScriptModule('@typo3/backend/element/icon-element.js');
         }
 
         $this->loadLanguageLabelsInline();

@@ -14,17 +14,53 @@ ve-editable-rich-text .ck-content.ck-content.ck-content {
 /**
   * Highlight the editable area on hover and focus:
  */
-ve-editable-rich-text .ck-content:hover,
-ve-editable-rich-text .ck-content:focus,
-ve-editable-rich-text[highlighted] .ck-content,
-ve-editable-rich-text[empty] .ck-content {
-  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.50) inset !important;
-  backdrop-filter: blur(10px) invert(20%) !important;
-  outline: 0.25rem solid #5432fe !important;
+ve-editable-rich-text .ck-content.ck-content.ck-content {
+  outline: 2px solid transparent !important;
+  outline-offset: 0 !important;
+  /* white halo outside the ring keeps it visible on dark and colored pages, changed bar on the left */
+  box-shadow: var(--ve-field-halo, 0 0 #0000), var(--ve-field-bar, 0 0 #0000) !important;
+  transition: outline-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-ve-editable-rich-text[changed] .ck-content {
-  backdrop-filter: blur(10px) hue-rotate(120deg) invert(30%) !important;
+ve-editable-rich-text .ck-content.ck-content.ck-content:hover {
+  outline-color: color-mix(in srgb, var(--ve-accent, #5432fe) 55%, transparent) !important;
+  background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 8%, transparent) !important;
+}
+
+ve-editable-rich-text .ck-content.ck-content.ck-content:focus,
+ve-editable-rich-text[highlighted] .ck-content.ck-content.ck-content {
+  outline-color: var(--ve-accent, #5432fe) !important;
+  background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 12%, transparent) !important;
+  --ve-field-halo: 0 0 0 3px var(--ve-halo, #fff);
+}
+
+ve-editable-rich-text[empty] .ck-content.ck-content.ck-content {
+  outline-style: dotted !important;
+  outline-color: var(--ve-accent, #5432fe) !important;
+  background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 6%, transparent) !important;
+  --ve-field-halo: 0 0 0 3px var(--ve-halo, #fff);
+  background-image: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ve-accent, #5432fe) 14%, transparent) 0 3px,
+    transparent 3px 8px
+  ) !important;
+}
+
+ve-editable-rich-text[changed] .ck-content.ck-content.ck-content {
+  background-color: color-mix(in srgb, var(--ve-success, #3b9e3b) var(--ve-changed-strength, 10%), transparent) !important;
+  --ve-field-bar: inset 3px 0 0 var(--ve-success, #3b9e3b);
+  position: relative !important;
+}
+
+/* The screen blend adds light only: invisible on light pages, it lifts the tint on dark ones. */
+ve-editable-rich-text[changed] .ck-content.ck-content.ck-content::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-color: color-mix(in srgb, var(--ve-success, #3b9e3b) var(--ve-changed-dark-strength, 25%), transparent);
+  mix-blend-mode: screen;
 }
 
 /**
@@ -33,9 +69,9 @@ ve-editable-rich-text[changed] .ck-content {
 ve-editable-rich-text .ck-editor__top {
   display: none;
   position: absolute !important;
-  bottom: 100%; /* position it over the element */
-  left: 0;
-  right: 0;
+  bottom: calc(100% + 1px); /* position it over the element */
+  left: -4px; /* as wide as the highlighted field, see TOOLBAR_OVERHANG in spotlight-overlay.js */
+  right: -4px;
 
   z-index: 20000;
 
@@ -55,7 +91,7 @@ ve-editable-rich-text .ck.ck-editor__editable.ck-focused .ck-placeholder::before
 }
 
 ve-editable-rich-text .ck-placeholder {
-  font-style: italic;
+  font-style: normal;
 }
 
 /**
@@ -73,15 +109,15 @@ ve-editable-rich-text .ck-placeholder {
 img[data-veedit] {
   anchor-name: --ve-image;
   transition: filter 0.2s ease, outline-color 0.2s ease;
-  outline: 5px solid transparent;
-  outline-offset: -5px;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
   pointer-events: initial;
 
   &:hover,
   &:focus {
     /*filter: brightness(0.6);*/
     cursor: pointer;
-    outline-color: #5432fe;
+    outline-color: var(--ve-accent, #5432fe);
   }
 }
 

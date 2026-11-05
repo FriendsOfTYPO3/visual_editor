@@ -24,6 +24,7 @@ use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
+use TYPO3\CMS\VisualEditor\Service\AppearanceDraftService;
 
 use function substr;
 
@@ -36,6 +37,7 @@ readonly class EditModeMiddleware implements MiddlewareInterface
         private Typo3Version $typo3Version,
         private ListenerProvider $listenerProvider,
         private PageRenderer $pageRenderer,
+        private AppearanceDraftService $appearanceDraftService,
     ) {
     }
 
@@ -110,6 +112,7 @@ readonly class EditModeMiddleware implements MiddlewareInterface
         }
 
         $this->addAjaxSettingsToJS();
+        $this->appearanceDraftService->load($request);
 
         return $handler->handle($request);
     }
