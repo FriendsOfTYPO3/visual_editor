@@ -96,7 +96,8 @@ loadHelp() {
 Usage: $0 [options] [phpunit args]
 
 Options:
-  -s <unit|functional>    Test suite to run
+  -s <unit|functional|playwright>
+                          Test suite to run
   -b <docker|podman>      Container runtime
   -p <8.2|8.3|8.4|8.5>    PHP version (default: 8.2)
   -d <sqlite|mariadb|mysql|postgres>
@@ -110,6 +111,8 @@ Options:
 Examples:
   ./Build/Scripts/runTests.sh -s unit
   ./Build/Scripts/runTests.sh -s functional
+  ./Build/Scripts/runTests.sh -s playwright
+  ./Build/Scripts/runTests.sh -s playwright -b podman
   ./Build/Scripts/runTests.sh -s functional -d sqlite -- --filter LocalizationServiceTest
 EOF
 }
@@ -186,6 +189,8 @@ IMAGE_ALPINE="docker.io/alpine:3.8"
 IMAGE_MARIADB="docker.io/mariadb:${DBMS_VERSION}"
 IMAGE_MYSQL="docker.io/mysql:${DBMS_VERSION}"
 IMAGE_POSTGRES="docker.io/postgres:${DBMS_VERSION}-alpine"
+# Keep this version aligned with the playwright dependency in package.json.
+IMAGE_PLAYWRIGHT="mcr.microsoft.com/playwright:v1.63.0-noble"
 
 shift $((OPTIND - 1))
 
@@ -222,6 +227,25 @@ fi
 
 SUITE_EXIT_CODE=1
 case ${TEST_SUITE} in
+    playwright)
+        # Load TYPO3's real browser dependencies from Composer, including Lit.
+        if [ -f vendor/typo3/cms-core/Resources/Public/JavaScript/lit-helper.js ] || \
+            ${CONTAINER_BIN} run ${CONTAINER_COMMON_PARAMS} --name playwright-${SUFFIX}-composer \
+                -e COMPOSER_HOME="${CORE_ROOT}/.cache/composer" ${IMAGE_PHP} \
+                composer install --no-interaction --prefer-dist --no-progress --no-plugins --no-scripts; then
+            # Install into a temporary mount so host node_modules remain untouched.
+            if ${CONTAINER_BIN} run ${CONTAINER_COMMON_PARAMS} --name playwright-${SUFFIX} \
+                --ipc=host --tmpfs "${CORE_ROOT}/node_modules:rw,uid=${HOST_UID},gid=${HOST_PID}" \
+                -e npm_config_cache="${CORE_ROOT}/.cache/npm" ${IMAGE_PLAYWRIGHT} \
+                /bin/sh -c 'npm ci && npm run test:browser'; then
+                SUITE_EXIT_CODE=0
+            else
+                SUITE_EXIT_CODE=$?
+            fi
+        else
+            SUITE_EXIT_CODE=$?
+        fi
+        ;;
     unit)
         ${CONTAINER_BIN} run ${CONTAINER_COMMON_PARAMS} --name unit-${SUFFIX} ${XDEBUG_MODE} -e XDEBUG_CONFIG="${XDEBUG_CONFIG}" ${IMAGE_PHP} vendor/bin/phpunit -c Build/phpunit/UnitTests.xml "$@"
         SUITE_EXIT_CODE=$?

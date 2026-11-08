@@ -7,7 +7,7 @@ import {FlatCompat} from '@eslint/eslintrc';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const javascriptFiles = ['Resources/Public/JavaScript/**/*.js', 'eslint.config.mjs'];
+const javascriptFiles = ['Resources/Public/JavaScript/**/*.js', 'Tests/Browser/**/*.mjs', 'eslint.config.mjs'];
 const compat = new FlatCompat({
   baseDirectory: __dirname,
   recommendedConfig: js.configs.recommended,
@@ -23,6 +23,12 @@ export default [
   {
     ...stylistic.configs.recommended,
     files: javascriptFiles,
+  },
+  {
+    files: ['Tests/Browser/**/*.mjs'],
+    languageOptions: {
+      globals: globals.node,
+    },
   },
   {
     files: javascriptFiles,
