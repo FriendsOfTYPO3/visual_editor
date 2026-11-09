@@ -499,7 +499,15 @@ export class VeEditableText extends LitElement {
       fieldPositionId: this.fieldPositionId,
       focused: false,
     }, 'parent');
-    this.#setSlotText(this.#validateAndStore(this.#editableTextToStoredText(this.#getSlotText())));
+
+    const value = this.#editableTextToStoredText(this.#getSlotText());
+    // focusing a field must not change its value, even if the value violates the TCA
+    if (value === this.valueInitial && !dataHandlerStore.hasChangedData(this.table, this.uid, this.field)) {
+      this.#setSlotText(value);
+      return;
+    }
+
+    this.#setSlotText(this.#validateAndStore(value));
   }
 
   /**

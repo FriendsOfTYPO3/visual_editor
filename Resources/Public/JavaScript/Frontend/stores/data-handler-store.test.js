@@ -75,3 +75,18 @@ test('data handler store emits table and global events for commands and save', a
     kind: 'saved',
   });
 });
+
+test('data handler store only counts invalid fields with changed data', async () => {
+  const {dataHandlerStore} = await loadFreshStore();
+
+  dataHandlerStore.setInitialData('tt_content', 789, 'header', 'ab');
+  dataHandlerStore.setInvalid('tt_content', 789, 'header', true);
+  assert.equal(dataHandlerStore.invalidCount, 0);
+  assert.deepEqual(dataHandlerStore.invalidFields, {tt_content: {789: {header: true}}});
+
+  dataHandlerStore.setData('tt_content', 789, 'header', 'a');
+  assert.equal(dataHandlerStore.invalidCount, 1);
+
+  dataHandlerStore.setData('tt_content', 789, 'header', 'ab');
+  assert.equal(dataHandlerStore.invalidCount, 0);
+});

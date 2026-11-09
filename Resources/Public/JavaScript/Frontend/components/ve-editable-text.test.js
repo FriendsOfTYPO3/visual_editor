@@ -208,3 +208,63 @@ test('ve-editable-text parses the validation attribute of elements created with 
   assert.deepEqual(pageErrors, []);
   await page.close();
 });
+
+/**
+ * @param {import('playwright').Page} page
+ * @returns {Promise<Record<string, any>>}
+ */
+async function getStoredData(page) {
+  return page.evaluate(async () => {
+    const {dataHandlerStore} = await import('@typo3/visual-editor/Frontend/stores/data-handler-store');
+    return dataHandlerStore.data;
+  });
+}
+
+/**
+ * @param {import('playwright').Page} page
+ * @returns {Promise<Record<string, string>>}
+ */
+async function getSlotTexts(page) {
+  return page.evaluate(() => Object.fromEntries(
+    [...document.querySelectorAll('ve-editable-text')].map(element => [element.id, element.shadowRoot.querySelector('.slot').innerText]),
+  ));
+}
+
+// values which violate the TCA, e.g. because the TCA became stricter after they were saved
+const legacyValues = editableText('trim', ' Foo ', {eval: ['trim']})
+  + editableText('min', 'ab', {min: 3})
+  + editableText('upper', 'abc', {eval: ['upper']})
+  + editableText('max', 'abcdefgh', {max: 5});
+
+test('ve-editable-text keeps untouched values when the field loses focus', async () => {
+  const {page, pageErrors} = await openPage();
+  await page.evaluate(html => document.body.innerHTML = html, legacyValues);
+  await defineEditableText(page);
+  await getEditableTextStates(page);
+
+  for (const id of ['trim', 'min', 'upper', 'max']) {
+    await page.locator(`#${id} .slot`).focus();
+    await page.locator(`#${id} .slot`).blur();
+  }
+
+  assert.deepEqual(await getStoredData(page), {});
+  assert.deepEqual(await getSlotTexts(page), {trim: ' Foo ', min: 'ab', upper: 'abc', max: 'abcdefgh'});
+  assert.deepEqual(pageErrors, []);
+  await page.close();
+});
+
+test('ve-editable-text normalizes changed values when the field loses focus', async () => {
+  const {page, pageErrors} = await openPage();
+  await page.evaluate(html => document.body.innerHTML = html, legacyValues);
+  await defineEditableText(page);
+  await getEditableTextStates(page);
+
+  await page.locator('#upper .slot').selectText();
+  await page.keyboard.type('new');
+  await page.locator('#upper .slot').blur();
+
+  assert.deepEqual(await getStoredData(page), {tt_content: {1: {upper: 'NEW'}}});
+  assert.equal((await getSlotTexts(page)).upper, 'NEW');
+  assert.deepEqual(pageErrors, []);
+  await page.close();
+});

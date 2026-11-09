@@ -13,7 +13,8 @@ export function syncEditorState() {
 }
 
 export function focusFirstInvalidField() {
-  document.querySelector('ve-editable-text[invalid]')?.focusEditable?.();
+  // only changed invalid fields block saving, see dataHandlerStore.invalidCount
+  document.querySelector('ve-editable-text[invalid][changed]')?.focusEditable?.();
 }
 
 export function initializeSaveHandling() {
