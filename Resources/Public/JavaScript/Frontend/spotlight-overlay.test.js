@@ -82,14 +82,15 @@ async function waitForFrames(page) {
  * Returns the id of the element that receives a click in the center of each element.
  *
  * @param {import('playwright').Page} page
+ * @param {string[]} ids
  * @returns {Promise<Record<string, string|null>>}
  */
-async function getClickedElementIds(page) {
-  return page.evaluate(() => Object.fromEntries(['sticky', 'fixed', 'static', 'other'].map((id) => {
+async function getClickedElementIds(page, ids) {
+  return page.evaluate(ids => Object.fromEntries(ids.map((id) => {
     const rect = document.getElementById(id).getBoundingClientRect();
     const element = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
     return [id, element?.id || null];
-  })));
+  })), ids);
 }
 
 test('spotlight keeps highlighted sticky and fixed elements clickable after scrolling', async () => {
@@ -101,25 +102,60 @@ test('spotlight keeps highlighted sticky and fixed elements clickable after scro
   await waitForFrames(page);
 
   // the overlay blocks the element which is not highlighted
-  assert.deepEqual(await getClickedElementIds(page), {sticky: 'sticky', fixed: 'fixed', static: 'static', other: null});
+  assert.deepEqual(
+    await getClickedElementIds(page, ['sticky', 'fixed', 'static', 'other']),
+    {sticky: 'sticky', fixed: 'fixed', static: 'static', other: null},
+  );
   await page.close();
 });
 
-test('spotlight does not rewrite the overlay while scrolling static elements', async () => {
+test('spotlight does not measure the targets while scrolling static elements', async () => {
   const page = await openPage(staticTargets);
   await page.evaluate(() => window.spotlight.highlight('.target'));
   await waitForFrames(page);
 
+  // the holes of static elements keep their document coordinates, so scrolling must not run any layout work
   await page.evaluate(() => {
-    window.pathChanges = 0;
-    new MutationObserver(records => window.pathChanges += records.length)
-      .observe(document.querySelector('.spotlight-overlay-path'), {attributes: true, attributeFilter: ['d']});
+    window.measurements = 0;
+    const getBoundingClientRect = Element.prototype.getBoundingClientRect;
+    Element.prototype.getBoundingClientRect = function () {
+      window.measurements++;
+      return getBoundingClientRect.call(this);
+    };
   });
   for (const y of [300, 600, 900]) {
     await page.evaluate(top => window.scrollTo(0, top), y);
     await waitForFrames(page);
   }
 
-  assert.equal(await page.evaluate(() => window.pathChanges), 0);
+  assert.equal(await page.evaluate(() => window.measurements), 0);
+  await page.close();
+});
+
+// the placeholder keeps the height of the header, so the document does not resize when the header becomes fixed
+const headerFixedByScript = `
+  <style>.is-fixed {position: fixed; top: 0; left: 0; right: 0;}</style>
+  <div style="height: 60px;"><div id="header"><span class="target" id="sticky">in a header fixed by a script</span></div></div>
+  <div style="height: 1000px;"></div>
+  <span class="target" id="static">static</span>
+  <span id="other">not highlighted</span>
+  <div style="height: 3000px;"></div>`;
+
+test('spotlight keeps a header clickable that a script makes fixed while scrolling', async () => {
+  const page = await openPage(headerFixedByScript);
+  await page.evaluate(() => {
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => header.classList.toggle('is-fixed', window.scrollY > 100));
+  });
+  await page.evaluate(() => window.spotlight.highlight('.target'));
+  await waitForFrames(page);
+
+  await page.evaluate(() => window.scrollTo(0, 900));
+  await waitForFrames(page);
+
+  assert.deepEqual(
+    await getClickedElementIds(page, ['sticky', 'static', 'other']),
+    {sticky: 'sticky', static: 'static', other: null},
+  );
   await page.close();
 });
