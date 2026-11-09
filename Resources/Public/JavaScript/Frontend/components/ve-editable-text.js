@@ -38,6 +38,8 @@ export class VeEditableText extends LitElement {
   constructor() {
     super();
 
+    // Lit parses the validation attribute (type: Object), this is only the default without the attribute
+    this.validation = {};
     this.invalid = false;
     this.validationErrors = [];
     this.showEmpty = showEmptyActive.get();
@@ -66,8 +68,6 @@ export class VeEditableText extends LitElement {
     super.connectedCallback();
     this.value = this.getAttribute('value') ?? '';
     this.valueInitial = this.value;
-    const validation = this.getAttribute('validation');
-    this.validation = validation ? JSON.parse(validation) : {};
 
     this.addEventListener('click', this.onClick);
     this.addEventListener('mousedown', this.onMousedown);

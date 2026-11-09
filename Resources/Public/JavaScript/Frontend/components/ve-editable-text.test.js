@@ -268,3 +268,25 @@ test('ve-editable-text normalizes changed values when the field loses focus', as
   assert.deepEqual(pageErrors, []);
   await page.close();
 });
+
+test('ve-editable-text keeps untouched values when the element is moved in the DOM', async () => {
+  const {page, pageErrors} = await openPage();
+  await page.evaluate(html => document.body.innerHTML = `<div id="source">${html}</div><div id="target"></div>`, legacyValues);
+  await defineEditableText(page);
+  await getEditableTextStates(page);
+
+  // moving a content element (drag and drop) disconnects and reconnects the editable texts inside
+  await page.evaluate(() => {
+    const target = document.getElementById('target');
+    for (const paragraph of [...document.getElementById('source').children]) {
+      target.insertBefore(paragraph, null);
+    }
+  });
+  const states = await getEditableTextStates(page);
+
+  assert.deepEqual(await getStoredData(page), {});
+  assert.deepEqual(await getSlotTexts(page), {trim: ' Foo ', min: 'ab', upper: 'abc', max: 'abcdefgh'});
+  assert.deepEqual(states.map(state => state.validationType), ['object', 'object', 'object', 'object']);
+  assert.deepEqual(pageErrors, []);
+  await page.close();
+});
