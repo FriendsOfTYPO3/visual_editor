@@ -105,21 +105,25 @@ test('spotlight keeps highlighted sticky and fixed elements clickable after scro
   await page.close();
 });
 
-test('spotlight does not rewrite the overlay while scrolling static elements', async () => {
+test('spotlight does not measure the targets while scrolling static elements', async () => {
   const page = await openPage(staticTargets);
   await page.evaluate(() => window.spotlight.highlight('.target'));
   await waitForFrames(page);
 
+  // the holes of static elements keep their document coordinates, so scrolling must not run any layout work
   await page.evaluate(() => {
-    window.pathChanges = 0;
-    new MutationObserver(records => window.pathChanges += records.length)
-      .observe(document.querySelector('.spotlight-overlay-path'), {attributes: true, attributeFilter: ['d']});
+    window.measurements = 0;
+    const getBoundingClientRect = Element.prototype.getBoundingClientRect;
+    Element.prototype.getBoundingClientRect = function () {
+      window.measurements++;
+      return getBoundingClientRect.call(this);
+    };
   });
   for (const y of [300, 600, 900]) {
     await page.evaluate(top => window.scrollTo(0, top), y);
     await waitForFrames(page);
   }
 
-  assert.equal(await page.evaluate(() => window.pathChanges), 0);
+  assert.equal(await page.evaluate(() => window.measurements), 0);
   await page.close();
 });
