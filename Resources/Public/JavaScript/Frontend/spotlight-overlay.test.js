@@ -23,6 +23,18 @@ const staticTargets = `
   <span class="target">static</span>
   <div style="height: 3000px;"></div>`;
 
+// the target starts hidden below the visible area of the container, at the height of #below
+const scrollContainerTargets = `
+  <div id="container" style="height: 300px; overflow: auto;">
+    <div style="height: 400px;"></div>
+    <span class="target" id="inner">in a scroll container</span>
+    <span id="other">not highlighted</span>
+    <div style="height: 600px;"></div>
+  </div>
+  <div style="height: 100px;"></div>
+  <span id="below">below the scroll container</span>
+  <div style="height: 3000px;"></div>`;
+
 /**
  * @param {string} body
  * @returns {string}
@@ -106,6 +118,31 @@ test('spotlight keeps highlighted sticky and fixed elements clickable after scro
     await getClickedElementIds(page, ['sticky', 'fixed', 'static', 'other']),
     {sticky: 'sticky', fixed: 'fixed', static: 'static', other: null},
   );
+  await page.close();
+});
+
+test('spotlight keeps highlighted elements clickable after scrolling their scroll container', async () => {
+  const page = await openPage(scrollContainerTargets);
+  await page.evaluate(() => window.spotlight.highlight('.target'));
+  await waitForFrames(page);
+
+  await page.evaluate(() => document.getElementById('container').scrollTop = 300);
+  await waitForFrames(page);
+
+  assert.deepEqual(
+    await getClickedElementIds(page, ['inner', 'other', 'below']),
+    {inner: 'inner', other: null, below: null},
+  );
+  await page.close();
+});
+
+test('spotlight does not open holes outside the scroll container of a hidden target', async () => {
+  const page = await openPage(scrollContainerTargets);
+  await page.evaluate(() => window.spotlight.highlight('.target'));
+  await waitForFrames(page);
+
+  // #inner is scrolled out of its container, its hole would be over #below
+  assert.deepEqual(await getClickedElementIds(page, ['below']), {below: null});
   await page.close();
 });
 

@@ -10,6 +10,8 @@ let overlaySvgEl = null;
 let overlayPathEl = null;
 
 let currentTargets = [];
+// inner scroll containers that clip each target, collected together with the targets
+let scrollContainersByTarget = new Map();
 let isActive = false;
 let listenersAdded = false;
 let scrollListenerAdded = false;
@@ -313,6 +315,7 @@ function isTargetVisible(element) {
 
 function computeHolesFromTargets() {
   const holes = [];
+  const scrollContainerRects = new Map();
 
   for (const el of currentTargets) {
     if (!(el instanceof Element) || !isTargetVisible(el)) continue;
@@ -320,12 +323,24 @@ function computeHolesFromTargets() {
     const rect = el.getBoundingClientRect();
     if (!rect || (rect.width <= EPS && rect.height <= EPS)) continue;
 
-    const x = rect.left + window.scrollX - HOLE_PADDING_INLINE;
-    const y = rect.top + window.scrollY - HOLE_PADDING_BLOCK;
-    const w = rect.width + HOLE_PADDING_INLINE * 2;
-    const h = rect.height + HOLE_PADDING_BLOCK * 2;
+    let left = rect.left - HOLE_PADDING_INLINE;
+    let top = rect.top - HOLE_PADDING_BLOCK;
+    let right = rect.right + HOLE_PADDING_INLINE;
+    let bottom = rect.bottom + HOLE_PADDING_BLOCK;
 
-    holes.push({x, y, w, h});
+    // parts of the target that are scrolled out of its scroll containers are hidden, so they get no hole
+    for (const container of scrollContainersByTarget.get(el) ?? []) {
+      if (!scrollContainerRects.has(container)) {
+        scrollContainerRects.set(container, container.getBoundingClientRect());
+      }
+      const visible = scrollContainerRects.get(container);
+      left = Math.max(left, visible.left);
+      top = Math.max(top, visible.top);
+      right = Math.min(right, visible.right);
+      bottom = Math.min(bottom, visible.bottom);
+    }
+
+    holes.push({x: left + window.scrollX, y: top + window.scrollY, w: right - left, h: bottom - top});
   }
 
   // Critical fix: union overlapping rectangles
@@ -350,7 +365,8 @@ function updateHoles() {
 }
 
 /**
- * Sticky and fixed elements move within the document while scrolling, so their holes have to follow.
+ * Sticky and fixed elements move within the document while the page scrolls, and elements in inner scroll
+ * containers move when their container scrolls, so their holes have to follow.
  * The holes of all other elements keep their document coordinates, so the path stays unchanged for them.
  */
 function scheduleScrollUpdate() {
@@ -376,43 +392,81 @@ function scheduleAncestorUpdate() {
   });
 }
 
+const SCROLLABLE_OVERFLOW = ['auto', 'scroll', 'overlay'];
+
 /**
- * Returns whether a target or one of its ancestors is sticky or fixed, so its hole moves within the document
- * while scrolling. Ancestors that are shared by several targets are checked once.
- *
- * This is checked when the targets are selected or the class or style attribute of an ancestor changes, not
- * while scrolling. Other changes, e.g. a class on a sibling that a selector depends on, are noticed with the
- * next selection of the targets (resize, mutation of a target).
- *
- * @param {Element[]} targets
+ * @param {Element} el
+ * @param {CSSStyleDeclaration} style
  * @returns {boolean}
  */
-function hasScrollDependentTarget(targets) {
-  const checked = new Set();
-  return targets.some((target) => {
-    for (let el = target; el && !checked.has(el); el = getComposedParent(el)) {
-      checked.add(el);
-      const position = getComputedStyle(el).position;
-      if (position === 'fixed' || position === 'sticky') return true;
+function isInnerScrollContainer(el, style) {
+  if (el === document.scrollingElement) return false;
+
+  return (SCROLLABLE_OVERFLOW.includes(style.overflowY) && el.scrollHeight > el.clientHeight)
+    || (SCROLLABLE_OVERFLOW.includes(style.overflowX) && el.scrollWidth > el.clientWidth);
+}
+
+/**
+ * Finds the targets whose holes depend on scrolling: a target or one of its ancestors is sticky or fixed,
+ * or the target is inside an inner scroll container. Ancestors shared by several targets are described once.
+ *
+ * This is checked when the targets are selected or the class or style attribute of an ancestor changes, not
+ * while scrolling. Other changes, e.g. a class on a sibling that a selector depends on, or content that makes
+ * a container scrollable, are noticed with the next selection of the targets (resize, mutation of a target).
+ *
+ * @param {Element[]} targets
+ * @returns {{followScrolling: boolean, scrollContainersByTarget: Map<Element, Element[]>}}
+ */
+function collectScrollDependencies(targets) {
+  const descriptions = new Map();
+  const describe = (el) => {
+    if (!descriptions.has(el)) {
+      const style = getComputedStyle(el);
+      descriptions.set(el, {position: style.position, scrollContainer: isInnerScrollContainer(el, style)});
     }
-    return false;
-  });
+    return descriptions.get(el);
+  };
+
+  let followScrolling = false;
+  const scrollContainersByTarget = new Map();
+  for (const target of targets) {
+    const scrollContainers = [];
+    // the scroll containers around a fixed element neither move nor clip it
+    let clipped = true;
+    for (let el = target; el; el = getComposedParent(el)) {
+      const {position, scrollContainer} = describe(el);
+      if (clipped && scrollContainer && el !== target) scrollContainers.push(el);
+      if (position === 'fixed' || position === 'sticky') followScrolling = true;
+      if (position === 'fixed') clipped = false;
+    }
+
+    if (scrollContainers.length) {
+      followScrolling = true;
+      scrollContainersByTarget.set(target, scrollContainers);
+    }
+  }
+
+  return {followScrolling, scrollContainersByTarget};
 }
 
 /**
  * Only listens to scrolling while a target depends on it, so scrolling runs no code otherwise.
+ * Scroll events of elements do not bubble, so the listener captures them at the document.
  *
  * @returns {boolean} whether the listener was added or removed
  */
 function updateScrollListener() {
-  const followScrolling = listenersAdded && hasScrollDependentTarget(currentTargets);
-  if (followScrolling === scrollListenerAdded) return false;
+  const dependencies = listenersAdded ?
+    collectScrollDependencies(currentTargets)
+    : {followScrolling: false, scrollContainersByTarget: new Map()};
+  scrollContainersByTarget = dependencies.scrollContainersByTarget;
+  if (dependencies.followScrolling === scrollListenerAdded) return false;
 
-  scrollListenerAdded = followScrolling;
-  if (followScrolling) {
-    window.addEventListener('scroll', scheduleScrollUpdate, {passive: true});
+  scrollListenerAdded = dependencies.followScrolling;
+  if (scrollListenerAdded) {
+    document.addEventListener('scroll', scheduleScrollUpdate, {capture: true, passive: true});
   } else {
-    window.removeEventListener('scroll', scheduleScrollUpdate);
+    document.removeEventListener('scroll', scheduleScrollUpdate, {capture: true});
   }
   return true;
 }
