@@ -15,6 +15,7 @@ let listenersAdded = false;
 let scrollListenerAdded = false;
 let updateScheduled = false;
 let scrollUpdateScheduled = false;
+let ancestorUpdateScheduled = false;
 let lastPathD = null;
 
 // Size of the whole document; the overlay is anchored to the document (not the viewport),
@@ -29,6 +30,7 @@ const EPS = 1e-6; // float compare tolerance
 
 const resizeObserver = new ResizeObserver(() => scheduleUpdate());
 const mutationObserver = new MutationObserver(() => scheduleUpdate());
+const ancestorObserver = new MutationObserver(() => scheduleAncestorUpdate());
 
 function ensureStyle() {
   if (styleEl) return;
@@ -361,12 +363,26 @@ function scheduleScrollUpdate() {
 }
 
 /**
+ * A class or style change can make an ancestor of the targets sticky or fixed after they were selected,
+ * e.g. a header that a script fixes while scrolling. The holes only have to be recomputed when this starts
+ * or stops following the scrolling; while it is followed, scrolling updates them anyway.
+ */
+function scheduleAncestorUpdate() {
+  if (!isActive || ancestorUpdateScheduled) return;
+  ancestorUpdateScheduled = true;
+  requestAnimationFrame(() => {
+    ancestorUpdateScheduled = false;
+    if (updateScrollListener()) updateHoles();
+  });
+}
+
+/**
  * Returns whether a target or one of its ancestors is sticky or fixed, so its hole moves within the document
  * while scrolling. Ancestors that are shared by several targets are checked once.
  *
- * This is checked when the targets are selected, not while scrolling. An ancestor outside the target subtrees
- * that becomes sticky or fixed later, e.g. by toggling a class, is noticed with the next selection of the
- * targets (resize, mutation of a target).
+ * This is checked when the targets are selected or the class or style attribute of an ancestor changes, not
+ * while scrolling. Other changes, e.g. a class on a sibling that a selector depends on, are noticed with the
+ * next selection of the targets (resize, mutation of a target).
  *
  * @param {Element[]} targets
  * @returns {boolean}
@@ -385,10 +401,12 @@ function hasScrollDependentTarget(targets) {
 
 /**
  * Only listens to scrolling while a target depends on it, so scrolling runs no code otherwise.
+ *
+ * @returns {boolean} whether the listener was added or removed
  */
 function updateScrollListener() {
   const followScrolling = listenersAdded && hasScrollDependentTarget(currentTargets);
-  if (followScrolling === scrollListenerAdded) return;
+  if (followScrolling === scrollListenerAdded) return false;
 
   scrollListenerAdded = followScrolling;
   if (followScrolling) {
@@ -396,6 +414,7 @@ function updateScrollListener() {
   } else {
     window.removeEventListener('scroll', scheduleScrollUpdate);
   }
+  return true;
 }
 
 function isSameTargetList(a, b) {
@@ -436,9 +455,11 @@ function scheduleUpdate() {
 function observeTargets() {
   resizeObserver.disconnect();
   mutationObserver.disconnect();
+  ancestorObserver.disconnect();
 
   resizeObserver.observe(document.documentElement);
 
+  const observedAncestors = new Set();
   currentTargets.forEach((el) => {
     if (!(el instanceof Element)) return;
 
@@ -458,6 +479,11 @@ function observeTargets() {
         attributes: true,
         attributeFilter: ['class', 'style'],
       });
+    }
+
+    for (let ancestor = getComposedParent(el); ancestor && !observedAncestors.has(ancestor); ancestor = getComposedParent(ancestor)) {
+      observedAncestors.add(ancestor);
+      ancestorObserver.observe(ancestor, {attributes: true, attributeFilter: ['class', 'style']});
     }
   });
 }
@@ -479,6 +505,7 @@ function removeListeners() {
 
   resizeObserver.disconnect();
   mutationObserver.disconnect();
+  ancestorObserver.disconnect();
 
   document.removeEventListener('toggle', scheduleUpdate, {capture: true});
   window.removeEventListener('resize', scheduleUpdate);
