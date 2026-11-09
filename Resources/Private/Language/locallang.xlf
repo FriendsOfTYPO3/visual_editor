@@ -43,6 +43,21 @@
             <trans-unit id="validation.max">
                 <source>Please enter no more than %d characters.</source>
             </trans-unit>
+            <trans-unit id="validation.integer">
+                <source>Please enter a whole number.</source>
+            </trans-unit>
+            <trans-unit id="validation.decimal">
+                <source>Please enter a decimal number.</source>
+            </trans-unit>
+            <trans-unit id="validation.decimalPlaces">
+                <source>Please enter no more than %d decimal places.</source>
+            </trans-unit>
+            <trans-unit id="validation.lower">
+                <source>Please enter a number greater than or equal to %s.</source>
+            </trans-unit>
+            <trans-unit id="validation.upper">
+                <source>Please enter a number less than or equal to %s.</source>
+            </trans-unit>
             <trans-unit id="inputDenial.noNewlines">
                 <source>Line breaks are not allowed.</source>
             </trans-unit>
@@ -60,6 +75,12 @@
             </trans-unit>
             <trans-unit id="inputDenial.alphanum_x">
                 <source>Only letters, numbers, _ and - are allowed.</source>
+            </trans-unit>
+            <trans-unit id="inputDenial.integer">
+                <source>Only digits and a leading minus sign are allowed.</source>
+            </trans-unit>
+            <trans-unit id="inputDenial.decimal">
+                <source>Only digits, a decimal separator and a leading minus sign are allowed.</source>
             </trans-unit>
             <trans-unit id="frontend.confirmCopy">
                 <source>copy the element?</source>
