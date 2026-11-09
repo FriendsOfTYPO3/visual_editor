@@ -13,6 +13,7 @@ let currentTargets = [];
 let isActive = false;
 let listenersAdded = false;
 let updateScheduled = false;
+let scrollUpdateScheduled = false;
 let lastPathD = null;
 
 // Size of the whole document; the overlay is anchored to the document (not the viewport),
@@ -332,12 +333,30 @@ function updateOverlayPath() {
   if (!overlayPathEl || !isActive) return;
 
   updateDocumentSize();
+  updateHoles();
+}
+
+function updateHoles() {
+  if (!overlayPathEl || !isActive) return;
 
   const d = buildOverlayPathD(computeHolesFromTargets());
   if (d === lastPathD) return;
 
   lastPathD = d;
   overlayPathEl.setAttribute('d', d);
+}
+
+/**
+ * Sticky and fixed elements move within the document while scrolling, so their holes have to follow.
+ * The holes of all other elements keep their document coordinates, so the path stays unchanged for them.
+ */
+function scheduleScrollUpdate() {
+  if (!isActive || scrollUpdateScheduled) return;
+  scrollUpdateScheduled = true;
+  requestAnimationFrame(() => {
+    scrollUpdateScheduled = false;
+    updateHoles();
+  });
 }
 
 function isSameTargetList(a, b) {
@@ -410,6 +429,7 @@ function addListeners() {
 
   document.addEventListener('toggle', scheduleUpdate, {capture: true});
   window.addEventListener('resize', scheduleUpdate);
+  window.addEventListener('scroll', scheduleScrollUpdate, {passive: true});
 }
 
 function removeListeners() {
@@ -421,6 +441,7 @@ function removeListeners() {
 
   document.removeEventListener('toggle', scheduleUpdate, {capture: true});
   window.removeEventListener('resize', scheduleUpdate);
+  window.removeEventListener('scroll', scheduleScrollUpdate);
 }
 
 /**
