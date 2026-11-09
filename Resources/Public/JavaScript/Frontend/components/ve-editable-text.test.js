@@ -269,24 +269,76 @@ test('ve-editable-text normalizes changed values when the field loses focus', as
   await page.close();
 });
 
-test('ve-editable-text keeps untouched values when the element is moved in the DOM', async () => {
-  const {page, pageErrors} = await openPage();
+/**
+ * @param {import('playwright').Page} page
+ * @returns {Promise<void>}
+ */
+async function renderMovableLegacyValues(page) {
   await page.evaluate(html => document.body.innerHTML = `<div id="source">${html}</div><div id="target"></div>`, legacyValues);
   await defineEditableText(page);
   await getEditableTextStates(page);
+}
 
-  // moving a content element (drag and drop) disconnects and reconnects the editable texts inside
+/**
+ * Moving a content element (drag and drop) disconnects and reconnects the editable texts inside.
+ *
+ * @param {import('playwright').Page} page
+ * @returns {Promise<void>}
+ */
+async function moveEditableTexts(page) {
   await page.evaluate(() => {
     const target = document.getElementById('target');
     for (const paragraph of [...document.getElementById('source').children]) {
       target.insertBefore(paragraph, null);
     }
   });
+}
+
+test('ve-editable-text keeps untouched values when the element is moved in the DOM', async () => {
+  const {page, pageErrors} = await openPage();
+  await renderMovableLegacyValues(page);
+
+  await moveEditableTexts(page);
   const states = await getEditableTextStates(page);
 
   assert.deepEqual(await getStoredData(page), {});
   assert.deepEqual(await getSlotTexts(page), {trim: ' Foo ', min: 'ab', upper: 'abc', max: 'abcdefgh'});
   assert.deepEqual(states.map(state => state.validationType), ['object', 'object', 'object', 'object']);
+  assert.deepEqual(pageErrors, []);
+  await page.close();
+});
+
+test('ve-editable-text keeps unsaved changes when the element is moved in the DOM', async () => {
+  const {page, pageErrors} = await openPage();
+  await renderMovableLegacyValues(page);
+
+  await page.locator('#upper .slot').selectText();
+  await page.keyboard.type('new');
+  await page.locator('#upper .slot').blur();
+  await moveEditableTexts(page);
+  await getEditableTextStates(page);
+
+  assert.deepEqual(await getStoredData(page), {tt_content: {1: {upper: 'NEW'}}});
+  assert.deepEqual(await getSlotTexts(page), {trim: ' Foo ', min: 'ab', upper: 'NEW', max: 'abcdefgh'});
+  assert.deepEqual(pageErrors, []);
+  await page.close();
+});
+
+test('ve-editable-text resets to the initial value after the element is moved in the DOM', async () => {
+  const {page, pageErrors} = await openPage();
+  await renderMovableLegacyValues(page);
+
+  await page.locator('#upper .slot').selectText();
+  await page.keyboard.type('new');
+  await page.locator('#upper .slot').blur();
+  await moveEditableTexts(page);
+  await getEditableTextStates(page);
+  // ve-reset-button is not defined on this page, so it has no size to click on
+  await page.evaluate(() => document.getElementById('upper').shadowRoot.querySelector('ve-reset-button').click());
+  await getEditableTextStates(page);
+
+  assert.deepEqual(await getStoredData(page), {});
+  assert.deepEqual(await getSlotTexts(page), {trim: ' Foo ', min: 'ab', upper: 'abc', max: 'abcdefgh'});
   assert.deepEqual(pageErrors, []);
   await page.close();
 });
