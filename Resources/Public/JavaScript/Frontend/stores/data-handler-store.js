@@ -29,11 +29,19 @@ class DataHandlerStore extends EventTarget {
     return getObjectLeafCount(this.#data) + this.getCmdChanges();
   }
 
+  /**
+   * Counts the invalid fields that block saving.
+   * Unchanged fields are not saved, so their stored value does not block saving, even if it violates the TCA.
+   */
   get invalidCount() {
     let count = 0;
-    for (const tables of Object.values(this.#invalidFields)) {
-      for (const fields of Object.values(tables)) {
-        count += Object.keys(fields).length;
+    for (const [table, records] of Object.entries(this.#invalidFields)) {
+      for (const [uid, fields] of Object.entries(records)) {
+        for (const field of Object.keys(fields)) {
+          if (this.hasChangedData(table, Number(uid), field)) {
+            count++;
+          }
+        }
       }
     }
     return count;
