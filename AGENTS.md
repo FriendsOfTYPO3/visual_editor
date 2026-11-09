@@ -8,7 +8,7 @@ This repository is a TYPO3 CMS extension. PHP source lives in `Classes/`, groupe
 
 - `composer test:unit`: runs PHPUnit unit tests via `Build/phpunit/UnitTests.xml`.
 - `composer test:functional`: runs functional tests through `Build/Scripts/runTests.sh` with sqlite by default.
-- `npm run test`: runs Node tests for `Resources/Public/JavaScript/**/*.test.js`.
+- `npm run test`: runs Node tests for `Resources/Public/JavaScript/**/*.test.js`. Browser tests need `npm ci` and `npx playwright install chromium` once.
 - `npm run lint`: runs ESLint checks for JavaScript files.
 - `npm run lint -- --fix`: runs ESLint with automatic fixes for JavaScript files.
 - `./Build/Scripts/runTests.sh -s unit -- --filter EditModeServiceTest`: run one PHPUnit test class.
@@ -22,7 +22,7 @@ Use strict PHP types and PSR-4 namespaces rooted at `TYPO3\CMS\VisualEditor\`. P
 
 ## Testing Guidelines
 
-Use PHPUnit 11 for PHP tests. Put isolated logic tests in `Tests/Unit/` and TYPO3 integration or database-dependent coverage in `Tests/Functional/`. Prioritize PHPUnit data providers for related input/output scenarios instead of duplicating similar test methods; use named provider keys matching the test method arguments, such as `arguments`, `routeArguments`, and `expected`. Name test methods after observable behavior, for example `getUsedArgumentsReplacesDuplicateRouteArguments`. JavaScript tests should sit beside the module they cover and use the `.test.js` suffix. Only add JavaScript tests when the behavior can be tested without mocking; avoid mock-heavy tests. For JavaScript changes, run `npm run test` and `npm run lint`; use `npm run lint -- --fix` for automatic ESLint fixes before the final lint check.
+Use PHPUnit 11 for PHP tests. Put isolated logic tests in `Tests/Unit/` and TYPO3 integration or database-dependent coverage in `Tests/Functional/`. Prioritize PHPUnit data providers for related input/output scenarios instead of duplicating similar test methods; use named provider keys matching the test method arguments, such as `arguments`, `routeArguments`, and `expected`. Name test methods after observable behavior, for example `getUsedArgumentsReplacesDuplicateRouteArguments`. JavaScript tests should sit beside the module they cover and use the `.test.js` suffix. Only add JavaScript tests when the behavior can be tested without mocking; avoid mock-heavy tests. Behavior of web components that depends on the DOM (custom element lifecycle, focus, rendering) is tested in Chromium with Playwright, see `ve-editable-text.test.js`. For JavaScript changes, run `npm run test` and `npm run lint`; use `npm run lint -- --fix` for automatic ESLint fixes before the final lint check.
 
 ## Commit & Pull Request Guidelines
 
