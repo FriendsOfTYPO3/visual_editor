@@ -19,6 +19,7 @@ use TYPO3\CMS\VisualEditor\EditableResult\Input;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 use TYPO3\CMS\VisualEditor\Service\ModelToRawRecordService;
+use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\InvalidArgumentValueException;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
@@ -60,7 +61,6 @@ final class NumberViewHelper extends AbstractViewHelper
         private readonly EditModeService $editModeService,
         private readonly RecordFactory $recordFactory,
         private readonly TcaSchemaFactory $tcaSchema,
-        private readonly Typo3Version $typo3Version,
         private readonly LocalizationService $localizationService,
         private readonly ModelToRawRecordService $modelToRawRecordService,
     ) {
@@ -71,9 +71,8 @@ final class NumberViewHelper extends AbstractViewHelper
         parent::initializeArguments();
 
         $type = 'object';
-        // can not always use DI here because fluid initializes the class without DI. and calls initializeArguments.
-        $typo3Version = $this->typo3Version ?? GeneralUtility::makeInstance(Typo3Version::class);
-        if ($typo3Version->getMajorVersion() >= 14) {
+        // Fluid may call initializeArguments() on an instance created without DI, so the version is not injected.
+        if (GeneralUtility::makeInstance(Typo3Version::class)->getMajorVersion() >= 14) {
             $type = self::RECORD_TYPE;
         }
 
@@ -92,8 +91,7 @@ final class NumberViewHelper extends AbstractViewHelper
 
     public function render(): ?Input
     {
-        $renderingContext = $this->renderingContext ?? throw new InvalidArgumentException('$this->renderingContext is not available', 1778400001);
-        $request = $renderingContext->getAttribute(ServerRequestInterface::class);
+        $request = $this->getRequest($this->renderingContext);
         $this->editModeService->init($request);
 
         $record = $this->renderChildren();
@@ -172,6 +170,15 @@ final class NumberViewHelper extends AbstractViewHelper
         $tag->forceClosingTag(true);
 
         return new Input($label, $tag->render(), $isEmpty, $rawValue);
+    }
+
+    /**
+     * The rendering context is nullable in Fluid 5 (TYPO3 v14), but not in Fluid 4 (TYPO3 v13).
+     */
+    private function getRequest(?RenderingContextInterface $renderingContext): ServerRequestInterface
+    {
+        return $renderingContext?->getAttribute(ServerRequestInterface::class)
+            ?? throw new InvalidArgumentException('The request is not available in the rendering context', 1778400001);
     }
 
     private function getRawValue(mixed $value, string $fieldIdentifier): string
