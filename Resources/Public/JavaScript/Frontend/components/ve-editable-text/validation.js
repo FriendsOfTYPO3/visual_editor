@@ -121,6 +121,11 @@ function normalizeNumberValue(input, number, preserveLeadingAndTrailingWhitespac
 }
 
 /**
+ * The DataHandler stores TCA type=number fields with format "decimal" with two decimal places.
+ */
+const DECIMAL_PLACES = 2;
+
+/**
  * @param {string} value
  * @param {{format?: string, lower?: number, upper?: number}} number
  * @returns {ValidationMessage[]}
@@ -133,6 +138,14 @@ function getNumberValidationIssues(value, number) {
   }
 
   const errors = [];
+  if (isDecimal) {
+    // trailing zeros do not change the stored value
+    const decimalPlaces = (value.split(/[.,]/)[1] ?? '').replace(/0+$/, '');
+    if (decimalPlaces.length > DECIMAL_PLACES) {
+      errors.push({key: 'validation.decimalPlaces', args: [DECIMAL_PLACES]});
+    }
+  }
+
   const numericValue = Number(value.replace(',', '.'));
   if (typeof number.lower === 'number' && numericValue < number.lower) {
     errors.push({key: 'validation.lower', args: [number.lower]});

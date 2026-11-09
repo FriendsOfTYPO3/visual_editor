@@ -49,6 +49,9 @@
             <trans-unit id="validation.decimal">
                 <target>Bitte eine Dezimalzahl eingeben.</target>
             </trans-unit>
+            <trans-unit id="validation.decimalPlaces">
+                <target>Bitte nicht mehr als %d Nachkommastellen eingeben.</target>
+            </trans-unit>
             <trans-unit id="validation.lower">
                 <target>Bitte eine Zahl größer oder gleich %s eingeben.</target>
             </trans-unit>

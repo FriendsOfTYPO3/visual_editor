@@ -49,6 +49,9 @@
             <trans-unit id="validation.decimal">
                 <source>Please enter a decimal number.</source>
             </trans-unit>
+            <trans-unit id="validation.decimalPlaces">
+                <source>Please enter no more than %d decimal places.</source>
+            </trans-unit>
             <trans-unit id="validation.lower">
                 <source>Please enter a number greater than or equal to %s.</source>
             </trans-unit>

@@ -161,3 +161,12 @@ test('toStoredValue stores empty nullable number fields as null', () => {
   assert.equal(toStoredValue('', {nullable: true}), '');
   assert.equal(toStoredValue('5', {nullable: true, number: {format: 'integer'}}), '5');
 });
+
+test('getValidationIssues limits decimal number fields to two decimal places', () => {
+  assert.deepEqual(getValidationIssues('1,239', {number: {format: 'decimal'}}), [{key: 'validation.decimalPlaces', args: [2]}]);
+  assert.deepEqual(getValidationIssues('1,23', {number: {format: 'decimal'}}), []);
+});
+
+test('getValidationIssues ignores trailing zeros when counting decimal places', () => {
+  assert.deepEqual(getValidationIssues('1,2300', {number: {format: 'decimal'}}), []);
+});
