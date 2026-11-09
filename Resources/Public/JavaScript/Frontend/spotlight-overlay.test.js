@@ -235,3 +235,52 @@ test('spotlight keeps a header clickable that a script makes fixed while scrolli
   );
   await page.close();
 });
+
+// a script moves the section with the target while scrolling, e.g. for a parallax or reveal effect
+const targetInMovedSection = `
+  <style>.hidden-below {transform: translateY(150px);}</style>
+  <div style="height: 1000px;"></div>
+  <section id="section"><span class="target" id="moved">in a moved section</span><span id="other">not highlighted</span></section>
+  <div style="height: 4000px;"></div>`;
+
+/**
+ * @param {import('playwright').Page} page
+ * @returns {Promise<void>}
+ */
+async function scrollDownInSteps(page) {
+  for (const y of [300, 600, 900]) {
+    await page.evaluate(top => window.scrollTo(0, top), y);
+    await waitForFrames(page);
+  }
+}
+
+test('spotlight follows highlighted elements that a script moves by a style while scrolling', async () => {
+  const page = await openPage(targetInMovedSection);
+  await page.evaluate(() => {
+    const section = document.getElementById('section');
+    window.addEventListener('scroll', () => section.style.transform = `translateY(${window.scrollY / 4}px)`);
+  });
+  await page.evaluate(() => window.spotlight.highlight('.target'));
+  await waitForFrames(page);
+
+  await scrollDownInSteps(page);
+
+  assert.deepEqual(await getClickedElementIds(page, ['moved', 'other']), {moved: 'moved', other: null});
+  await page.close();
+});
+
+test('spotlight follows highlighted elements that a script moves by a class while scrolling', async () => {
+  const page = await openPage(targetInMovedSection);
+  await page.evaluate(() => {
+    const section = document.getElementById('section');
+    section.classList.add('hidden-below');
+    window.addEventListener('scroll', () => section.classList.toggle('hidden-below', window.scrollY <= 300));
+  });
+  await page.evaluate(() => window.spotlight.highlight('.target'));
+  await waitForFrames(page);
+
+  await scrollDownInSteps(page);
+
+  assert.deepEqual(await getClickedElementIds(page, ['moved', 'other']), {moved: 'moved', other: null});
+  await page.close();
+});
