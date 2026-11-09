@@ -109,6 +109,22 @@ Inside the component, accept the argument as a string or stringable value:
 <f:argument name="header" type="string|Stringable" />
 ````
 
+### Number Fields
+Fields of TCA type `number` are rendered with the `f:render.number` ViewHelper.
+It formats the number like `f:format.number` and accepts the same arguments (`decimals`, `decimalSeparator`, `thousandsSeparator`).
+If `decimals` is not set, it defaults to `0` for the format `integer` and to `2` for the format `decimal`.
+
+````html
+before:
+<span>{record.price -> f:format.number(thousandsSeparator: '.')}</span>
+
+after:
+<span>{record -> f:render.number(field: 'price', thousandsSeparator: '.')}</span>
+````
+
+In edit mode, the editor sees and types the raw value. The input is validated against the TCA configuration (`format`, `range`, `required`, `nullable`).
+Clearing a `nullable` field stores `NULL`.
+
 ### ContentArea
 
 #### ViewHelper `f:render.contentArea` (v14)

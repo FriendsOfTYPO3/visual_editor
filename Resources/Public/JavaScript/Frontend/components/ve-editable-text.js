@@ -6,7 +6,7 @@ import {showEmptyActive} from '@typo3/visual-editor/Shared/local-stores';
 import '@typo3/visual-editor/Frontend/components/ve-icon';
 import '@typo3/visual-editor/Frontend/components/ve-validation-overlay';
 import {getEditValue, insertTextAtSelection} from '@typo3/visual-editor/Frontend/components/ve-editable-text/editing';
-import {getValidationIssues, normalizeValue} from '@typo3/visual-editor/Frontend/components/ve-editable-text/validation';
+import {getValidationIssues, normalizeValue, toStoredValue} from '@typo3/visual-editor/Frontend/components/ve-editable-text/validation';
 import {getCaretOffset, setCaretPosition} from '@typo3/visual-editor/Frontend/caret-helper';
 import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 
@@ -66,7 +66,8 @@ export class VeEditableText extends LitElement {
     super.connectedCallback();
     this.value = this.getAttribute('value') ?? '';
     this.valueInitial = this.value;
-    this.validation = this.getAttribute('validation') || {};
+    const validation = this.getAttribute('validation');
+    this.validation = validation ? JSON.parse(validation) : {};
 
     this.addEventListener('click', this.onClick);
     this.addEventListener('mousedown', this.onMousedown);
@@ -116,7 +117,7 @@ export class VeEditableText extends LitElement {
     this.placeholder = this.name;
     this.skipNextValueNormalization = true;
     this.#setSlotText(this.valueInitial);
-    dataHandlerStore.setInitialData(this.table, this.uid, this.field, this.valueInitial);
+    dataHandlerStore.setInitialData(this.table, this.uid, this.field, toStoredValue(this.valueInitial, this.validation));
     this.#applyValidationState(this.valueInitial);
   }
 
@@ -148,7 +149,7 @@ export class VeEditableText extends LitElement {
     this.#setSlotText(this.valueInitial);
     this.skipNextValueNormalization = true;
     this.#applyValidationState(this.valueInitial);
-    dataHandlerStore.setData(this.table, this.uid, this.field, this.valueInitial);
+    dataHandlerStore.setData(this.table, this.uid, this.field, toStoredValue(this.valueInitial, this.validation));
   };
 
   /**
@@ -357,8 +358,12 @@ export class VeEditableText extends LitElement {
     }
 
     this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
-    this.valueInitial = dataHandlerStore.initialData[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
-    const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
+    const initialData = dataHandlerStore.initialData[this.table]?.[this.uid];
+    if (initialData && this.field in initialData) {
+      this.valueInitial = initialData[this.field] ?? '';
+    }
+    const data = dataHandlerStore.data[this.table]?.[this.uid];
+    const storedValue = data && this.field in data ? (data[this.field] ?? '') : this.valueInitial;
     const slot = this.#getSlot();
     const isFocused = this.matches(':focus-within');
     if (!isFocused && storedValue?.trim() !== slot?.innerText?.trim()) {
@@ -574,7 +579,7 @@ export class VeEditableText extends LitElement {
       normalizedValue = normalizedValue.slice(0, max);
     }
 
-    dataHandlerStore.setData(this.table, this.uid, this.field, normalizedValue);
+    dataHandlerStore.setData(this.table, this.uid, this.field, toStoredValue(normalizedValue, this.validation));
     return normalizedValue;
   }
 

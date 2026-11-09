@@ -43,6 +43,18 @@
             <trans-unit id="validation.max">
                 <target>Bitte nicht mehr als %d Zeichen eingeben.</target>
             </trans-unit>
+            <trans-unit id="validation.integer">
+                <target>Bitte eine ganze Zahl eingeben.</target>
+            </trans-unit>
+            <trans-unit id="validation.decimal">
+                <target>Bitte eine Dezimalzahl eingeben.</target>
+            </trans-unit>
+            <trans-unit id="validation.lower">
+                <target>Bitte eine Zahl größer oder gleich %s eingeben.</target>
+            </trans-unit>
+            <trans-unit id="validation.upper">
+                <target>Bitte eine Zahl kleiner oder gleich %s eingeben.</target>
+            </trans-unit>
             <trans-unit id="inputDenial.noNewlines">
                 <target>Zeilenumbrüche sind nicht erlaubt.</target>
             </trans-unit>
@@ -60,6 +72,12 @@
             </trans-unit>
             <trans-unit id="inputDenial.alphanum_x">
                 <target>Es sind nur Buchstaben, Zahlen, _ und - erlaubt.</target>
+            </trans-unit>
+            <trans-unit id="inputDenial.integer">
+                <target>Es sind nur Ziffern und ein führendes Minuszeichen erlaubt.</target>
+            </trans-unit>
+            <trans-unit id="inputDenial.decimal">
+                <target>Es sind nur Ziffern, ein Dezimaltrennzeichen und ein führendes Minuszeichen erlaubt.</target>
             </trans-unit>
             <trans-unit id="frontend.confirmCopy">
                 <target>Element kopieren?</target>
