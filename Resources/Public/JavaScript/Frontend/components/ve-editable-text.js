@@ -66,8 +66,11 @@ export class VeEditableText extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.value = this.getAttribute('value') ?? '';
-    this.valueInitial = this.value;
+    // moving a content element reconnects the element, and the reflected value attribute holds the edited value then
+    if (!this.hasUpdated) {
+      this.value = this.getAttribute('value') ?? '';
+      this.valueInitial = this.value;
+    }
 
     this.addEventListener('click', this.onClick);
     this.addEventListener('mousedown', this.onMousedown);
