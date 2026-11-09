@@ -35,6 +35,21 @@ const scrollContainerTargets = `
   <span id="below">below the scroll container</span>
   <div style="height: 3000px;"></div>`;
 
+const targetBelowTheFold = `
+  <div style="height: 1000px;"></div>
+  <span class="target" id="static">static</span>
+  <span id="other">not highlighted</span>
+  <div style="height: 3000px;"></div>`;
+
+// html has no overflow, so the overflow of body applies to the viewport and the document scrolls
+const bodyOverflowOfViewport = `
+  <style>html, body {height: 100%;} body {overflow-x: hidden;}</style>
+  ${targetBelowTheFold}`;
+
+const bodyAsScrollContainer = `
+  <style>html {overflow: hidden; height: 100%;} body {overflow: auto; height: 100%;}</style>
+  ${targetBelowTheFold}`;
+
 /**
  * @param {string} body
  * @returns {string}
@@ -143,6 +158,30 @@ test('spotlight does not open holes outside the scroll container of a hidden tar
 
   // #inner is scrolled out of its container, its hole would be over #below
   assert.deepEqual(await getClickedElementIds(page, ['below']), {below: null});
+  await page.close();
+});
+
+test('spotlight keeps highlighted elements clickable when the overflow of body applies to the viewport', async () => {
+  const page = await openPage(bodyOverflowOfViewport);
+  await page.evaluate(() => window.spotlight.highlight('.target'));
+  await waitForFrames(page);
+
+  await page.evaluate(() => window.scrollTo(0, 900));
+  await waitForFrames(page);
+
+  assert.deepEqual(await getClickedElementIds(page, ['static', 'other']), {static: 'static', other: null});
+  await page.close();
+});
+
+test('spotlight keeps highlighted elements clickable after scrolling body as scroll container', async () => {
+  const page = await openPage(bodyAsScrollContainer);
+  await page.evaluate(() => window.spotlight.highlight('.target'));
+  await waitForFrames(page);
+
+  await page.evaluate(() => document.body.scrollTop = 900);
+  await waitForFrames(page);
+
+  assert.deepEqual(await getClickedElementIds(page, ['static', 'other']), {static: 'static', other: null});
   await page.close();
 });
 

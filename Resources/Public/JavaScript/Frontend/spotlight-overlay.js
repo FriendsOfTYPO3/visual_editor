@@ -395,12 +395,19 @@ function scheduleAncestorUpdate() {
 const SCROLLABLE_OVERFLOW = ['auto', 'scroll', 'overlay'];
 
 /**
+ * The overflow of the root element applies to the viewport, and so does the overflow of body while the root
+ * element has none, e.g. `body {overflow-x: hidden}`. They do not scroll themselves then.
+ *
  * @param {Element} el
  * @param {CSSStyleDeclaration} style
  * @returns {boolean}
  */
 function isInnerScrollContainer(el, style) {
-  if (el === document.scrollingElement) return false;
+  if (el === document.documentElement || el === document.scrollingElement) return false;
+  if (el === document.body) {
+    const rootStyle = getComputedStyle(document.documentElement);
+    if (rootStyle.overflowX === 'visible' && rootStyle.overflowY === 'visible') return false;
+  }
 
   return (SCROLLABLE_OVERFLOW.includes(style.overflowY) && el.scrollHeight > el.clientHeight)
     || (SCROLLABLE_OVERFLOW.includes(style.overflowX) && el.scrollWidth > el.clientWidth);
