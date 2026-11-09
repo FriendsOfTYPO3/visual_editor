@@ -379,16 +379,17 @@ function scheduleScrollUpdate() {
 }
 
 /**
- * A class or style change can make an ancestor of the targets sticky or fixed after they were selected,
- * e.g. a header that a script fixes while scrolling. The holes only have to be recomputed when this starts
- * or stops following the scrolling; while it is followed, scrolling updates them anyway.
+ * A class or style change of an ancestor can move the targets, e.g. a script that moves a section for a
+ * parallax or reveal effect while scrolling, or make them follow the scrolling, e.g. a header that a script
+ * fixes while scrolling. Pages without such changes still run no code while scrolling.
  */
 function scheduleAncestorUpdate() {
   if (!isActive || ancestorUpdateScheduled) return;
   ancestorUpdateScheduled = true;
   requestAnimationFrame(() => {
     ancestorUpdateScheduled = false;
-    if (updateScrollListener()) updateHoles();
+    updateScrollListener();
+    updateHoles();
   });
 }
 
@@ -459,15 +460,13 @@ function collectScrollDependencies(targets) {
 /**
  * Only listens to scrolling while a target depends on it, so scrolling runs no code otherwise.
  * Scroll events of elements do not bubble, so the listener captures them at the document.
- *
- * @returns {boolean} whether the listener was added or removed
  */
 function updateScrollListener() {
   const dependencies = listenersAdded ?
     collectScrollDependencies(currentTargets)
     : {followScrolling: false, scrollContainersByTarget: new Map()};
   scrollContainersByTarget = dependencies.scrollContainersByTarget;
-  if (dependencies.followScrolling === scrollListenerAdded) return false;
+  if (dependencies.followScrolling === scrollListenerAdded) return;
 
   scrollListenerAdded = dependencies.followScrolling;
   if (scrollListenerAdded) {
@@ -475,7 +474,6 @@ function updateScrollListener() {
   } else {
     document.removeEventListener('scroll', scheduleScrollUpdate, {capture: true});
   }
-  return true;
 }
 
 function isSameTargetList(a, b) {
