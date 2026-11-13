@@ -13,7 +13,6 @@ use TYPO3\CMS\Backend\Routing\Router;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Context\Context;
-use TYPO3\CMS\Core\Context\VisibilityAspect;
 use TYPO3\CMS\Core\Error\Http\UnauthorizedException;
 use TYPO3\CMS\Core\EventDispatcher\ListenerProvider;
 use TYPO3\CMS\Core\Http\HtmlResponse;
@@ -24,6 +23,8 @@ use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
+use TYPO3\CMS\VisualEditor\Configuration\HiddenRecordTablesConfiguration;
+use TYPO3\CMS\VisualEditor\Context\EditModeAspect;
 
 use function substr;
 
@@ -36,16 +37,28 @@ readonly class EditModeMiddleware implements MiddlewareInterface
         private Typo3Version $typo3Version,
         private ListenerProvider $listenerProvider,
         private PageRenderer $pageRenderer,
+        private HiddenRecordTablesConfiguration $hiddenRecordTablesConfiguration,
     ) {
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if ($this->shouldInitEditMode($request)) {
-            return $this->handleEdit($request, $handler);
-        }
+        $editMode = $this->shouldInitEditMode($request);
+        $this->context->setAspect(
+            EditModeAspect::IDENTIFIER,
+            new EditModeAspect($editMode, $editMode ? $this->hiddenRecordTablesConfiguration->getTables() : []),
+        );
+        try {
+            if ($editMode) {
+                return $this->handleEdit($request, $handler);
+            }
 
-        return $handler->handle($request);
+            return $handler->handle($request);
+        } finally {
+            // The Context outlives the request, e.g. in sub requests and long-running processes:
+            // do not keep the edit mode for following requests.
+            $this->context->unsetAspect(EditModeAspect::IDENTIFIER);
+        }
     }
 
     private function shouldInitEditMode(ServerRequestInterface $request): bool
@@ -82,24 +95,6 @@ readonly class EditModeMiddleware implements MiddlewareInterface
 
     private function handleEdit(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        // The core's PreviewSimulator has already decided whether hidden pages (the
-        // previewed page itself or a hidden ancestor with extendToSubpages) and
-        // scheduled records are visible in this preview. Keep that decision and only
-        // enforce hidden content for editing: resetting includeHiddenPages makes
-        // PageRepository::getPage() return no record for a hidden page, which breaks
-        // e.g. content sliding (ContentObjectRenderer::getSlidePids()).
-        /** @var VisibilityAspect $visibilityAspect */
-        $visibilityAspect = $this->context->getAspect('visibility');
-        $this->context->setAspect(
-            'visibility',
-            new VisibilityAspect(
-                includeHiddenPages: $visibilityAspect->includeHiddenPages(),
-                includeHiddenContent: true,
-                includeDeletedRecords: false,
-                includeScheduledRecords: $visibilityAspect->includeScheduledRecords(),
-            ),
-        );
-
         if ($this->typo3Version->getMajorVersion() >= 14) {
             // currently this is needed to allow ~labels imports to work in frontend context. (maybe this change in the development of v14)
             $this->listenerProvider->addListener(

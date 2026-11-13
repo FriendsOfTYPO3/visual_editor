@@ -1,0 +1,34 @@
+page = PAGE
+page {
+  10 = CONTENT
+  10 {
+    table = tt_content
+    select.orderBy = sorting
+    renderObj = COA
+    renderObj {
+      10 = TEXT
+      10.field = header
+      10.wrap = <h1>|</h1>
+      20 = FILES
+      20.references {
+        table = tt_content
+        fieldName = image
+      }
+      20.renderObj = TEXT
+      20.renderObj.data = file:current:title
+      20.renderObj.wrap = <p>|</p>
+    }
+  }
+
+  20 = CONTENT
+  20 {
+    table = tx_blogexample_domain_model_post
+    select {
+      pidInList = 1
+      orderBy = uid
+    }
+    renderObj = TEXT
+    renderObj.field = title
+    renderObj.wrap = <li>|</li>
+  }
+}
