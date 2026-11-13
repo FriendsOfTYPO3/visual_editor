@@ -1,0 +1,40 @@
+"pages"
+,"uid","pid","title","doktype","is_siteroot","deleted","hidden","perms_everybody","slug","sys_language_uid","l10n_parent"
+,1,0,"Root",1,1,0,0,15,"/",0,0
+,2,0,"Root",1,1,0,0,15,"/",1,1
+"be_users"
+,"uid","pid","tstamp","username","password","admin","disable","starttime","endtime","options","crdate","workspace_perms","deleted","TSconfig","lastlogin","workspace_id"
+,1,0,1366642540,"admin","$1$tCrlLajZ$C0sikFQQ3SWaFAZ1Me0Z/1",1,0,0,0,0,1366642540,1,0,,1371033743,0
+"sys_workspace"
+,"uid","pid","title","deleted"
+,1,0,"Workspace",0
+"tt_content"
+,"uid","pid","sorting","CType","header","hidden","deleted","sys_language_uid","l18n_parent","image","t3ver_oid","t3ver_wsid","t3ver_state"
+,1,1,256,"textpic","Visible content element",0,0,0,0,2,0,0,0
+,2,1,512,"textpic","Hidden content element",1,0,0,0,0,0,0,0
+,3,1,256,"textpic","Hidden translated content element",1,0,1,1,0,0,0,0
+,4,1,768,"textpic","Live content element",0,0,0,0,0,0,0,0
+,5,1,768,"textpic","Workspace hidden content element",1,0,0,0,0,4,1,0
+"sys_file"
+,"uid","pid","storage","type","identifier","identifier_hash","folder_hash","extension","mime_type","name","sha1","size"
+,1,0,0,2,"/image.jpg","","","jpg","image/jpeg","image.jpg","",0
+"sys_file_reference"
+,"uid","pid","uid_local","uid_foreign","tablenames","fieldname","sorting_foreign","title","hidden","deleted","t3ver_oid","t3ver_wsid","t3ver_state"
+,1,1,1,1,"tt_content","image",1,"Hidden file reference",1,0,0,0,0
+,2,1,1,1,"tt_content","image",2,"Visible file reference",0,0,0,0,0
+,3,1,1,1,"tt_content","image",2,"Workspace hidden file reference",1,0,2,1,0
+"tx_blogexample_domain_model_blog"
+,"uid","pid","title","hidden","deleted","posts"
+,1,1,"Blog",0,0,10
+"tx_blogexample_domain_model_post"
+,"uid","pid","blog","title","hidden","deleted","sys_language_uid","l18n_parent","t3ver_oid","t3ver_wsid","t3ver_state"
+,1,1,1,"Visible post",0,0,0,0,0,0,0
+,2,1,1,"Hidden post",1,0,0,0,0,0,0
+,3,1,1,"Live hidden post",1,0,0,0,0,0,0
+,4,1,1,"Workspace unhidden post",0,0,0,0,3,1,0
+,5,1,1,"Live visible post",0,0,0,0,0,0,0
+,6,1,1,"Workspace hidden post",1,0,0,0,5,1,0
+,7,1,1,"Hidden translated post",1,0,1,1,0,0,0
+,8,1,1,"Live hidden translated post",1,0,1,10,0,0,0
+,9,1,1,"Workspace unhidden translated post",0,0,1,10,8,1,0
+,10,1,1,"Translated post",0,0,0,0,0,0,0

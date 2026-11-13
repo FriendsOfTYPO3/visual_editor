@@ -1,0 +1,19 @@
+{
+	"name": "typo3tests/backend-user-session",
+	"type": "typo3-cms-extension",
+	"description": "Starts a session for the backend user of frontend functional tests",
+	"license": "GPL-2.0-or-later",
+	"require": {
+		"typo3/cms-core": "*@dev"
+	},
+	"extra": {
+		"typo3/cms": {
+			"extension-key": "backend_user_session"
+		}
+	},
+	"autoload": {
+		"psr-4": {
+			"TYPO3Tests\\BackendUserSession\\": "Classes/"
+		}
+	}
+}

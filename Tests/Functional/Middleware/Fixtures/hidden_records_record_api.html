@@ -1,0 +1,9 @@
+<f:for each="{contentElements}" as="contentElement">
+    <h1>{contentElement.record.header}</h1>
+    <f:for each="{contentElement.record.image}" as="fileReference">
+        <p>{fileReference.title}</p>
+    </f:for>
+</f:for>
+<f:for each="{posts}" as="post">
+    <li>{post.record.title}</li>
+</f:for>

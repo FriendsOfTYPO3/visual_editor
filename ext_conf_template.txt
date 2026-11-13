@@ -1,0 +1,2 @@
+# cat=edit mode; type=string; label=Show hidden records of these tables in edit mode: Comma separated list of tables, e.g. tt_content,tx_news_domain_model_news. Hidden records of all other tables stay hidden in edit mode, like in the frontend. Add the tables that are made editable in the visual editor, so editors can see and unhide their hidden records. pages are not supported: hidden pages follow the preview of the TYPO3 core.
+showHiddenRecordsOfTables = tt_content
