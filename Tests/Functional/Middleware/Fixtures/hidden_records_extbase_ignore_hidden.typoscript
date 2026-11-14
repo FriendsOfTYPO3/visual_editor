@@ -1,0 +1,2 @@
+# Lets the Extbase query of hidden_records_extbase.typoscript explicitly ignore the hidden field
+page.20.ignoreHiddenField = 1
