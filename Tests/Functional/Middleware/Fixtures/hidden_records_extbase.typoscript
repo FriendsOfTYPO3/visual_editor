@@ -1,0 +1,4 @@
+# Renders the blog posts with Extbase instead of CONTENT, see hidden_records.typoscript
+page.20 >
+page.20 = USER
+page.20.userFunc = TYPO3\CMS\VisualEditor\Tests\Functional\Middleware\Fixtures\ExtbasePostRenderer->render

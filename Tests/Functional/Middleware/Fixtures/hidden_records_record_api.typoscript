@@ -1,0 +1,25 @@
+page = PAGE
+page {
+  10 = FLUIDTEMPLATE
+  10 {
+    file = EXT:visual_editor/Tests/Functional/Middleware/Fixtures/hidden_records_record_api.html
+    dataProcessing {
+      10 = database-query
+      10 {
+        table = tt_content
+        orderBy = sorting
+        as = contentElements
+        dataProcessing.10 = record-transformation
+      }
+
+      20 = database-query
+      20 {
+        table = tx_blogexample_domain_model_post
+        pidInList = 1
+        orderBy = uid
+        as = posts
+        dataProcessing.10 = record-transformation
+      }
+    }
+  }
+}

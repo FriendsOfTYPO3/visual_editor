@@ -199,6 +199,21 @@ search for:
   </f:mark.contentArea>
   ````
 
+## Extension configuration
+
+### `showHiddenRecordsOfTables`
+
+Comma separated list of tables whose hidden records are shown in edit mode, so editors can see and unhide them. Default: `tt_content`.
+
+Hidden records of all other tables stay hidden in edit mode, like in the frontend, e.g. hidden images (`sys_file_reference`). If you make records of another table editable with the visual editor, e.g. news with `stdWrap.wrapContentElementsWithVeWrapper`, add the table:
+
+```php
+// config/system/settings.php or additional.php
+$GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['visual_editor']['showHiddenRecordsOfTables'] = 'tt_content,tx_news_domain_model_news';
+```
+
+`pages` is not supported: hidden pages follow the preview of the TYPO3 core.
+
 ## PSR-14 events
 
 ### `ModifyNewContentElementWizardUrlParameterEvent`
