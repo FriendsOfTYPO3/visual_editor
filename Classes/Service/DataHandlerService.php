@@ -6,6 +6,7 @@ namespace TYPO3\CMS\VisualEditor\Service;
 
 use RuntimeException;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
+use TYPO3\CMS\Core\DataHandling\Model\CorrelationId;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -26,15 +27,17 @@ final readonly class DataHandlerService
      *
      * @return list<string>
      */
-    public function run(array $data, array $cmd): array
+    public function run(array $data, array $cmd, CorrelationId $correlationId): array
     {
         $this->validateData($data);
         $this->validateCmd($cmd);
 
         $dataHandler = GeneralUtility::makeInstance(DataHandler::class); // never use DataHandler over DI!!
         $dataHandler->start($data, $cmd);
+        $dataHandler->setCorrelationId($correlationId);
         $dataHandler->process_datamap();
         $dataHandler->process_cmdmap();
+
         return $dataHandler->errorLog;
     }
 
