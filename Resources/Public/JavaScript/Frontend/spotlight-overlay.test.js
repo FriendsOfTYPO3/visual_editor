@@ -8,6 +8,7 @@ import {chromium} from 'playwright';
  */
 
 const moduleSource = await readFile(new URL('./spotlight-overlay.js', import.meta.url), 'utf8');
+const cutoutGeometrySource = await readFile(new URL('./cutout-geometry.js', import.meta.url), 'utf8');
 
 const stickyAndFixedTargets = `
   <header><span class="target" id="sticky">in a sticky header</span></header>
@@ -58,6 +59,7 @@ function pageHtml(body) {
   return `<!doctype html>
 <html lang="en">
 <head>
+  <script type="importmap">{"imports": {"@typo3/visual-editor/Frontend/cutout-geometry": "/cutout-geometry.js"}}</script>
   <style>
     body {margin: 0;}
     header {position: sticky; top: 0; height: 60px; background: #ddd;}
@@ -85,8 +87,12 @@ after(async () => {
 async function openPage(body) {
   const page = await browser.newPage({viewport: {width: 800, height: 600}});
   await page.route('http://spotlight.test/**', (route) => {
-    if (new URL(route.request().url()).pathname === '/spotlight-overlay.js') {
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname === '/spotlight-overlay.js') {
       return route.fulfill({contentType: 'text/javascript', body: moduleSource});
+    }
+    if (pathname === '/cutout-geometry.js') {
+      return route.fulfill({contentType: 'text/javascript', body: cutoutGeometrySource});
     }
     return route.fulfill({contentType: 'text/html', body: pageHtml(body)});
   });
@@ -282,5 +288,42 @@ test('spotlight follows highlighted elements that a script moves by a class whil
   await scrollDownInSteps(page);
 
   assert.deepEqual(await getClickedElementIds(page, ['moved', 'other']), {moved: 'moved', other: null});
+  await page.close();
+});
+
+const paddedTargets = `
+  <div style="height: 100px;"></div>
+  <span class="target" id="padded" style="margin-left: 100px;">default padding</span>
+  <div style="height: 100px;"></div>
+  <span class="target" id="exact" style="margin-left: 100px; --ve-cutout-padding-inline: 0; --ve-cutout-padding-block: 0;">no padding</span>
+  <div style="height: 100px;"></div>
+  <span class="target" id="parent" style="position: relative; margin-left: 100px; --ve-cutout-padding-inline: 0;">
+    <span id="floating" style="position: absolute; top: 60px; left: 0;">floating</span>
+  </span>`;
+
+/**
+ * Returns whether the overlay blocks a click 4px left of each element, which is inside the default padding.
+ *
+ * @param {import('playwright').Page} page
+ * @param {string[]} ids
+ * @returns {Promise<Record<string, boolean>>}
+ */
+async function getBlockedNextToElements(page, ids) {
+  return page.evaluate(ids => Object.fromEntries(ids.map((id) => {
+    const rect = document.getElementById(id).getBoundingClientRect();
+    const element = document.elementFromPoint(rect.left - 4, rect.top + rect.height / 2);
+    return [id, element?.tagName === 'path'];
+  })), ids);
+}
+
+test('spotlight takes the padding of a cut-out from the custom properties of the element, not for the elements inside', async () => {
+  const page = await openPage(paddedTargets);
+  await page.evaluate(() => window.spotlight.highlight('.target'));
+  await waitForFrames(page);
+
+  assert.deepEqual(
+    await getBlockedNextToElements(page, ['padded', 'exact', 'floating']),
+    {padded: false, exact: true, floating: false},
+  );
   await page.close();
 });
