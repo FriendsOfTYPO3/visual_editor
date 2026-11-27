@@ -3,11 +3,16 @@
 // Outside the holes: NOT click-through (blocked). Inside the holes: click-through.
 // Fixes overlapping holes by union-merging rectangles before building the evenodd path.
 
+import {CUTOUT_PADDING_BLOCK, CUTOUT_PADDING_INLINE, CUTOUT_RADIUS} from '@typo3/visual-editor/Frontend/cutout-geometry';
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 let styleEl = null;
 let overlaySvgEl = null;
 let overlayPathEl = null;
+let overlayShadeEl = null;
+let overlayMaskBackgroundEl = null;
+let overlayMaskHolesEl = null;
 
 let currentTargets = [];
 // inner scroll containers that clip each target, collected together with the targets
@@ -25,8 +30,19 @@ let lastPathD = null;
 let docWidth = 0;
 let docHeight = 0;
 
-const HOLE_PADDING_BLOCK = 8; // top/bottom padding around highlighted element
-const HOLE_PADDING_INLINE = 10; // left/right padding around highlighted element
+const HOLE_PADDING_BLOCK = CUTOUT_PADDING_BLOCK; // top/bottom padding around highlighted element
+const HOLE_PADDING_INLINE = CUTOUT_PADDING_INLINE; // left/right padding around highlighted element
+const HOLE_RADIUS = CUTOUT_RADIUS; // corner radius of the visible cut-out
+// The action bar of the hovered content element is cut out exactly: any padding would show
+// as a light border around it.
+const ACTION_BAR_HOLE_PADDING = 0;
+// The rich text toolbar is this much wider than its field on each side (editable.css). Its cut-out
+// gets that much less padding, so it ends where the cut-out of the field ends.
+const TOOLBAR_SELECTOR = '.ck-editor__top';
+const TOOLBAR_OVERHANG = 4;
+const ACTION_BAR_HOLE_RADIUS = 3; // radius of the action bar itself, when its style does not say
+const ACTION_BAR_SELECTOR = '.action-bar.hovered, .action-bar.hidden, .action-bar:focus-within';
+const MASK_ID = 'spotlightOverlayMask';
 
 const EPS = 1e-6; // float compare tolerance
 
@@ -38,7 +54,8 @@ function ensureStyle() {
   if (styleEl) return;
 
   const css = `
-/* SVG overlay that blocks clicks only where it is painted (outside the holes).
+/* SVG overlay. The visible shade is a masked rect with rounded cut-outs,
+   the (transparent) path with the merged rectangular holes blocks clicks outside the holes.
    It is positioned in document coordinates; width/height are set inline. */
 .spotlight-overlay-svg {
   position: absolute;
@@ -79,14 +96,37 @@ function ensureOverlay() {
   overlaySvgEl.setAttribute('aria-hidden', 'true');
   overlaySvgEl.setAttribute('focusable', 'false');
 
+  const defsEl = document.createElementNS(SVG_NS, 'defs');
+  const maskEl = document.createElementNS(SVG_NS, 'mask');
+  maskEl.setAttribute('id', MASK_ID);
+  maskEl.setAttribute('maskUnits', 'userSpaceOnUse');
+  maskEl.setAttribute('x', '0');
+  maskEl.setAttribute('y', '0');
+
+  overlayMaskBackgroundEl = document.createElementNS(SVG_NS, 'rect');
+  overlayMaskBackgroundEl.setAttribute('fill', 'white');
+
+  overlayMaskHolesEl = document.createElementNS(SVG_NS, 'g');
+  overlayMaskHolesEl.setAttribute('fill', 'black');
+
+  maskEl.append(overlayMaskBackgroundEl, overlayMaskHolesEl);
+  defsEl.appendChild(maskEl);
+
+  overlayShadeEl = document.createElementNS(SVG_NS, 'rect');
+  overlayShadeEl.setAttribute('class', 'spotlight-overlay-shade');
+  overlayShadeEl.setAttribute('fill', 'rgba(0,0,0,0.75)');
+  overlayShadeEl.setAttribute('mask', `url(#${MASK_ID})`);
+  overlayShadeEl.setAttribute('pointer-events', 'none');
+
+  // Hit area only: transparent, but "painted", so it catches pointer events outside the holes.
   overlayPathEl = document.createElementNS(SVG_NS, 'path');
   overlayPathEl.setAttribute('class', 'spotlight-overlay-path');
-  overlayPathEl.setAttribute('fill', 'rgba(0,0,0,0.8)');
+  overlayPathEl.setAttribute('fill', 'transparent');
   overlayPathEl.setAttribute('fill-rule', 'evenodd'); // outer rect minus holes
 
   overlaySvgEl.setAttribute('preserveAspectRatio', 'none');
 
-  overlaySvgEl.appendChild(overlayPathEl);
+  overlaySvgEl.append(defsEl, overlayShadeEl, overlayPathEl);
   document.documentElement.appendChild(overlaySvgEl);
 
   // After the fade-out the overlay is collapsed, so it cannot keep the document scrollable.
@@ -110,6 +150,11 @@ function setOverlaySize(width, height) {
   overlaySvgEl.setAttribute('width', String(width));
   overlaySvgEl.setAttribute('height', String(height));
   overlaySvgEl.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+  for (const el of [overlayShadeEl, overlayMaskBackgroundEl, overlayMaskBackgroundEl?.parentElement]) {
+    el?.setAttribute('width', String(width));
+    el?.setAttribute('height', String(height));
+  }
 }
 
 function collapseOverlay() {
@@ -323,10 +368,17 @@ function computeHolesFromTargets() {
     const rect = el.getBoundingClientRect();
     if (!rect || (rect.width <= EPS && rect.height <= EPS)) continue;
 
-    let left = rect.left - HOLE_PADDING_INLINE;
-    let top = rect.top - HOLE_PADDING_BLOCK;
-    let right = rect.right + HOLE_PADDING_INLINE;
-    let bottom = rect.bottom + HOLE_PADDING_BLOCK;
+    const isActionBar = el.matches(ACTION_BAR_SELECTOR);
+    const paddingBlock = isActionBar ? ACTION_BAR_HOLE_PADDING : HOLE_PADDING_BLOCK;
+    let paddingInline = isActionBar ? ACTION_BAR_HOLE_PADDING : HOLE_PADDING_INLINE;
+    if (el.matches(TOOLBAR_SELECTOR)) {
+      paddingInline -= TOOLBAR_OVERHANG;
+    }
+
+    let left = rect.left - paddingInline;
+    let top = rect.top - paddingBlock;
+    let right = rect.right + paddingInline;
+    let bottom = rect.bottom + paddingBlock;
 
     // parts of the target that are scrolled out of its scroll containers are hidden, so they get no hole
     for (const container of scrollContainersByTarget.get(el) ?? []) {
@@ -340,11 +392,45 @@ function computeHolesFromTargets() {
       bottom = Math.min(bottom, visible.bottom);
     }
 
-    holes.push({x: left + window.scrollX, y: top + window.scrollY, w: right - left, h: bottom - top});
+    const x = left + window.scrollX;
+    const y = top + window.scrollY;
+    const w = right - left;
+    const h = bottom - top;
+
+    // the action bar is only round at the top, its bottom edge sits on the frame of the content element
+    const barRadius = isActionBar ? (parseFloat(getComputedStyle(el).borderTopLeftRadius) || ACTION_BAR_HOLE_RADIUS) : 0;
+    holes.push({...clampRectToDocument({x, y, w, h}), r: isActionBar ? barRadius : HOLE_RADIUS, topOnly: isActionBar});
   }
 
-  // Critical fix: union overlapping rectangles
-  return unionRects(holes);
+  return holes.filter(r => r.w > EPS && r.h > EPS);
+}
+
+function renderMaskHoles(holes) {
+  overlayMaskHolesEl.replaceChildren(...holes.map((hole) => {
+    if (hole.topOnly) {
+      const r = Math.min(hole.r, hole.w / 2, hole.h);
+      const path = document.createElementNS(SVG_NS, 'path');
+      path.setAttribute('d', [
+        `M ${hole.x} ${hole.y + hole.h}`,
+        `V ${hole.y + r}`,
+        `A ${r} ${r} 0 0 1 ${hole.x + r} ${hole.y}`,
+        `H ${hole.x + hole.w - r}`,
+        `A ${r} ${r} 0 0 1 ${hole.x + hole.w} ${hole.y + r}`,
+        `V ${hole.y + hole.h}`,
+        'Z',
+      ].join(' '));
+      return path;
+    }
+
+    const rect = document.createElementNS(SVG_NS, 'rect');
+    rect.setAttribute('x', String(hole.x));
+    rect.setAttribute('y', String(hole.y));
+    rect.setAttribute('width', String(hole.w));
+    rect.setAttribute('height', String(hole.h));
+    rect.setAttribute('rx', String(hole.r));
+    rect.setAttribute('ry', String(hole.r));
+    return rect;
+  }));
 }
 
 function updateOverlayPath() {
@@ -357,11 +443,16 @@ function updateOverlayPath() {
 function updateHoles() {
   if (!overlayPathEl || !isActive) return;
 
-  const d = buildOverlayPathD(computeHolesFromTargets());
-  if (d === lastPathD) return;
+  const holes = computeHolesFromTargets();
+  // The visible cut-outs may overlap (masks handle that). The click-through areas must not (evenodd),
+  // so they are merged.
+  const d = buildOverlayPathD(unionRects(holes));
+  const key = `${d}|${holes.map(h => `${h.x},${h.y},${h.w},${h.h},${h.r}`).join(';')}`;
+  if (key === lastPathD) return;
 
-  lastPathD = d;
+  lastPathD = key;
   overlayPathEl.setAttribute('d', d);
+  renderMaskHoles(holes);
 }
 
 /**
@@ -555,6 +646,7 @@ function addListeners() {
 
   document.addEventListener('toggle', scheduleUpdate, {capture: true});
   window.addEventListener('resize', scheduleUpdate);
+  window.addEventListener('ve-spotlight-refresh', scheduleUpdate);
   updateScrollListener();
 }
 
@@ -568,6 +660,7 @@ function removeListeners() {
 
   document.removeEventListener('toggle', scheduleUpdate, {capture: true});
   window.removeEventListener('resize', scheduleUpdate);
+  window.removeEventListener('ve-spotlight-refresh', scheduleUpdate);
   updateScrollListener();
 }
 
@@ -601,6 +694,11 @@ function selectElements(selectorToHighlight) {
     if (el.shadowRoot) {
       result = result.concat(traverse(el.shadowRoot));
     }
+  });
+
+  // Visible action bars of the content elements live in their shadow roots.
+  document.querySelectorAll('ve-content-element').forEach((contentElement) => {
+    contentElement.shadowRoot?.querySelectorAll(ACTION_BAR_SELECTOR).forEach(el => result.push(el));
   });
 
   return Array.from(new Set(result));

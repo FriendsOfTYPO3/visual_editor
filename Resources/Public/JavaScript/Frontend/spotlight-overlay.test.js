@@ -8,6 +8,7 @@ import {chromium} from 'playwright';
  */
 
 const moduleSource = await readFile(new URL('./spotlight-overlay.js', import.meta.url), 'utf8');
+const cutoutGeometrySource = await readFile(new URL('./cutout-geometry.js', import.meta.url), 'utf8');
 
 const stickyAndFixedTargets = `
   <header><span class="target" id="sticky">in a sticky header</span></header>
@@ -58,6 +59,7 @@ function pageHtml(body) {
   return `<!doctype html>
 <html lang="en">
 <head>
+  <script type="importmap">{"imports": {"@typo3/visual-editor/Frontend/cutout-geometry": "/cutout-geometry.js"}}</script>
   <style>
     body {margin: 0;}
     header {position: sticky; top: 0; height: 60px; background: #ddd;}
@@ -85,8 +87,12 @@ after(async () => {
 async function openPage(body) {
   const page = await browser.newPage({viewport: {width: 800, height: 600}});
   await page.route('http://spotlight.test/**', (route) => {
-    if (new URL(route.request().url()).pathname === '/spotlight-overlay.js') {
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname === '/spotlight-overlay.js') {
       return route.fulfill({contentType: 'text/javascript', body: moduleSource});
+    }
+    if (pathname === '/cutout-geometry.js') {
+      return route.fulfill({contentType: 'text/javascript', body: cutoutGeometrySource});
     }
     return route.fulfill({contentType: 'text/html', body: pageHtml(body)});
   });

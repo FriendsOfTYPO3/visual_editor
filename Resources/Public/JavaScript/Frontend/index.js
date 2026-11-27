@@ -12,6 +12,7 @@ import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 import {initializeNavigationInterception} from '@typo3/visual-editor/Frontend/initialize-navigation-interception';
 import {initializeSaveHandling} from '@typo3/visual-editor/Frontend/initialize-save-handling';
 import {initializeSpotlightHandling} from '@typo3/visual-editor/Frontend/initialize-spotlight-handling';
+import {initializeThemeSync} from '@typo3/visual-editor/Frontend/initialize-theme-sync';
 import {initializeImageHandling} from '@typo3/visual-editor/Frontend/initialize-image-handling';
 import {initializeScrollPositionSyncAndSave} from '@typo3/visual-editor/Frontend/scroll-position-sync';
 import {initializeIframeLoadingSignal} from '@typo3/visual-editor/Frontend/initialize-iframe-loading-signal';
@@ -26,6 +27,7 @@ if (window.veInfo) {
   sendMessage('pageChanged', window.veInfo);
 }
 
+initializeThemeSync();
 initializeSpotlightHandling();
 initializeIframeLoadingSignal();
 initializeSaveHandling();
