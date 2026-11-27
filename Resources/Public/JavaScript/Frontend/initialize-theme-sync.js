@@ -7,23 +7,16 @@
 
 const BACKEND_TOKENS = {
   '--ve-accent': '--typo3-state-primary-bg',
-  '--ve-accent-contrast': '--typo3-state-primary-color',
   // the default button of the backend, the action bar looks like one
   '--ve-button-bg': '--typo3-state-default-bg',
   '--ve-button-color': '--typo3-state-default-color',
   '--ve-button-hover-bg': '--typo3-state-default-hover-bg',
   '--ve-success': '--typo3-state-success-bg',
-  '--ve-danger': '--typo3-state-danger-bg',
 };
 
 // These are drawn on the website itself, whose background does not follow the backend color scheme.
 // The light variant has enough contrast on light pages and on dark pages (with the white halo).
 const PAGE_TOKENS = ['--ve-accent', '--ve-success'];
-
-// The thin outline around the field rings, it keeps them visible on dark and colored pages.
-const STATIC_TOKENS = {
-  '--ve-halo': '#fff',
-};
 
 /**
  * Backend tokens are defined with light-dark() and var(), so the value is only resolved for a real property.
@@ -75,19 +68,13 @@ function resolveBackendButtonRadius(backendDocument) {
 }
 
 function applyBackendTheme() {
-  for (const [property, value] of Object.entries(STATIC_TOKENS)) {
-    document.documentElement.style.setProperty(property, value);
-  }
-
   try {
     const backendDocument = window.parent.document;
-    const colors = resolveBackendColors(backendDocument);
-    for (const [property, value] of Object.entries(colors)) {
-      document.documentElement.style.setProperty(property, value);
-    }
-    const radius = resolveBackendButtonRadius(backendDocument);
-    if (radius) {
-      document.documentElement.style.setProperty('--ve-button-radius', radius);
+    const properties = {...resolveBackendColors(backendDocument), '--ve-button-radius': resolveBackendButtonRadius(backendDocument)};
+    for (const [property, value] of Object.entries(properties)) {
+      if (value) {
+        document.documentElement.style.setProperty(property, value);
+      }
     }
   } catch {
     // cross-origin or no backend parent: keep the defaults of the components
