@@ -25,6 +25,7 @@ use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\CMS\VisualEditor\Configuration\HiddenRecordTablesConfiguration;
 use TYPO3\CMS\VisualEditor\Context\EditModeAspect;
+use TYPO3\CMS\VisualEditor\Service\AppearanceDraftService;
 
 use function substr;
 
@@ -38,6 +39,7 @@ readonly class EditModeMiddleware implements MiddlewareInterface
         private ListenerProvider $listenerProvider,
         private PageRenderer $pageRenderer,
         private HiddenRecordTablesConfiguration $hiddenRecordTablesConfiguration,
+        private AppearanceDraftService $appearanceDraftService,
     ) {
     }
 
@@ -112,6 +114,7 @@ readonly class EditModeMiddleware implements MiddlewareInterface
         }
 
         $this->addAjaxSettingsToJS();
+        $this->appearanceDraftService->load($request);
 
         return $handler->handle($request);
     }

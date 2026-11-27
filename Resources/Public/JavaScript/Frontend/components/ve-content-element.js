@@ -10,6 +10,7 @@ import {getAddAboveUidPid} from '@typo3/visual-editor/Frontend/components/add-ab
 import {shouldHideContentElement} from '@typo3/visual-editor/Frontend/components/should-hide-content-element';
 import {syncContentElementMoved} from '@typo3/visual-editor/Frontend/components/sync-content-element-moved';
 import {showHiddenActive} from '@typo3/visual-editor/Shared/local-stores';
+import '@typo3/visual-editor/Frontend/components/ve-appearance-menu';
 
 /**
  * @extends {HTMLElement}
@@ -29,6 +30,7 @@ export class VeContentElement extends LitElement {
     hiddenFieldName: {type: String},
     canModifyRecord: {type: Boolean},
     canBeMoved: {type: Boolean},
+    appearanceFields: {type: Array},
 
     showHidden: {type: Boolean, state: true, attribute: false},
     isHovered: {type: Boolean, state: true, attribute: false},
@@ -260,6 +262,10 @@ export class VeContentElement extends LitElement {
   updated(changedProperties) {
     // hide the whole element when "Show hidden" is off and this element is hidden
     this.classList.toggle('ve-hidden', this.hideBecauseHidden);
+    // an open appearance menu is closed together with the action bar
+    if (!this.isHovered && !this.isFocusWithin) {
+      this.renderRoot.querySelector('ve-appearance-menu')?.close();
+    }
   }
 
   render() {
@@ -280,6 +286,11 @@ export class VeContentElement extends LitElement {
                 ${(this.canBeMoved && this.hasContentAreaAsParent) ? '⠿ ' : ''}${window.veInfo.showIdWithTitle ? `[${this.uid}] ` : ''}${this.elementName}
               </span>
         <!-- TODO extract button bar as separate component -->
+        ${
+          this.appearanceFields?.length ?
+            html`<ve-appearance-menu table="${this.table}" uid="${this.uid}" .fields="${this.appearanceFields}"></ve-appearance-menu>`
+            : ''
+        }
         ${
           this.editContentContextualUrl ?
             html`
