@@ -217,7 +217,7 @@ img[data-veedit] {
 
   width: 24px;
   aspect-ratio: 1 / 1;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 3px #000) drop-shadow(0 0 8px #000);
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 4px #000);
 
   pointer-events: none;
   opacity: 0;
