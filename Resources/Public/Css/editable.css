@@ -169,7 +169,7 @@ img[data-veedit] {
   anchor-scope: --ve-image;
 }
 
-/* the hover ring: an image has no padding to paint it in, so it is a box over the image */
+/* the hover ring and the tint with the hatch of an empty field: an image has no padding to paint them in, so it is a box over the image */
 *:has(> img[data-veedit])::before {
   content: '';
   position: absolute;
@@ -181,10 +181,11 @@ img[data-veedit] {
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s ease;
-  background-image: var(--ve-ring-images);
-  background-size: var(--ve-ring-sizes);
-  background-position: var(--ve-ring-positions);
-  background-repeat: var(--ve-ring-repeats);
+  background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 8%, transparent);
+  background-image: var(--ve-ring-images), var(--ve-empty-hatch);
+  background-size: var(--ve-ring-sizes), auto;
+  background-position: var(--ve-ring-positions), 0 0;
+  background-repeat: var(--ve-ring-repeats), repeat;
 }
 
 *:has(> img[data-veedit]:hover:not(:focus))::before {
@@ -198,14 +199,16 @@ img[data-veedit] {
   position-anchor: --ve-image;
   position-area: center;
 
-  width: clamp(20px, 33%, 100px);
+  /* a small button like the ones of the action bar, the icon is 16px */
+  width: 28px;
   aspect-ratio: 1 / 1;
-  filter: drop-shadow( 0 0 0.25rem #000 ) drop-shadow( 0 0 0.5rem #000 ) drop-shadow( 0 0 0.75rem #000 );
+  border-radius: var(--ve-button-radius, 3px);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ve-halo, #fff) 70%, transparent), 0 1px 4px rgba(0, 0, 0, 0.4);
 
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s ease;
-  background: center / contain no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g fill="white"><path d="m9.293 3.293-8 8A.997.997 0 0 0 1 12v3h3c.265 0 .52-.105.707-.293l8-8-3.414-3.414zM8.999 5l.5.5-5 5-.5-.5 5-5zM4 14H3v-1H2v-1l1-1 2 2-1 1zM13.707 5.707l1.354-1.354a.5.5 0 0 0 0-.707L12.354.939a.5.5 0 0 0-.707 0l-1.354 1.354 3.414 3.414z"/></g></svg>');
+  background: var(--ve-accent, #5432fe) center / 16px 16px no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g fill="white"><path d="m9.293 3.293-8 8A.997.997 0 0 0 1 12v3h3c.265 0 .52-.105.707-.293l8-8-3.414-3.414zM8.999 5l.5.5-5 5-.5-.5 5-5zM4 14H3v-1H2v-1l1-1 2 2-1 1zM13.707 5.707l1.354-1.354a.5.5 0 0 0 0-.707L12.354.939a.5.5 0 0 0-.707 0l-1.354 1.354 3.414 3.414z"/></g></svg>');
 }
 
 *:has(> img[data-veedit]:hover)::after,
