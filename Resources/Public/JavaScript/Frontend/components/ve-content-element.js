@@ -525,8 +525,8 @@ export class VeContentElement extends LitElement {
       --ve-cutout-padding-inline: 0;
       --ve-cutout-radius: var(--ve-button-radius, 3px);
       --ve-cutout-round: top;
-      /* the inset line separates the bar from the page in light and dark mode */
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ve-button-color, #181718) 40%, transparent), 0 0 6px rgba(0, 0, 0, 0.125);
+      /* no outline: the shadow lifts the bar off the page */
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.35);
       z-index: 10100;
       font-size: 13px;
       line-height: 1.4;
