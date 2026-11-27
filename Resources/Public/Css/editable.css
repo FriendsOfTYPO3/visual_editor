@@ -110,8 +110,9 @@ ve-editable-rich-text .ck-editor__top {
   display: none;
   position: absolute !important;
   bottom: calc(100% + 1px); /* position it over the element */
-  left: -4px; /* as wide as the highlighted field, see TOOLBAR_OVERHANG in spotlight-overlay.js */
+  left: -4px; /* as wide as the highlighted field, which is cut out with 8px */
   right: -4px;
+  --ve-cutout-padding-inline: 4px; /* so its cut-out ends where the cut-out of the field ends */
 
   z-index: 20000;
 

@@ -353,6 +353,7 @@ export class VeContentElement extends LitElement {
         table="${this.table}" uid="${this.uid}" CType="${this.CType}"
         class="action-bar${this.isHidden ? ' hidden' : ''}${this.dragInProgress ? ' dragAndDropActive' : ''}${(this.isHovered || this.isFocusWithin) ? ' hovered' : ''}"
         isActive="${(this.canBeMoved && this.hasContentAreaAsParent) ? 'true' : 'false'}"
+        ?data-ve-cutout="${this.isHidden || this.isHovered || this.isFocusWithin}"
         role="region"
         aria-label="${lll('frontend.actionBar')}"
       >
@@ -519,6 +520,11 @@ export class VeContentElement extends LitElement {
       padding: 3px 4px;
       /* as round as the buttons of the backend, the bottom edge sits on the frame */
       border-radius: var(--ve-button-radius, 3px) var(--ve-button-radius, 3px) 0 0;
+      /* the spotlight cuts the bar out exactly: any padding would show as a light border around it */
+      --ve-cutout-padding-block: 0;
+      --ve-cutout-padding-inline: 0;
+      --ve-cutout-radius: var(--ve-button-radius, 3px);
+      --ve-cutout-round: top;
       /* the inset line separates the bar from the page in light and dark mode */
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ve-button-color, #181718) 40%, transparent), 0 0 6px rgba(0, 0, 0, 0.125);
       z-index: 10100;

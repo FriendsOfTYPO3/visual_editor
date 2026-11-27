@@ -33,15 +33,22 @@ let docHeight = 0;
 const HOLE_PADDING_BLOCK = CUTOUT_PADDING_BLOCK; // top/bottom padding around highlighted element
 const HOLE_PADDING_INLINE = CUTOUT_PADDING_INLINE; // left/right padding around highlighted element
 const HOLE_RADIUS = CUTOUT_RADIUS; // corner radius of the visible cut-out
-// The action bar of the hovered content element is cut out exactly: any padding would show
-// as a light border around it.
-const ACTION_BAR_HOLE_PADDING = 0;
-// The rich text toolbar is this much wider than its field on each side (editable.css). Its cut-out
-// gets that much less padding, so it ends where the cut-out of the field ends.
-const TOOLBAR_SELECTOR = '.ck-editor__top';
-const TOOLBAR_OVERHANG = 4;
-const ACTION_BAR_HOLE_RADIUS = 3; // radius of the action bar itself, when its style does not say
-const ACTION_BAR_SELECTOR = '.action-bar.hovered, .action-bar.hidden, .action-bar:focus-within';
+// A highlighted element can change its cut-out with these custom properties, for example the action bar
+// of a content element, which is cut out exactly. `--ve-cutout-round: top` rounds only the top corners.
+const CUTOUT_PADDING_BLOCK_PROPERTY = '--ve-cutout-padding-block';
+const CUTOUT_PADDING_INLINE_PROPERTY = '--ve-cutout-padding-inline';
+const CUTOUT_RADIUS_PROPERTY = '--ve-cutout-radius';
+const CUTOUT_ROUND_PROPERTY = '--ve-cutout-round';
+// registered, so the properties of an element are not inherited by the floating elements inside of it
+for (const name of [CUTOUT_PADDING_BLOCK_PROPERTY, CUTOUT_PADDING_INLINE_PROPERTY, CUTOUT_RADIUS_PROPERTY, CUTOUT_ROUND_PROPERTY]) {
+  try {
+    CSS.registerProperty({name, syntax: '*', inherits: false});
+  } catch {
+    // already registered, e.g. by a second copy of this module
+  }
+}
+// Elements in the shadow root of a content element that are cut out as well, e.g. the visible action bar.
+const SHADOW_CUTOUT_SELECTOR = '[data-ve-cutout]';
 const MASK_ID = 'spotlightOverlayMask';
 
 const EPS = 1e-6; // float compare tolerance
@@ -358,6 +365,17 @@ function isTargetVisible(element) {
   return true;
 }
 
+/**
+ * @param {CSSStyleDeclaration} style
+ * @param {string} property
+ * @param {number} fallback
+ * @returns {number}
+ */
+function getPixels(style, property, fallback) {
+  const value = parseFloat(style.getPropertyValue(property));
+  return Number.isNaN(value) ? fallback : value;
+}
+
 function computeHolesFromTargets() {
   const holes = [];
   const scrollContainerRects = new Map();
@@ -368,12 +386,9 @@ function computeHolesFromTargets() {
     const rect = el.getBoundingClientRect();
     if (!rect || (rect.width <= EPS && rect.height <= EPS)) continue;
 
-    const isActionBar = el.matches(ACTION_BAR_SELECTOR);
-    const paddingBlock = isActionBar ? ACTION_BAR_HOLE_PADDING : HOLE_PADDING_BLOCK;
-    let paddingInline = isActionBar ? ACTION_BAR_HOLE_PADDING : HOLE_PADDING_INLINE;
-    if (el.matches(TOOLBAR_SELECTOR)) {
-      paddingInline -= TOOLBAR_OVERHANG;
-    }
+    const style = getComputedStyle(el);
+    const paddingBlock = getPixels(style, CUTOUT_PADDING_BLOCK_PROPERTY, HOLE_PADDING_BLOCK);
+    const paddingInline = getPixels(style, CUTOUT_PADDING_INLINE_PROPERTY, HOLE_PADDING_INLINE);
 
     let left = rect.left - paddingInline;
     let top = rect.top - paddingBlock;
@@ -397,9 +412,11 @@ function computeHolesFromTargets() {
     const w = right - left;
     const h = bottom - top;
 
-    // the action bar is only round at the top, its bottom edge sits on the frame of the content element
-    const barRadius = isActionBar ? (parseFloat(getComputedStyle(el).borderTopLeftRadius) || ACTION_BAR_HOLE_RADIUS) : 0;
-    holes.push({...clampRectToDocument({x, y, w, h}), r: isActionBar ? barRadius : HOLE_RADIUS, topOnly: isActionBar});
+    holes.push({
+      ...clampRectToDocument({x, y, w, h}),
+      r: getPixels(style, CUTOUT_RADIUS_PROPERTY, HOLE_RADIUS),
+      topOnly: style.getPropertyValue(CUTOUT_ROUND_PROPERTY).trim() === 'top',
+    });
   }
 
   return holes.filter(r => r.w > EPS && r.h > EPS);
@@ -698,7 +715,7 @@ function selectElements(selectorToHighlight) {
 
   // Visible action bars of the content elements live in their shadow roots.
   document.querySelectorAll('ve-content-element').forEach((contentElement) => {
-    contentElement.shadowRoot?.querySelectorAll(ACTION_BAR_SELECTOR).forEach(el => result.push(el));
+    contentElement.shadowRoot?.querySelectorAll(SHADOW_CUTOUT_SELECTOR).forEach(el => result.push(el));
   });
 
   return Array.from(new Set(result));
