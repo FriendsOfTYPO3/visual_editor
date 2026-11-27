@@ -181,15 +181,13 @@ img[data-veedit] {
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s ease;
-  /* a photo is busy, so the tint and the hatch are stronger than on a text field */
+  /* a photo is busy, so the hatch is wider and fainter than on a text field, the tint does the work */
   --ve-image-hatch: repeating-linear-gradient(
     in srgb 135deg,
-    color-mix(in srgb, var(--ve-halo, #fff) 45%, transparent) 0 2px,
-    transparent 2px 6px,
-    color-mix(in srgb, var(--ve-accent, #5432fe) 55%, transparent) 6px 8px,
-    transparent 8px 12px
+    color-mix(in srgb, var(--ve-halo, #fff) 30%, transparent) 0 1px,
+    transparent 1px 12px
   );
-  background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 24%, transparent);
+  background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 20%, transparent);
   background-image: var(--ve-ring-images), var(--ve-image-hatch);
   background-size: var(--ve-ring-sizes), auto;
   background-position: var(--ve-ring-positions), 0 0;
@@ -203,7 +201,7 @@ img[data-veedit] {
 /* focused: the tint and the hatch of a focused empty field, the outline of the image is the ring */
 *:has(> img[data-veedit]:focus)::before {
   opacity: 1;
-  background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 30%, transparent);
+  background-color: color-mix(in srgb, var(--ve-accent, #5432fe) 24%, transparent);
   background-image: var(--ve-image-hatch);
   background-size: auto;
   background-position: 0 0;
